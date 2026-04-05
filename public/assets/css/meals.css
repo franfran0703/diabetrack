@@ -1,0 +1,709 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+body {
+    background-color: #FFF8F5;
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+}
+
+/* ── PAGE HEADER — centered like blood sugar ──────────── */
+.meal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 40px;
+    gap: 14px;
+}
+.meal-header h1 {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.6rem;
+    background: linear-gradient(120deg, #c04a20 0%, #F97447 45%, #fbab6e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    display: inline-block;
+}
+.meal-header p {
+    font-size: 0.9rem;
+    color: #a0714f;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Add meal button */
+.btn-add-meal {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: #F97447;
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(249,116,71,0.38);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    letter-spacing: -0.2px;
+}
+.btn-add-meal:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 32px rgba(249,116,71,0.48);
+    background: #f86030;
+}
+.btn-add-icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 900; line-height: 1;
+}
+
+/* ── ALERTS ───────────────────────────────────────────── */
+.meal-alert {
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.meal-alert.success {
+    background: rgba(52,211,153,0.10);
+    border: 1.5px solid rgba(52,211,153,0.25);
+    color: #0f7a45;
+}
+.meal-alert.error {
+    background: rgba(220,38,38,0.08);
+    border: 1.5px solid rgba(220,38,38,0.2);
+    color: #b91c1c;
+}
+
+/* ── STAT CARDS ───────────────────────────────────────── */
+/* ── STAT STRIP — unique to meals ────────────────────── */
+.meal-stat-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+    align-items: stretch;
+}
+
+/* Big featured carbs panel */
+.meal-strip-main {
+    background: linear-gradient(145deg, #F97447, #fb9261, #fdac88);
+    border-radius: 28px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 36px rgba(249,116,71,0.30);
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+    min-height: 220px;
+}
+.meal-strip-main:hover { transform: translateY(-4px) rotate(-0.3deg); }
+
+.meal-strip-main::before {
+    content: '🍚';
+    position: absolute;
+    right: -16px; bottom: -16px;
+    font-size: 130px;
+    opacity: 0.12;
+    transform: rotate(-10deg);
+    pointer-events: none;
+    line-height: 1;
+}
+
+.meal-strip-main-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.meal-strip-icon {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+}
+.meal-strip-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+.meal-strip-main-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 4rem;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -3px;
+    position: relative; z-index: 1;
+}
+.meal-strip-main-unit {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0;
+    margin-left: 4px;
+}
+.meal-strip-main-label {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    position: relative; z-index: 1;
+}
+
+/* Progress bar */
+.meal-strip-progress-wrap { position: relative; z-index: 1; }
+.meal-strip-progress-track {
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+.meal-strip-progress-bar {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s ease;
+}
+.meal-strip-progress-bar.good { background: rgba(255,255,255,0.85); }
+.meal-strip-progress-bar.warn { background: #fcd34d; }
+.meal-strip-progress-bar.over { background: #ef4444; }
+.meal-strip-progress-label {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 700;
+}
+
+/* Mini stack — right side 2x2 grid */
+.meal-strip-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+}
+
+.meal-strip-mini {
+    border-radius: 22px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1);
+}
+.meal-strip-mini:hover { transform: translateY(-3px); }
+
+.meal-strip-mini-1 {
+    background: linear-gradient(145deg, #d95f2b, #e8743f, #f0915e);
+    box-shadow: 0 6px 24px rgba(217,95,43,0.28);
+}
+.meal-strip-mini-2 {
+    background: linear-gradient(145deg, #c04a20, #d9622f, #e87d4e);
+    box-shadow: 0 6px 24px rgba(192,74,32,0.26);
+}
+.meal-strip-mini-3 {
+    background: linear-gradient(145deg, #a83818, #c04a20, #d96030);
+    box-shadow: 0 6px 24px rgba(168,56,24,0.26);
+}
+.meal-strip-mini-4 {
+    background: linear-gradient(145deg, #8b2e12, #a83818, #c04020);
+    box-shadow: 0 6px 24px rgba(139,46,18,0.26);
+}
+
+.meal-strip-mini-icon {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.meal-strip-mini-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.meal-strip-mini-val small {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    margin-left: 2px;
+    letter-spacing: 0;
+}
+.meal-strip-mini-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 600;
+    margin-top: 3px;
+}
+.meal-stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    position: relative; z-index: 1;
+    flex-shrink: 0;
+}
+.meal-stat-body { position: relative; z-index: 1; }
+.meal-stat-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.4rem;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.meal-stat-card:nth-child(1) .meal-stat-val { font-size: 3.6rem; }
+.meal-stat-val small {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    margin-left: 3px;
+    letter-spacing: 0;
+}
+.meal-stat-label {
+    font-size: 0.76rem;
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    margin-top: 5px;
+}
+.meal-stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+    position: relative; z-index: 1;
+    white-space: nowrap;
+    width: fit-content;
+    margin-top: 14px;
+}
+
+/* ── SECTION LABEL ────────────────────────────────────── */
+.meal-section-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #c4714a;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.meal-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(249,116,71,0.12);
+    border-radius: 1px;
+}
+
+/* ── CONTENT CARDS ────────────────────────────────────── */
+.meal-card {
+    background: linear-gradient(155deg, #FDE8DC 0%, #fdd5be 55%, #fcc8ab 100%);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.18);
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(249,116,71,0.08);
+    margin-bottom: 20px;
+}
+
+/* ── NUTRITION SUMMARY BAR ────────────────────────────── */
+.meal-nutrition-bar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.meal-nutrition-item {
+    background: rgba(255,255,255,0.55);
+    border: 1.5px solid rgba(249,116,71,0.12);
+    border-radius: 16px;
+    padding: 14px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+.meal-nutrition-item:hover { transform: translateY(-2px); }
+.meal-nutrition-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: #c04a20;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.meal-nutrition-unit {
+    font-size: 0.65rem;
+    color: #d4917a;
+    font-weight: 600;
+}
+.meal-nutrition-name {
+    font-size: 0.7rem;
+    color: #b8927e;
+    font-weight: 700;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── TODAY'S MEAL ITEMS ───────────────────────────────── */
+.meal-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(255,255,255,0.55);
+    border: 1.5px solid rgba(249,116,71,0.12);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.meal-item:hover {
+    box-shadow: 0 6px 20px rgba(249,116,71,0.12);
+    transform: translateX(3px);
+}
+.meal-item-icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 12px rgba(249,116,71,0.35);
+    flex-shrink: 0;
+}
+.meal-item-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #1a0800;
+}
+.meal-item-meta {
+    font-size: 0.74rem;
+    color: #b8927e;
+    margin-top: 2px;
+    font-weight: 500;
+}
+.meal-item-carbs {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #c04a20;
+    text-align: right;
+    flex-shrink: 0;
+}
+.meal-item-carbs small {
+    font-size: 0.68rem;
+    color: #d4917a;
+    font-weight: 600;
+    display: block;
+}
+
+/* Meal type badge */
+.meal-type-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: rgba(249,116,71,0.12);
+    color: #c04a20;
+    border: 1px solid rgba(249,116,71,0.18);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Delete btn */
+.meal-del-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: rgba(220,38,38,0.08);
+    border: 1.5px solid rgba(220,38,38,0.18);
+    color: #c0392b;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+.meal-del-btn:hover {
+    background: rgba(220,38,38,0.18);
+    color: #e74c3c;
+    transform: scale(1.08);
+}
+
+/* ── FULL LOG TABLE ───────────────────────────────────── */
+.meal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.84rem;
+}
+.meal-table th {
+    color: #c4714a;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0 14px 14px 0;
+    border-bottom: 2px solid rgba(249,116,71,0.12);
+}
+.meal-table td {
+    padding: 13px 14px 13px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+    vertical-align: middle;
+    color: #3a1a08;
+}
+.meal-table tr:last-child td { border-bottom: none; }
+.meal-table tr:hover td { background: rgba(249,116,71,0.03); }
+.meal-table-name { font-weight: 800; color: #1a0800; }
+.meal-table-muted { color: #b8927e; }
+.meal-table-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    color: #c04a20;
+}
+
+/* ── MODAL ────────────────────────────────────────────── */
+.meal-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,8,0,0.55);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.meal-modal-overlay.open { display: flex; }
+
+.meal-modal {
+    background: linear-gradient(155deg, #fff3ed, #fde8dc, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.25);
+    border-radius: 28px;
+    padding: 32px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(249,116,71,0.22);
+    position: relative;
+    animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.meal-modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(249,116,71,0.12);
+    border: none; cursor: pointer;
+    font-size: 1rem; color: #c4714a;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.meal-modal-close:hover { background: rgba(249,116,71,0.25); }
+.meal-modal-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: #1a0800;
+    margin-bottom: 4px;
+}
+.meal-modal-sub {
+    font-size: 0.8rem;
+    color: #b8927e;
+    margin-bottom: 24px;
+}
+
+/* Form fields */
+.meal-form-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #b8927e;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+}
+.meal-form-input,
+.meal-form-select,
+.meal-form-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(249,116,71,0.22);
+    border-radius: 14px;
+    padding: 12px 15px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    color: #1a0800;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+}
+.meal-form-input:focus,
+.meal-form-select:focus,
+.meal-form-textarea:focus {
+    border-color: #F97447;
+    box-shadow: 0 0 0 3px rgba(249,116,71,0.12);
+}
+.meal-form-input::placeholder,
+.meal-form-textarea::placeholder { color: rgba(184,146,126,0.5); }
+.meal-form-textarea { resize: none; }
+
+.meal-form-group { margin-bottom: 14px; }
+.meal-form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.meal-form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+/* Nutrition section divider */
+.meal-form-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c4714a;
+}
+.meal-form-divider::before,
+.meal-form-divider::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(249,116,71,0.15);
+    border-radius: 1px;
+}
+
+/* Required marker */
+.meal-required {
+    color: #F97447;
+    font-size: 0.75rem;
+}
+
+/* Optional tag */
+.meal-optional {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: rgba(184,146,126,0.6);
+    letter-spacing: 0.5px;
+    margin-left: 4px;
+    text-transform: lowercase;
+}
+
+/* Save button */
+.meal-save-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    background: #F97447;
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(249,116,71,0.42);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    letter-spacing: -0.2px;
+}
+.meal-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(249,116,71,0.52);
+    background: #f86030;
+}
+
+/* ── MEAL TYPE SELECTOR ───────────────────────────────── */
+.meal-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.meal-type-btn {
+    padding: 10px 6px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(249,116,71,0.2);
+    background: rgba(255,255,255,0.55);
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #b85a2a;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.meal-type-btn:hover {
+    border-color: #F97447;
+    background: rgba(255,255,255,0.8);
+}
+.meal-type-btn.selected {
+    border-color: #F97447;
+    background: #F97447;
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(249,116,71,0.35);
+}
+.meal-type-btn span { font-size: 1.3rem; }
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.meal-empty {
+    text-align: center;
+    padding: 48px 0;
+    color: #c4714a;
+}
+.meal-empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.meal-empty p    { font-size: 0.88rem; font-weight: 600; }
+.meal-empty span { font-size: 0.76rem; color: #d4917a; margin-top: 6px; display: block; }
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.meal-header     { animation: fadeSlideUp 0.5s ease both 0.05s; }
+.meal-stats-grid { animation: fadeSlideUp 0.5s ease both 0.12s; }
+.meal-card       { animation: fadeSlideUp 0.5s ease both 0.20s; }

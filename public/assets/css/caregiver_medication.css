@@ -1,0 +1,479 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+body {
+    background-color: #1C0F0A;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── PAGE HEADER ──────────────────────────────────────── */
+.cgmed-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 20px;
+}
+.cgmed-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cgmed-eyebrow::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: rgba(255,180,130,0.4);
+    border-radius: 2px;
+    display: inline-block;
+}
+.cgmed-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: -1.5px;
+    color: #ffe8d6;
+    margin: 0;
+    line-height: 1;
+}
+.cgmed-title span {
+    background: linear-gradient(120deg, #fbab6e, #fdd5be);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.cgmed-patient-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 100px;
+    padding: 8px 16px 8px 8px;
+    backdrop-filter: blur(8px);
+}
+.cgmed-patient-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+.cgmed-patient-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffe8d6;
+}
+.cgmed-patient-label {
+    font-size: 0.65rem;
+    color: rgba(255,200,160,0.45);
+    font-weight: 600;
+}
+
+/* ── SUMMARY BAR ──────────────────────────────────────── */
+/* Horizontal row of 4 glass panels */
+.cgmed-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.cgmed-sum-panel {
+    border-radius: 20px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s;
+}
+.cgmed-sum-panel:hover { transform: translateY(-2px); }
+
+.cgmed-sum-panel.glass {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+}
+.cgmed-sum-panel.glass-warm {
+    background: rgba(249,116,71,0.10);
+    border: 1.5px solid rgba(249,116,71,0.20);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+}
+.cgmed-sum-panel.peach {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+}
+.cgmed-sum-panel.danger-glass {
+    background: rgba(220,38,38,0.10);
+    border: 1.5px solid rgba(220,38,38,0.20);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+}
+
+.cgmed-sum-icon {
+    width: 44px; height: 44px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.glass      .cgmed-sum-icon { background: rgba(255,255,255,0.10); }
+.glass-warm .cgmed-sum-icon { background: rgba(249,116,71,0.15); }
+.peach      .cgmed-sum-icon { background: rgba(249,116,71,0.15); border: 1.5px solid rgba(249,116,71,0.2); }
+.danger-glass .cgmed-sum-icon { background: rgba(220,38,38,0.15); }
+
+.cgmed-sum-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2rem;
+    line-height: 1;
+    letter-spacing: -1.5px;
+}
+.glass      .cgmed-sum-val { color: #ffe8d6; }
+.glass-warm .cgmed-sum-val { color: #fbab6e; }
+.peach      .cgmed-sum-val { color: #c04a20; }
+.danger-glass .cgmed-sum-val { color: #fca5a5; }
+
+.cgmed-sum-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-top: 3px;
+}
+.glass      .cgmed-sum-label { color: rgba(255,200,160,0.45); }
+.glass-warm .cgmed-sum-label { color: rgba(255,180,130,0.5); }
+.peach      .cgmed-sum-label { color: #b8927e; }
+.danger-glass .cgmed-sum-label { color: rgba(252,165,165,0.6); }
+
+/* ── MAIN CONTENT ROW ─────────────────────────────────── */
+.cgmed-main {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: start;
+}
+
+/* ── TIMELINE PANEL ───────────────────────────────────── */
+.cgmed-timeline-panel {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 28px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.cgmed-panel-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cgmed-timeline-panel .cgmed-panel-label {
+    color: rgba(255,180,130,0.5);
+}
+.cgmed-timeline-panel .cgmed-panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+}
+
+/* Timeline items */
+.cgmed-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+
+/* Vertical line */
+.cgmed-timeline::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+}
+
+.cgmed-tl-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 0;
+    position: relative;
+}
+
+/* Timeline dot */
+.cgmed-tl-dot {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+.cgmed-tl-dot.taken {
+    background: rgba(34,197,94,0.15);
+    border: 2px solid rgba(34,197,94,0.3);
+}
+.cgmed-tl-dot.missed {
+    background: rgba(220,38,38,0.15);
+    border: 2px solid rgba(220,38,38,0.25);
+}
+.cgmed-tl-dot.pending {
+    background: rgba(249,116,71,0.12);
+    border: 2px solid rgba(249,116,71,0.2);
+}
+
+.cgmed-tl-content {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 14px 16px;
+    transition: background 0.15s;
+}
+.cgmed-tl-content:hover {
+    background: rgba(255,255,255,0.07);
+}
+
+.cgmed-tl-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.cgmed-tl-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #ffe8d6;
+}
+.cgmed-tl-badge {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 100px;
+}
+.cgmed-tl-badge.taken   { background: rgba(34,197,94,0.15);  color: #86efac; }
+.cgmed-tl-badge.missed  { background: rgba(220,38,38,0.15);  color: #fca5a5; }
+.cgmed-tl-badge.pending { background: rgba(249,116,71,0.15); color: #fbab6e; }
+
+.cgmed-tl-meta {
+    font-size: 0.74rem;
+    color: rgba(255,200,160,0.45);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── ALERT PANEL — right ──────────────────────────────── */
+.cgmed-alert-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Top — missed count — peach */
+.cgmed-missed-hero {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.22);
+    border-radius: 22px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.cgmed-missed-hero:hover { transform: translateY(-2px); }
+.cgmed-missed-hero::before {
+    content: '💊';
+    position: absolute;
+    right: -10px; bottom: -10px;
+    font-size: 80px;
+    opacity: 0.08;
+    transform: rotate(-15deg);
+    pointer-events: none;
+}
+.cgmed-missed-count {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 4rem;
+    color: #c04a20;
+    line-height: 1;
+    letter-spacing: -3px;
+}
+.cgmed-missed-label {
+    font-size: 0.78rem;
+    color: #b8927e;
+    font-weight: 600;
+    margin-top: 6px;
+}
+.cgmed-missed-sub {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: #a0714f;
+    margin-top: 4px;
+}
+
+/* Middle — schedule count — glass warm */
+.cgmed-schedule-count {
+    background: rgba(249,116,71,0.10);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 22px;
+    padding: 20px 22px;
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+.cgmed-schedule-count:hover { transform: translateY(-2px); }
+.cgmed-schedule-num {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.4rem;
+    color: #fbab6e;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.cgmed-schedule-text {
+    font-size: 0.75rem;
+    color: rgba(255,180,130,0.5);
+    font-weight: 600;
+}
+
+.cgmed-taken-count {
+    background: rgba(34,197,94,0.08);
+    border: 1.5px solid rgba(34,197,94,0.18);
+    border-radius: 22px;
+    padding: 20px 22px;
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+.cgmed-taken-count:hover { transform: translateY(-2px); }
+.cgmed-taken-num {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.4rem;
+    color: #86efac;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.cgmed-taken-text {
+    font-size: 0.75rem;
+    color: rgba(134,239,172,0.5);
+    font-weight: 600;
+}
+
+/* ── HISTORY TABLE ────────────────────────────────────── */
+.cgmed-table-panel {
+    background: linear-gradient(155deg, #fff3ed, #fde8dc, #fcd8c4);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+.cgmed-table-panel .cgmed-panel-label {
+    color: #c4714a;
+}
+.cgmed-table-panel .cgmed-panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(249,116,71,0.15);
+    border-radius: 1px;
+}
+
+.cgmed-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.84rem;
+}
+.cgmed-table th {
+    color: #c4714a;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0 14px 14px 0;
+    border-bottom: 2px solid rgba(249,116,71,0.12);
+}
+.cgmed-table td {
+    padding: 13px 14px 13px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+    vertical-align: middle;
+    color: #3a1a08;
+}
+.cgmed-table tr:last-child td { border-bottom: none; }
+.cgmed-table tr:hover td { background: rgba(249,116,71,0.03); }
+.cgmed-table-name { font-weight: 800; color: #1a0800; }
+.cgmed-table-muted { color: #b8927e; }
+
+.cgmed-tpill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 4px 11px;
+    border-radius: 100px;
+}
+.cgmed-tpill.taken  { background: #d4f7e8; color: #0f7a45; }
+.cgmed-tpill.missed { background: #fde8e8; color: #b91c1c; }
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.cgmed-empty {
+    text-align: center;
+    padding: 48px 0;
+}
+.cgmed-empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.cgmed-empty-text {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+.cgmed-timeline-panel .cgmed-empty-text { color: rgba(255,200,160,0.4); }
+.cgmed-table-panel    .cgmed-empty-text { color: #c4714a; }
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.cgmed-header          { animation: fadeUp 0.5s ease both 0.05s; }
+.cgmed-summary         { animation: fadeUp 0.5s ease both 0.10s; }
+.cgmed-timeline-panel  { animation: fadeUp 0.5s ease both 0.18s; }
+.cgmed-alert-panel     { animation: fadeUp 0.5s ease both 0.22s; }
+.cgmed-table-panel     { animation: fadeUp 0.5s ease both 0.28s; }

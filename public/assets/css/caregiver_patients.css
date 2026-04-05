@@ -1,0 +1,394 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+body {
+    background-color: #1C0F0A;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── PAGE HEADER ──────────────────────────────────────── */
+.cgp-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 20px;
+}
+.cgp-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cgp-eyebrow::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: rgba(255,180,130,0.4);
+    border-radius: 2px;
+    display: inline-block;
+}
+.cgp-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: -1.5px;
+    color: #ffe8d6;
+    margin: 0;
+    line-height: 1;
+}
+.cgp-title span {
+    background: linear-gradient(120deg, #fbab6e, #fdd5be);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.cgp-sub {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: rgba(255,200,160,0.5);
+    margin-top: 4px;
+}
+
+/* ── ALERTS ───────────────────────────────────────────── */
+.cgp-alert {
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cgp-alert.success {
+    background: rgba(34,197,94,0.10);
+    border: 1.5px solid rgba(34,197,94,0.22);
+    color: #86efac;
+}
+.cgp-alert.error {
+    background: rgba(220,38,38,0.10);
+    border: 1.5px solid rgba(220,38,38,0.22);
+    color: #fca5a5;
+}
+
+.cgp-layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* ── PATIENT DIRECTORY ────────────────────────────────── */
+.cgp-directory {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Empty state */
+.cgp-empty {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 60px;
+    text-align: center;
+    backdrop-filter: blur(12px);
+}
+.cgp-empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.cgp-empty-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #ffe8d6;
+    margin-bottom: 8px;
+}
+.cgp-empty-sub {
+    font-size: 0.82rem;
+    color: rgba(255,200,160,0.4);
+    line-height: 1.5;
+}
+
+.cgp-patient-card {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    border-radius: 24px;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(249,116,71,0.12);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.cgp-patient-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.35), 0 2px 8px rgba(249,116,71,0.18);
+}
+.cgp-patient-card::before {
+    content: '👤';
+    position: absolute;
+    right: -10px; top: -10px;
+    font-size: 80px;
+    opacity: 0.06;
+    transform: rotate(10deg);
+    pointer-events: none;
+}
+
+/* Avatar */
+.cgp-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(249,116,71,0.40);
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+}
+
+/* Info */
+.cgp-patient-info { position: relative; z-index: 1; }
+.cgp-patient-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: #1a0800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+.cgp-patient-email {
+    font-size: 0.78rem;
+    color: #b8927e;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+.cgp-patient-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.cgp-meta-pill {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 100px;
+    background: rgba(249,116,71,0.12);
+    color: #c04a20;
+    border: 1px solid rgba(249,116,71,0.18);
+}
+
+/* Actions */
+.cgp-patient-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    position: relative; z-index: 1;
+    flex-shrink: 0;
+}
+.cgp-btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: #F97447;
+    color: #fff;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(249,116,71,0.38);
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.cgp-btn-view:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(249,116,71,0.48);
+    background: #f86030;
+    color: #fff;
+}
+.cgp-btn-unlink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: rgba(220,38,38,0.10);
+    color: #d40505;
+    border: 1.5px solid rgba(220,38,38,0.2);
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.cgp-btn-unlink:hover {
+    background: rgba(220,38,38,0.22);
+    color: #fca5a5;
+}
+
+/* ── LINK FORM PANEL ──────────────────────────────────── */
+.cgp-form-panel {
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 24px;
+    padding: 28px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    position: sticky;
+    top: 20px;
+}
+
+.cgp-form-icon {
+    width: 56px; height: 56px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 20px;
+    box-shadow: 0 6px 20px rgba(249,116,71,0.4);
+}
+.cgp-form-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #ffe8d6;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+.cgp-form-sub {
+    font-size: 0.78rem;
+    color: rgba(255,200,160,0.45);
+    text-align: center;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.cgp-form-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: rgba(255,180,130,0.55);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.cgp-form-input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    color: #ffe8d6;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    margin-bottom: 16px;
+}
+.cgp-form-input:focus {
+    border-color: rgba(249,116,71,0.5);
+    box-shadow: 0 0 0 3px rgba(249,116,71,0.10);
+}
+.cgp-form-input::placeholder { color: rgba(255,180,130,0.25); }
+
+.cgp-form-info {
+    background: rgba(249,116,71,0.08);
+    border: 1px solid rgba(249,116,71,0.15);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-size: 0.74rem;
+    color: rgba(255,200,160,0.5);
+    line-height: 1.6;
+}
+
+.cgp-form-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(249,116,71,0.42);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: -0.2px;
+}
+.cgp-form-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(249,116,71,0.52);
+}
+
+/* Divider */
+.cgp-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255,180,130,0.25);
+}
+.cgp-divider::before,
+.cgp-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+}
+
+/* Count pill in form panel */
+.cgp-count-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 4px;
+}
+.cgp-count-num {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2rem;
+    color: #fbab6e;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.cgp-count-text {
+    font-size: 0.75rem;
+    color: rgba(255,200,160,0.4);
+    font-weight: 600;
+}
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.cgp-header       { animation: fadeUp 0.5s ease both 0.05s; }
+.cgp-layout       { animation: fadeUp 0.5s ease both 0.12s; }
+.cgp-patient-card { animation: fadeUp 0.5s ease both 0.15s; }

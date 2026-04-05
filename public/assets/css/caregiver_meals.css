@@ -1,0 +1,535 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+body {
+    background-color: #1C0F0A;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── PAGE HEADER ──────────────────────────────────────── */
+.cgml-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 20px;
+}
+.cgml-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cgml-eyebrow::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: rgba(255,180,130,0.4);
+    border-radius: 2px;
+    display: inline-block;
+}
+.cgml-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: -1.5px;
+    color: #ffe8d6;
+    margin: 0;
+    line-height: 1;
+}
+.cgml-title span {
+    background: linear-gradient(120deg, #fbab6e, #fdd5be);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.cgml-patient-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 100px;
+    padding: 8px 16px 8px 8px;
+    backdrop-filter: blur(8px);
+}
+.cgml-patient-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+.cgml-patient-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffe8d6;
+}
+.cgml-patient-label {
+    font-size: 0.65rem;
+    color: rgba(255,200,160,0.45);
+    font-weight: 600;
+}
+
+/* ── TOP SUMMARY ROW ──────────────────────────────────── */
+/* 3 wide glass panels in a row */
+.cgml-summary-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+/* Big carbs panel — peach */
+.cgml-carbs-hero {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.22);
+    border-radius: 24px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.28);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.cgml-carbs-hero:hover { transform: translateY(-2px); }
+.cgml-carbs-hero::before {
+    content: '🍚';
+    position: absolute;
+    right: -10px; bottom: -10px;
+    font-size: 80px;
+    opacity: 0.08;
+    transform: rotate(-10deg);
+    pointer-events: none;
+}
+.cgml-carbs-circle {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 6px 20px rgba(249,116,71,0.4);
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+}
+.cgml-carbs-info { position: relative; z-index: 1; flex: 1; }
+.cgml-carbs-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 3rem;
+    color: #c04a20;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.cgml-carbs-val small {
+    font-size: 1rem;
+    color: #d4917a;
+    font-weight: 600;
+    letter-spacing: 0;
+    margin-left: 3px;
+}
+.cgml-carbs-label {
+    font-size: 0.78rem;
+    color: #b8927e;
+    font-weight: 600;
+    margin-top: 4px;
+}
+/* Carb limit bar */
+.cgml-carb-bar-wrap { margin-top: 10px; }
+.cgml-carb-bar-track {
+    height: 6px;
+    background: rgba(249,116,71,0.15);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+.cgml-carb-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s ease;
+}
+.cgml-carb-bar-fill.good { background: linear-gradient(90deg, #22c55e, #86efac); }
+.cgml-carb-bar-fill.warn { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+.cgml-carb-bar-fill.over { background: linear-gradient(90deg, #ef4444, #fca5a5); }
+.cgml-carb-bar-label {
+    font-size: 0.68rem;
+    color: #b8927e;
+    font-weight: 700;
+}
+
+.cgml-meals-count {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.10);
+    border-radius: 24px;
+    padding: 22px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+.cgml-meals-count:hover { transform: translateY(-2px); }
+.cgml-count-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+}
+.cgml-count-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 3rem;
+    color: #ffe8d6;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.cgml-count-sub {
+    font-size: 0.72rem;
+    color: rgba(255,200,160,0.4);
+    font-weight: 600;
+}
+
+/* Calories — warm glass */
+.cgml-calories-panel {
+    background: rgba(249,116,71,0.10);
+    border: 1.5px solid rgba(249,116,71,0.20);
+    border-radius: 24px;
+    padding: 22px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+.cgml-calories-panel:hover { transform: translateY(-2px); }
+.cgml-calories-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.55);
+}
+.cgml-calories-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.4rem;
+    color: #fbab6e;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.cgml-calories-val small {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255,180,130,0.5);
+    letter-spacing: 0;
+    margin-left: 2px;
+}
+.cgml-calories-sub {
+    font-size: 0.72rem;
+    color: rgba(255,180,130,0.45);
+    font-weight: 600;
+}
+
+/* ── SPLIT LAYOUT ─────────────────────────────────────── */
+.cgml-split {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: start;
+}
+
+/* ── LEFT: MEAL FEED ──────────────────────────────────── */
+.cgml-feed-panel {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 28px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.cgml-panel-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cgml-feed-panel .cgml-panel-label {
+    color: rgba(255,180,130,0.5);
+}
+.cgml-feed-panel .cgml-panel-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: rgba(255,255,255,0.06);
+}
+
+/* Meal feed items */
+.cgml-feed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: opacity 0.15s;
+}
+.cgml-feed-item:last-child { border-bottom: none; }
+.cgml-feed-item:hover { opacity: 0.85; }
+
+.cgml-feed-icon {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: rgba(249,116,71,0.12);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.cgml-feed-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #ffe8d6;
+    margin-bottom: 3px;
+}
+.cgml-feed-meta {
+    font-size: 0.72rem;
+    color: rgba(255,200,160,0.45);
+    font-weight: 500;
+    line-height: 1.4;
+}
+.cgml-feed-right {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+}
+.cgml-feed-carbs {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #fbab6e;
+    letter-spacing: -0.5px;
+}
+.cgml-feed-carbs small {
+    font-size: 0.65rem;
+    color: rgba(255,180,130,0.45);
+    font-weight: 600;
+}
+.cgml-feed-time {
+    font-size: 0.68rem;
+    color: rgba(255,180,130,0.35);
+    font-weight: 600;
+    margin-top: 2px;
+}
+.cgml-feed-type {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(249,116,71,0.12);
+    color: #fbab6e;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+/* ── RIGHT: NUTRITION ANALYSIS ────────────────────────── */
+.cgml-nutrition-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.cgml-breakdown {
+    background: linear-gradient(155deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.25);
+}
+.cgml-breakdown .cgml-panel-label {
+    color: #c4714a;
+}
+.cgml-breakdown .cgml-panel-label::after {
+    content: '';
+    flex: 1; height: 1.5px;
+    background: rgba(249,116,71,0.15);
+}
+
+/* Individual nutrient row */
+.cgml-nutrient-row {
+    margin-bottom: 14px;
+}
+.cgml-nutrient-row:last-child { margin-bottom: 0; }
+.cgml-nutrient-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+.cgml-nutrient-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #3a1a08;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cgml-nutrient-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: #c04a20;
+}
+.cgml-nutrient-track {
+    height: 6px;
+    background: rgba(249,116,71,0.12);
+    border-radius: 100px;
+    overflow: hidden;
+}
+.cgml-nutrient-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s ease;
+}
+
+/* Safe zone reminder — glass warm */
+.cgml-safe-zone {
+    background: rgba(249,116,71,0.10);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 22px;
+    padding: 20px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.cgml-safe-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.55);
+    margin-bottom: 12px;
+}
+.cgml-safe-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.75rem;
+}
+.cgml-safe-item:last-child { border-bottom: none; }
+.cgml-safe-name {
+    color: rgba(255,200,160,0.55);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.cgml-safe-limit {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    color: #fbab6e;
+    font-size: 0.8rem;
+}
+
+/* ── HISTORY TABLE ────────────────────────────────────── */
+.cgml-table-panel {
+    background: linear-gradient(155deg, #fff3ed, #fde8dc, #fcd8c4);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.22);
+}
+.cgml-table-panel .cgml-panel-label {
+    color: #c4714a;
+}
+.cgml-table-panel .cgml-panel-label::after {
+    content: '';
+    flex: 1; height: 1.5px;
+    background: rgba(249,116,71,0.15);
+}
+
+.cgml-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.84rem;
+}
+.cgml-table th {
+    color: #c4714a;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0 14px 14px 0;
+    border-bottom: 2px solid rgba(249,116,71,0.12);
+}
+.cgml-table td {
+    padding: 13px 14px 13px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+    vertical-align: middle;
+    color: #3a1a08;
+}
+.cgml-table tr:last-child td { border-bottom: none; }
+.cgml-table tr:hover td { background: rgba(249,116,71,0.03); }
+.cgml-table-name { font-weight: 800; color: #1a0800; }
+.cgml-table-muted { color: #b8927e; }
+.cgml-table-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    color: #c04a20;
+}
+.cgml-type-pill {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 4px 11px;
+    border-radius: 100px;
+    background: rgba(249,116,71,0.12);
+    color: #c04a20;
+    border: 1px solid rgba(249,116,71,0.18);
+    white-space: nowrap;
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.cgml-empty {
+    text-align: center;
+    padding: 48px 0;
+}
+.cgml-empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.cgml-empty-text {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+.cgml-feed-panel   .cgml-empty-text { color: rgba(255,200,160,0.4); }
+.cgml-table-panel  .cgml-empty-text { color: #c4714a; }
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.cgml-header       { animation: fadeUp 0.5s ease both 0.05s; }
+.cgml-summary-row  { animation: fadeUp 0.5s ease both 0.10s; }
+.cgml-split        { animation: fadeUp 0.5s ease both 0.18s; }
+.cgml-table-panel  { animation: fadeUp 0.5s ease both 0.25s; }

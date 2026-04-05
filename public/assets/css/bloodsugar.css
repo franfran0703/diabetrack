@@ -1,0 +1,562 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Clash+Display:wght@400;500;600;700&display=swap');
+
+/* ╔══════════════════════════════════════════════════════╗
+   ║  DIABETRACK — Blood Sugar Page                       ║
+   ║  Palette: Coral #F97447 · Peach #FDE8DC · Cream #FFF8F5
+   ╚══════════════════════════════════════════════════════╝ */
+
+/* --- FONT FALLBACK (Cabinet Grotesk via bunny fonts) --- */
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+/* ── PAGE ────────────────────────────────────────────── */
+body {
+    background-color: #FFF8F5;
+    font-family: 'Cabinet Grotesk', 'Plus Jakarta Sans', sans-serif;
+    position: relative;
+}
+body::before,
+body::after { display: none; }
+
+.bs-header,
+.bs-stats-row,
+.bs-grid,
+.bs-table-card {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── PAGE HEADER ─────────────────────────────────────── */
+.bs-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 40px;
+    gap: 14px;
+}
+.bs-header h4 {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.6rem;
+    background: linear-gradient(120deg, #c04a20 0%, #F97447 45%, #fbab6e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    display: inline-block;
+}
+.bs-header p {
+    font-size: 0.9rem;
+    color: #a0714f;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Add Reading button */
+.btn-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #F97447;
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(249,116,71,0.38);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+}
+.btn-add:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 32px rgba(249,116,71,0.48);
+    background: #f86030;
+    color: #fff;
+}
+.btn-add-icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 900; line-height: 1;
+}
+
+/* ── STAT CARDS ──────────────────────────────────────── */
+.bs-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.bs-scard {
+    border-radius: 28px;
+    border: none;
+    padding: 28px 28px 24px;
+    position: relative;
+    overflow: hidden;
+    min-height: 192px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+}
+.bs-scard:hover {
+    transform: translateY(-6px) rotate(-0.5deg);
+    box-shadow: 0 20px 48px rgba(249,116,71,0.22) !important;
+}
+
+/* Card 1 — Coral (main brand) */
+.bs-scard:nth-child(1) {
+    background: linear-gradient(145deg, #F97447 0%, #fb8c61 50%, #fdac88 100%);
+    box-shadow: 0 8px 28px rgba(249,116,71,0.32);
+}
+/* Card 2 — Deep Peach / Terracotta */
+.bs-scard:nth-child(2) {
+    background: linear-gradient(145deg, #d95f2b 0%, #e8743f 50%, #f0915e 100%);
+    box-shadow: 0 8px 28px rgba(217,95,43,0.32);
+}
+/* Card 3 — Warm Blush */
+.bs-scard:nth-child(3) {
+    background: linear-gradient(145deg, #c04a20 0%, #d9622f 50%, #e87d4e 100%);
+    box-shadow: 0 8px 28px rgba(192,74,32,0.28);
+}
+
+/* Decorative large illustration via data-illus attr */
+.bs-scard::after {
+    content: attr(data-illus);
+    position: absolute;
+    right: -18px;
+    top: -18px;
+    font-size: 130px;
+    line-height: 1;
+    opacity: 0.17;
+    transform: rotate(18deg);
+    pointer-events: none;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.12));
+}
+
+/* Decorative background circle — purely CSS, no extra markup */
+.bs-scard::before {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    pointer-events: none;
+}
+
+/* Circular icon — the small circle from the reference */
+.bs-scard-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    border: 2px solid rgba(255,255,255,0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+}
+
+.bs-scard-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.8rem;
+    color: #fff;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -1.5px;
+}
+.bs-scard-val small {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.68);
+    font-weight: 600;
+    margin-left: 4px;
+    letter-spacing: 0;
+}
+.bs-scard-label {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.72);
+    margin-top: 6px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.2px;
+}
+
+/* ── BADGES — pill only, never full-width ────────────── */
+.bs-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 16px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 5px 14px;
+    border-radius: 100px;
+    width: auto;
+    max-width: fit-content;
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.1px;
+}
+
+/* On coral stat cards */
+.bs-scard .bs-badge.good   { background: rgba(255,255,255,0.28); color: #fff; }
+.bs-scard .bs-badge.warn   { background: rgba(0,0,0,0.16);       color: #fff; }
+.bs-scard .bs-badge.danger { background: rgba(0,0,0,0.18);       color: #fff; }
+
+/* In table rows */
+.bs-table .bs-badge.good   { background: #d4f7e8; color: #0f7a45; margin-top: 0; }
+.bs-table .bs-badge.warn   { background: #fff3cd; color: #856404; margin-top: 0; }
+.bs-table .bs-badge.danger { background: #fde0e0; color: #b41908; margin-top: 0; border: 1.5px solid rgba(192,57,43,0.2); }
+
+/* ── SECTION LABEL ───────────────────────────────────── */
+.bs-section-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #c4714a;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.bs-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(249,116,71,0.15);
+    border-radius: 1px;
+}
+
+/* ── TWO COLUMN GRID ─────────────────────────────────── */
+.bs-grid {
+    display: grid;
+    grid-template-columns: 1fr 390px;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 20px;
+}
+
+/* ── CHART CARD ──────────────────────────────────────── */
+.bs-chart-card {
+    background: linear-gradient(155deg, #FDE8DC 0%, #fdd5be 55%, #fcc8ab 100%);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.18);
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(249,116,71,0.1);
+}
+.bs-chart-card .bs-section-label { color: #c4714a; }
+.bs-chart-card .bs-section-label::after { background: rgba(249,116,71,0.2); }
+
+/* ── FORM CARD ───────────────────────────────────────── */
+.bs-form-card {
+    background: linear-gradient(155deg, #fff3ed 0%, #fde8dc 55%, #fdd5be 100%);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.22);
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(249,116,71,0.1);
+    scroll-margin-top: 80px;
+}
+.bs-form-card .bs-section-label { color: #b85a2a; }
+.bs-form-card .bs-section-label::after { background: rgba(249,116,71,0.2); }
+
+/* ── GLUCOSE DIAL ────────────────────────────────────── */
+.bs-dial-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 0 8px;
+    margin-bottom: 16px;
+}
+.bs-dial-number {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 4.2rem;
+    color: #c04a20;
+    line-height: 1;
+    letter-spacing: -3px;
+    transition: color 0.3s;
+}
+.bs-dial-unit {
+    font-size: 0.82rem;
+    color: #c4714a;
+    font-weight: 700;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+}
+.bs-dial-status {
+    margin-top: 10px;
+    padding: 6px 20px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    background: rgba(249,116,71,0.15);
+    color: #c04a20;
+    letter-spacing: 0.3px;
+    transition: all 0.3s;
+}
+.bs-glucose-range {
+    width: 100%;
+    margin: 8px 0 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 10px;
+    border-radius: 6px;
+    /* Hard stops — no blending between zones, matches indicator card */
+    background: linear-gradient(90deg,
+        #e74c3c 0% 8.3%,
+        #3498db 8.3% 23.9%,
+        #27ae60 23.9% 39.4%,
+        #1a5276 39.4% 57.8%,
+        #f39c12 57.8% 100%
+    );
+    outline: none;
+    cursor: pointer;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
+}
+.bs-glucose-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #F97447;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: border-color 0.25s, box-shadow 0.2s;
+}
+.bs-glucose-range::-webkit-slider-thumb:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+/* Thumb border color changes with zone — set via JS */
+.bs-glucose-range::-webkit-slider-thumb { transition: border-color 0.3s; }
+
+.bs-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    font-weight: 800;
+    margin-bottom: 18px;
+    letter-spacing: 0.3px;
+}
+/* Each label colored to match its zone */
+.bs-range-label-low         { color: #e74c3c; }
+.bs-range-label-normal      { color: #2980b9; }
+.bs-range-label-borderline  { color: #27ae60; }
+.bs-range-label-high        { color: #1a5276; }
+.bs-range-label-dangerous   { color: #e67e22; }
+
+/* ── TYPE SELECTOR ───────────────────────────────────── */
+.bs-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.bs-type-btn {
+    padding: 10px 8px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(249,116,71,0.3);
+    background: rgba(255,255,255,0.55);
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #b85a2a;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    letter-spacing: 0.1px;
+}
+.bs-type-btn:hover {
+    border-color: #F97447;
+    background: rgba(255,255,255,0.8);
+}
+.bs-type-btn.selected {
+    border-color: #F97447;
+    background: #F97447;
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 4px 14px rgba(249,116,71,0.35);
+}
+
+/* ── NOTES INPUT ─────────────────────────────────────── */
+.bs-notes {
+    width: 100%;
+    border: 1.5px solid rgba(249,116,71,0.28);
+    border-radius: 14px;
+    padding: 11px 15px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.84rem;
+    color: #7a3010;
+    resize: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    background: rgba(255,255,255,0.6);
+}
+.bs-notes:focus {
+    border-color: #F97447;
+    box-shadow: 0 0 0 3px rgba(249,116,71,0.12);
+}
+.bs-notes::placeholder { color: rgba(196,113,74,0.5); }
+
+/* ── SAVE BUTTON ─────────────────────────────────────── */
+.bs-save-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 14px;
+    background: #F97447;
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(249,116,71,0.42);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    letter-spacing: -0.2px;
+}
+.bs-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(249,116,71,0.52);
+    background: #f86030;
+}
+
+/* ── TABLE CARD ──────────────────────────────────────── */
+.bs-table-card {
+    background: linear-gradient(155deg, #fff3ed 0%, #fde8dc 50%, #fcd8c4 100%);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.18);
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(249,116,71,0.08);
+}
+.bs-table-card .bs-section-label { color: #c4714a; }
+.bs-table-card .bs-section-label::after { background: rgba(249,116,71,0.18); }
+
+.bs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+    font-family: 'Cabinet Grotesk', sans-serif;
+}
+.bs-table th {
+    color: #c4714a;
+    font-size: 0.67rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0 14px 14px 0;
+    border-bottom: 2px solid rgba(249,116,71,0.12);
+}
+.bs-table td {
+    padding: 14px 14px 14px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+    vertical-align: middle;
+    color: #3a1a08;
+}
+.bs-table tr:last-child td { border-bottom: none; }
+.bs-table tr:hover td { background: rgba(249,116,71,0.04); border-radius: 10px; }
+
+.bs-reading-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: #c04a20;
+    letter-spacing: -0.5px;
+}
+.bs-reading-unit {
+    font-size: 0.68rem;
+    color: #c4714a;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.bs-del-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 46px;
+    border-radius: 10px;
+    background: rgba(220,38,38,0.08);
+    border: 1.5px solid rgba(220,38,38,0.18);
+    color: #000000;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.bs-del-btn:hover {
+    background: rgba(210, 3, 3, 0.541); 
+    color: #e74c3c;
+    transform: scale(1.08);
+}
+
+.bs-del-btn:hover { opacity: 1; color: #c0392b; }
+
+/* ── EMPTY STATE ─────────────────────────────────────── */
+.bs-empty {
+    text-align: center;
+    padding: 48px 0;
+    color: #c4714a;
+}
+.bs-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.bs-empty p { font-size: 0.9rem; font-weight: 500; }
+
+/* ── MODAL ───────────────────────────────────────────── */
+.bs-modal-content {
+    background: linear-gradient(155deg, #fff3ed 0%, #fde8dc 55%, #fcc8ab 100%);
+    border: 1.5px solid rgba(249,116,71,0.25);
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(249,116,71,0.2);
+}
+.bs-modal-header {
+    border-bottom: 1px solid rgba(249,116,71,0.15);
+    padding: 22px 26px 18px;
+}
+.bs-modal-header .modal-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.15rem;
+    color: #7a2a08;
+    letter-spacing: -0.3px;
+}
+.bs-modal-header .btn-close { opacity: 0.4; }
+.bs-modal-body { padding: 20px 26px 26px; }
+
+/* ── DIAL STATUS — 5-zone medical colors ─────────────── */
+.bs-dial-status.zone-low        { background: rgba(231,76,60,0.12);  color: #c0392b; }
+.bs-dial-status.zone-normal     { background: rgba(52,152,219,0.12); color: #1a6fa8; }
+.bs-dial-status.zone-borderline { background: rgba(39,174,96,0.12);  color: #1e8449; }
+.bs-dial-status.zone-high       { background: rgba(26,82,118,0.12);  color: #1a5276; }
+.bs-dial-status.zone-dangerous  { background: rgba(243,156,18,0.12); color: #d35400; }
+
+/* ── DIAL NUMBER — color matches active zone ─────────── */
+.bs-dial-wrap.zone-low        .bs-dial-number { color: #e74c3c; }
+.bs-dial-wrap.zone-normal     .bs-dial-number { color: #2980b9; }
+.bs-dial-wrap.zone-borderline .bs-dial-number { color: #27ae60; }
+.bs-dial-wrap.zone-high       .bs-dial-number { color: #1a5276; }
+.bs-dial-wrap.zone-dangerous  .bs-dial-number { color: #e67e22; }
