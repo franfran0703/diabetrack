@@ -195,6 +195,21 @@ public function appointments() {
             $apptModel->updateStatus($_POST['appt_id'], $pid, $_POST['status']);
             $success = 'Appointment status updated!';
         }
+public function activity() {
+    $activityModel = $this->model('ActivityModel');
+    $pid           = $_SESSION['user_id'];
+    $error         = null;
+    $success       = null;
+
+    // Handle add
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $activityModel->addActivity($pid, [
+            'activity_name'    => trim($_POST['activity_name']),
+            'duration_minutes' => (int) $_POST['duration_minutes'],
+            'intensity'        => trim($_POST['intensity']),
+            'notes'            => trim($_POST['notes'] ?? ''),
+        ]);
+        $success = 'Activity logged successfully!';
     }
 
     // Handle delete
@@ -221,5 +236,27 @@ public function appointments() {
         'counts'   => $counts,
         'error'    => $error,
         'success'  => $success,
+    ]);
+}
+        $activityModel->deleteLog($_GET['delete'], $pid);
+        header('Location: /diabetrack/public/patient/activity');
+        exit;
+    }
+
+    $logs        = $activityModel->getLogs($pid);
+    $todayLogs   = $activityModel->getTodayLogs($pid);
+    $todayTotals = $activityModel->getTodayTotals($pid);
+    $weekTotals  = $activityModel->getWeekTotals($pid);
+    $last7Days   = $activityModel->getLast7Days($pid);
+
+    $this->view('patient/activity_view', [
+        'name'        => $_SESSION['user_name'],
+        'logs'        => $logs,
+        'todayLogs'   => $todayLogs,
+        'todayTotals' => $todayTotals,
+        'weekTotals'  => $weekTotals,
+        'last7Days'   => $last7Days,
+        'error'       => $error,
+        'success'     => $success,
     ]);
 }
