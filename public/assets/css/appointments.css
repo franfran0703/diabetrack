@@ -1,0 +1,585 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+body {
+    background-color: #FFF8F5;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* ── PAGE HEADER ──────────────────────────────────────── */
+.appt-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 40px;
+    gap: 14px;
+}
+.appt-header h1 {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.6rem;
+    background: linear-gradient(120deg, #c04a20 0%, #F97447 45%, #fbab6e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    display: inline-block;
+}
+.appt-header p {
+    font-size: 0.9rem;
+    color: #a0714f;
+    margin: 0;
+    font-weight: 500;
+}
+.btn-add-appt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: #F97447;
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(249,116,71,0.38);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.btn-add-appt:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 32px rgba(249,116,71,0.48);
+    background: #f86030;
+}
+.btn-add-icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.28);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 900;
+}
+
+/* ── ALERTS ───────────────────────────────────────────── */
+.appt-alert {
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.appt-alert.success {
+    background: rgba(52,211,153,0.10);
+    border: 1.5px solid rgba(52,211,153,0.25);
+    color: #0f7a45;
+}
+.appt-alert.error {
+    background: rgba(220,38,38,0.08);
+    border: 1.5px solid rgba(220,38,38,0.2);
+    color: #b91c1c;
+}
+
+/* ── UNIQUE LAYOUT — Next appt hero + side counts ─────── */
+.appt-top {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: stretch;
+}
+
+/* Next appointment hero — full peach card */
+.appt-next-hero {
+    background: linear-gradient(145deg, #F97447, #fb9261, #fdac88);
+    border-radius: 28px;
+    padding: 32px 36px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    box-shadow: 0 10px 36px rgba(249,116,71,0.30);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.appt-next-hero:hover { transform: translateY(-3px); }
+.appt-next-hero::before {
+    content: '🩺';
+    position: absolute;
+    right: -20px; bottom: -20px;
+    font-size: 150px;
+    opacity: 0.10;
+    transform: rotate(-15deg);
+    pointer-events: none;
+}
+
+.appt-next-date-box {
+    background: rgba(255,255,255,0.22);
+    border: 2px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 16px 20px;
+    text-align: center;
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+    min-width: 90px;
+}
+.appt-next-month {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.appt-next-day {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.8rem;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.appt-next-weekday {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.65);
+}
+
+.appt-next-info { position: relative; z-index: 1; flex: 1; }
+.appt-next-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 8px;
+}
+.appt-next-doctor {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+.appt-next-time {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 16px;
+}
+.appt-next-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 6px 16px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+}
+
+/* No appointment state */
+.appt-no-next {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    border-radius: 28px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 6px 24px rgba(249,116,71,0.10);
+}
+.appt-no-next-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.appt-no-next-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #1a0800;
+    margin-bottom: 6px;
+}
+.appt-no-next-sub {
+    font-size: 0.78rem;
+    color: #b8927e;
+}
+
+/* Count stack — right side */
+.appt-count-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.appt-count-card {
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    transition: transform 0.2s;
+}
+.appt-count-card:hover { transform: translateX(3px); }
+
+.appt-count-card.upcoming {
+    background: linear-gradient(145deg, #d95f2b, #e8743f, #f0915e);
+    box-shadow: 0 6px 20px rgba(217,95,43,0.25);
+}
+.appt-count-card.completed {
+    background: linear-gradient(145deg, #c04a20, #d9622f, #e87d4e);
+    box-shadow: 0 6px 20px rgba(192,74,32,0.22);
+}
+.appt-count-card.cancelled {
+    background: linear-gradient(145deg, #a83818, #c04a20, #d96030);
+    box-shadow: 0 6px 20px rgba(168,56,24,0.22);
+}
+
+.appt-count-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.appt-count-num {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -1.5px;
+}
+.appt-count-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* ── MAIN GRID — upcoming list + calendar hint ────────── */
+.appt-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: start;
+}
+
+/* Section label */
+.appt-section-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #c4714a;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.appt-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: rgba(249,116,71,0.12);
+    border-radius: 1px;
+}
+
+/* Content card */
+.appt-card {
+    background: linear-gradient(155deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.18);
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(249,116,71,0.08);
+}
+
+/* Appointment list items */
+.appt-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+}
+.appt-item:last-child { border-bottom: none; }
+
+.appt-item-date {
+    background: rgba(249,116,71,0.12);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    border-radius: 14px;
+    padding: 10px 14px;
+    text-align: center;
+    flex-shrink: 0;
+    min-width: 58px;
+}
+.appt-item-month {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #c4714a;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+.appt-item-day {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: #c04a20;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.appt-item-info { flex: 1; }
+.appt-item-doctor {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #1a0800;
+    margin-bottom: 3px;
+}
+.appt-item-meta {
+    font-size: 0.74rem;
+    color: #b8927e;
+    font-weight: 500;
+}
+
+/* Status badge */
+.appt-status {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 100px;
+    flex-shrink: 0;
+}
+.appt-status.upcoming  { background: rgba(249,116,71,0.12); color: #c04a20; border: 1px solid rgba(249,116,71,0.2); }
+.appt-status.completed { background: rgba(52,211,153,0.12); color: #0f7a45; border: 1px solid rgba(52,211,153,0.2); }
+.appt-status.cancelled { background: rgba(220,38,38,0.10);  color: #b91c1c; border: 1px solid rgba(220,38,38,0.15); }
+
+/* Action buttons */
+.appt-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.appt-btn {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Cabinet Grotesk', sans-serif;
+}
+.appt-btn-done {
+    background: rgba(52,211,153,0.12);
+    color: #0f7a45;
+    border: 1.5px solid rgba(52,211,153,0.2);
+}
+.appt-btn-done:hover { background: rgba(52,211,153,0.22); }
+.appt-btn-cancel {
+    background: rgba(220,38,38,0.08);
+    color: #b91c1c;
+    border: 1.5px solid rgba(220,38,38,0.15);
+}
+.appt-btn-cancel:hover { background: rgba(220,38,38,0.18); }
+
+.appt-del-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: rgba(220,38,38,0.08);
+    border: 1.5px solid rgba(220,38,38,0.15);
+    color: #c0392b;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+.appt-del-btn:hover {
+    background: rgba(220,38,38,0.18);
+    transform: scale(1.08);
+}
+
+/* Tips card */
+.appt-tips-card {
+    background: linear-gradient(155deg, #fff3ed, #fde8dc);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.15);
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(249,116,71,0.07);
+}
+.appt-tip-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+}
+.appt-tip-item:last-child { border-bottom: none; }
+.appt-tip-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: rgba(249,116,71,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.appt-tip-text {
+    font-size: 0.78rem;
+    color: #7a3010;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+/* ── ALL APPOINTMENTS TABLE ───────────────────────────── */
+.appt-table-card {
+    background: linear-gradient(155deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border-radius: 26px;
+    border: 1.5px solid rgba(249,116,71,0.18);
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(249,116,71,0.08);
+}
+.appt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.84rem;
+}
+.appt-table th {
+    color: #c4714a;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0 14px 14px 0;
+    border-bottom: 2px solid rgba(249,116,71,0.12);
+}
+.appt-table td {
+    padding: 13px 14px 13px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+    vertical-align: middle;
+    color: #3a1a08;
+}
+.appt-table tr:last-child td { border-bottom: none; }
+.appt-table tr:hover td { background: rgba(249,116,71,0.03); }
+.appt-table-doctor { font-weight: 800; color: #1a0800; }
+.appt-table-muted  { color: #b8927e; }
+
+/* ── MODAL ────────────────────────────────────────────── */
+.appt-modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,8,0,0.55);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.appt-modal-overlay.open { display: flex; }
+.appt-modal {
+    background: linear-gradient(155deg, #fff3ed, #fde8dc, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.25);
+    border-radius: 28px;
+    padding: 32px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 20px 60px rgba(249,116,71,0.22);
+    position: relative;
+    animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalIn {
+    from { opacity:0; transform:scale(0.92) translateY(16px); }
+    to   { opacity:1; transform:scale(1)    translateY(0); }
+}
+.appt-modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(249,116,71,0.12);
+    border: none; cursor: pointer;
+    font-size: 1rem; color: #c4714a;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.appt-modal-close:hover { background: rgba(249,116,71,0.25); }
+.appt-modal-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900; font-size: 1.2rem;
+    color: #1a0800; margin-bottom: 4px;
+}
+.appt-modal-sub { font-size: 0.8rem; color: #b8927e; margin-bottom: 24px; }
+
+.appt-form-label {
+    display: block;
+    font-size: 0.72rem; font-weight: 800;
+    color: #b8927e; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 7px;
+}
+.appt-form-input,
+.appt-form-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(249,116,71,0.22);
+    border-radius: 14px;
+    padding: 12px 15px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem; color: #1a0800;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.appt-form-input:focus,
+.appt-form-textarea:focus {
+    border-color: #F97447;
+    box-shadow: 0 0 0 3px rgba(249,116,71,0.12);
+}
+.appt-form-input::placeholder,
+.appt-form-textarea::placeholder { color: rgba(184,146,126,0.5); }
+.appt-form-textarea { resize: none; }
+.appt-form-group { margin-bottom: 16px; }
+
+.appt-save-btn {
+    width: 100%;
+    padding: 14px; margin-top: 8px;
+    background: #F97447; color: #fff;
+    border: none; border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.9rem; font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 6px 22px rgba(249,116,71,0.42);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.appt-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(249,116,71,0.52);
+    background: #f86030;
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.appt-empty {
+    text-align: center; padding: 40px 0; color: #c4714a;
+}
+.appt-empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.appt-empty p    { font-size: 0.88rem; font-weight: 600; }
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.appt-header     { animation: fadeSlideUp 0.5s ease both 0.05s; }
+.appt-top        { animation: fadeSlideUp 0.5s ease both 0.10s; }
+.appt-main-grid  { animation: fadeSlideUp 0.5s ease both 0.18s; }
+.appt-table-card { animation: fadeSlideUp 0.5s ease both 0.25s; }
