@@ -175,3 +175,88 @@ public function meals() {
     ]);
 }
 }
+public function appointments() {
+    $apptModel = $this->model('AppointmentModel');
+    $pid       = $_SESSION['user_id'];
+    $error     = null;
+    $success   = null;
+
+    // Handle add
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+        if ($_POST['action'] === 'add') {
+            $apptModel->addAppointment($pid, [
+                'doctor_name'      => trim($_POST['doctor_name']),
+                'appointment_date' => trim($_POST['appointment_date']),
+                'notes'            => trim($_POST['notes'] ?? ''),
+            ]);
+            $success = 'Appointment added successfully!';
+
+        } elseif ($_POST['action'] === 'status') {
+            $apptModel->updateStatus($_POST['appt_id'], $pid, $_POST['status']);
+            $success = 'Appointment status updated!';
+        }
+public function activity() {
+    $activityModel = $this->model('ActivityModel');
+    $pid           = $_SESSION['user_id'];
+    $error         = null;
+    $success       = null;
+
+    // Handle add
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $activityModel->addActivity($pid, [
+            'activity_name'    => trim($_POST['activity_name']),
+            'duration_minutes' => (int) $_POST['duration_minutes'],
+            'intensity'        => trim($_POST['intensity']),
+            'notes'            => trim($_POST['notes'] ?? ''),
+        ]);
+        $success = 'Activity logged successfully!';
+    }
+
+    // Handle delete
+    if (isset($_GET['delete'])) {
+        $apptModel->delete($_GET['delete'], $pid);
+        header('Location: /diabetrack/public/patient/appointments');
+        exit;
+    }
+
+    $all      = $apptModel->getAll($pid);
+    $upcoming = $apptModel->getUpcoming($pid);
+    $next     = $apptModel->getNext($pid);
+    $counts   = [
+        'upcoming'  => $apptModel->countByStatus($pid, 'Upcoming'),
+        'completed' => $apptModel->countByStatus($pid, 'Completed'),
+        'cancelled' => $apptModel->countByStatus($pid, 'Cancelled'),
+    ];
+
+    $this->view('patient/appointments_view', [
+        'name'     => $_SESSION['user_name'],
+        'all'      => $all,
+        'upcoming' => $upcoming,
+        'next'     => $next,
+        'counts'   => $counts,
+        'error'    => $error,
+        'success'  => $success,
+    ]);
+}
+        $activityModel->deleteLog($_GET['delete'], $pid);
+        header('Location: /diabetrack/public/patient/activity');
+        exit;
+    }
+
+    $logs        = $activityModel->getLogs($pid);
+    $todayLogs   = $activityModel->getTodayLogs($pid);
+    $todayTotals = $activityModel->getTodayTotals($pid);
+    $weekTotals  = $activityModel->getWeekTotals($pid);
+    $last7Days   = $activityModel->getLast7Days($pid);
+
+    $this->view('patient/activity_view', [
+        'name'        => $_SESSION['user_name'],
+        'logs'        => $logs,
+        'todayLogs'   => $todayLogs,
+        'todayTotals' => $todayTotals,
+        'weekTotals'  => $weekTotals,
+        'last7Days'   => $last7Days,
+        'error'       => $error,
+        'success'     => $success,
+    ]);
+}
