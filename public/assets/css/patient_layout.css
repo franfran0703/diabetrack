@@ -308,6 +308,8 @@ body::before {
 
 .page-body {
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 /* ╔══════════════════════════════════════════╗

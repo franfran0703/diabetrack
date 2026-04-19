@@ -5,10 +5,24 @@
 
 body {
     font-family: 'DM Sans', sans-serif;
-    background: #FFF8F5;
-    color: #1a0800;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+    background-color: #FFF8F5;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        );
 }
 
 /* ── NOISE TEXTURE OVERLAY ────────────────────────────── */

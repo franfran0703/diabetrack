@@ -5,10 +5,26 @@
    ╚══════════════════════════════════════════════════════╝ */
 
 body {
-    background-color: #FFF8F5;
     font-family: 'DM Sans', sans-serif;
+    position: relative;
+    min-height: 100vh;
+    background-color: #FFF8F5;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        );
 }
-
 /* ── TOP ROW: greeting + quick actions ──────────────── */
 .db-top-row {
     display: flex;

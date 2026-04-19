@@ -10,10 +10,6 @@ ob_start();
 <div class="meal-header">
     <h1>🥗 Meals & Carbs Tracker</h1>
     <p>Log your meals and track your daily nutritional intake.</p>
-    <button class="btn-add-meal" onclick="openModal('addMealModal')">
-        <span class="btn-add-icon">+</span>
-        Log a Meal
-    </button>
 </div>
 
 <!-- ALERTS -->
@@ -317,6 +313,11 @@ ob_start();
         </form>
     </div>
 </div>
+
+<button class="patient-fab" onclick="openModal('addMealModal')">
+    <span class="patient-fab-icon">🥗</span>
+    <span class="patient-fab-label">Log a Meal</span>
+</button>
 
 <script>
 function openModal(id) {

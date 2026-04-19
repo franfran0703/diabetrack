@@ -2,10 +2,26 @@
 @import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
 
 body {
-    background-color: #FFF8F5;
     font-family: 'DM Sans', sans-serif;
+    position: relative;
+    min-height: 100vh;
+    background-color: #FFF8F5;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        );
 }
-
 /* ── PAGE HEADER — centered ───────────────────────────── */
 .act-header {
     display: flex;
@@ -34,33 +50,68 @@ body {
     margin: 0;
     font-weight: 500;
 }
-.btn-log-activity {
-    display: inline-flex;
+/* ── FAB ──────────────────────────────────────────────── */
+.patient-fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 998;
+    display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 28px;
-    background: #F97447;
-    color: #fff;
+    gap: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #c04a20, #F97447, #fbab6e);
     border: none;
     border-radius: 100px;
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 800;
+    padding: 16px 20px;
     cursor: pointer;
-    box-shadow: 0 6px 24px rgba(249,116,71,0.38);
-    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    box-shadow:
+        0 8px 32px rgba(249,116,71,0.50),
+        0 2px 8px rgba(249,116,71,0.30);
+    transition:
+        gap 0.35s cubic-bezier(.34,1.56,.64,1),
+        padding 0.35s cubic-bezier(.34,1.56,.64,1),
+        box-shadow 0.2s,
+        transform 0.2s;
+    animation: fabPulse 3s ease-in-out infinite;
 }
-.btn-log-activity:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 32px rgba(249,116,71,0.48);
-    background: #f86030;
+@keyframes fabPulse {
+    0%, 100% { box-shadow: 0 8px 32px rgba(249,116,71,0.50), 0 2px 8px rgba(249,116,71,0.30); }
+    50%       { box-shadow: 0 12px 40px rgba(249,116,71,0.65), 0 4px 16px rgba(249,116,71,0.40); }
 }
-.btn-log-icon {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.28);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; font-weight: 900;
+.patient-fab:hover {
+    gap: 10px;
+    padding: 16px 28px;
+    transform: translateY(-3px);
+    box-shadow: 0 14px 40px rgba(249,116,71,0.60);
+    animation: none;
+}
+.patient-fab-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+.patient-fab:hover .patient-fab-icon {
+    transform: rotate(-15deg) scale(1.15);
+}
+.patient-fab-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #fff;
+    white-space: nowrap;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    letter-spacing: -0.2px;
+    transition:
+        max-width 0.35s cubic-bezier(.34,1.56,.64,1),
+        opacity 0.25s ease;
+}
+.patient-fab:hover .patient-fab-label {
+    max-width: 160px;
+    opacity: 1;
 }
 
 /* ── ALERTS ───────────────────────────────────────────── */
@@ -97,7 +148,8 @@ body {
 
 /* Ring panel — today's minutes */
 .act-ring-panel {
-    background: linear-gradient(145deg, #F97447, #fb9261, #fdac88);
+    background: linear-gradient(145deg, #e8532a, #F97447, #fb9261);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 28px;
     padding: 32px 24px;
     text-align: center;
@@ -269,20 +321,30 @@ body {
 
 /* Chart card */
 .act-chart-card {
-    background: linear-gradient(155deg, #FDE8DC, #fdd5be, #fcc8ab);
+    background: rgba(255,255,255,0.72);
     border-radius: 26px;
-    border: 1.5px solid rgba(249,116,71,0.18);
+    border: 1.5px solid rgba(249,116,71,0.14);
     padding: 28px;
-    box-shadow: 0 4px 24px rgba(249,116,71,0.08);
+    box-shadow:
+        0 4px 6px rgba(249,116,71,0.04),
+        0 10px 40px rgba(249,116,71,0.10),
+        0 1px 0 rgba(255,255,255,0.9) inset;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 /* Today's activity list */
 .act-today-card {
-    background: linear-gradient(155deg, #fff3ed, #fde8dc, #fdd5be);
+    background: rgba(255,255,255,0.65);
     border-radius: 26px;
-    border: 1.5px solid rgba(249,116,71,0.15);
+    border: 1.5px solid rgba(249,116,71,0.12);
     padding: 28px;
-    box-shadow: 0 4px 24px rgba(249,116,71,0.07);
+    box-shadow:
+        0 4px 6px rgba(249,116,71,0.03),
+        0 10px 36px rgba(249,116,71,0.08),
+        0 1px 0 rgba(255,255,255,0.9) inset;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .act-section-label {
@@ -305,13 +367,17 @@ body {
     border-radius: 1px;
 }
 
-/* Activity items */
 .act-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 13px 0;
     border-bottom: 1px solid rgba(249,116,71,0.08);
+    transition: all 0.2s ease;
+}
+.act-item:hover {
+    padding-left: 8px;
+    border-bottom-color: rgba(249,116,71,0.18);
 }
 .act-item:last-child { border-bottom: none; }
 
@@ -386,13 +452,17 @@ body {
     transform: scale(1.08);
 }
 
-/* ── FULL LOG TABLE ───────────────────────────────────── */
 .act-table-card {
-    background: linear-gradient(155deg, #FDE8DC, #fdd5be, #fcc8ab);
+    background: rgba(255,255,255,0.72);
     border-radius: 26px;
-    border: 1.5px solid rgba(249,116,71,0.18);
+    border: 1.5px solid rgba(249,116,71,0.14);
     padding: 28px;
-    box-shadow: 0 4px 24px rgba(249,116,71,0.08);
+    box-shadow:
+        0 4px 6px rgba(249,116,71,0.04),
+        0 10px 40px rgba(249,116,71,0.10),
+        0 1px 0 rgba(255,255,255,0.9) inset;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 .act-table {
     width: 100%;
