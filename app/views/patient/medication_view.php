@@ -7,12 +7,8 @@ ob_start();
 <link href="/diabetrack/public/assets/css/medication.css?v=<?= time() ?>" rel="stylesheet">
 
 <div class="bs-header">
-    <h4> Medication Tracker</h4>
+    <h4> 💊 Medication Tracker</h4>
     <p>Manage your medications and log daily doses.</p>
-    <button class="btn-add btn-add-med" onclick="openModal('addModal')" style="border:none;">
-        <span class="btn-add-icon">+</span>
-        Add Medication
-    </button>
 </div>
 
 <!-- ALERTS -->
@@ -241,6 +237,12 @@ function medFormFields($prefix = '') { ob_start(); ?>
     </div>
 <?php return ob_get_clean(); }
 ?>
+
+
+    <button class="patient-fab" onclick="openModal('addModal')">
+    <span class="patient-fab-icon">💊</span>
+    <span class="patient-fab-label">Add Medication</span>
+    </button>
 
 <script>
 function openModal(id) {

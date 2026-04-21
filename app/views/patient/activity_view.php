@@ -32,10 +32,6 @@ $dashOffset  = $circumference * (1 - $ringPct);
 <div class="act-header">
     <h1>🏃 Activity Monitor</h1>
     <p>Track your daily physical activities and stay active.</p>
-    <button class="btn-log-activity" onclick="openModal('actModal')">
-        <span class="btn-log-icon">+</span>
-        Log Activity
-    </button>
 </div>
 
 <!-- ALERTS -->
@@ -312,6 +308,11 @@ $dashOffset  = $circumference * (1 - $ringPct);
         </form>
     </div>
 </div>
+
+<button class="patient-fab" onclick="openModal('actModal')">
+    <span class="patient-fab-icon">🏃</span>
+    <span class="patient-fab-label">Log Activity</span>
+</button>
 
 <!-- CHART JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

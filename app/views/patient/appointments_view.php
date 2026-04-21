@@ -6,16 +6,6 @@ ob_start();
 
 <link href="/diabetrack/public/assets/css/appointments.css?v=<?= time() ?>" rel="stylesheet">
 
-<!-- HEADER -->
-<div class="appt-header">
-    <h1>📅 Appointments</h1>
-    <p>Schedule and manage your doctor visits.</p>
-    <button class="btn-add-appt" onclick="openModal('apptModal')">
-        <span class="btn-add-icon">+</span>
-        Add Appointment
-    </button>
-</div>
-
 <!-- ALERTS -->
 <?php if ($success): ?>
 <div class="appt-alert success">✅ <?= htmlspecialchars($success) ?></div>
@@ -245,6 +235,11 @@ ob_start();
             <button type="submit" class="appt-save-btn">📅 Save Appointment</button>
         </form>
     </div>
+</div>
+
+<div class="appt-fab" onclick="openModal('apptModal')" title="Add Appointment">
+    <div class="appt-fab-icon">📅</div>
+    <span class="appt-fab-label">Add Appointment</span>
 </div>
 
 <script>

@@ -8,21 +8,26 @@
 /* --- FONT FALLBACK (Cabinet Grotesk via bunny fonts) --- */
 @import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
 
-/* ── PAGE ────────────────────────────────────────────── */
 body {
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+    min-height: 100vh;
     background-color: #FFF8F5;
-    font-family: 'Cabinet Grotesk', 'Plus Jakarta Sans', sans-serif;
-    position: relative;
-}
-body::before,
-body::after { display: none; }
-
-.bs-header,
-.bs-stats-row,
-.bs-grid,
-.bs-table-card {
-    position: relative;
-    z-index: 1;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        );
 }
 
 /* ── PAGE HEADER ─────────────────────────────────────── */
@@ -54,38 +59,68 @@ body::after { display: none; }
     font-weight: 500;
 }
 
-/* Add Reading button */
-.btn-add {
-    display: inline-flex;
+/* ── FAB ──────────────────────────────────────────────── */
+.patient-fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 998;
+    display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: #F97447;
-    color: #fff;
+    gap: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, #c04a20, #F97447, #fbab6e);
     border: none;
     border-radius: 100px;
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 800;
+    padding: 16px 20px;
     cursor: pointer;
-    box-shadow: 0 6px 24px rgba(249,116,71,0.38);
-    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-    text-decoration: none;
-    white-space: nowrap;
-    letter-spacing: -0.2px;
+    box-shadow:
+        0 8px 32px rgba(249,116,71,0.50),
+        0 2px 8px rgba(249,116,71,0.30);
+    transition:
+        gap 0.35s cubic-bezier(.34,1.56,.64,1),
+        padding 0.35s cubic-bezier(.34,1.56,.64,1),
+        box-shadow 0.2s,
+        transform 0.2s;
+    animation: fabPulse 3s ease-in-out infinite;
 }
-.btn-add:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 32px rgba(249,116,71,0.48);
-    background: #f86030;
+@keyframes fabPulse {
+    0%, 100% { box-shadow: 0 8px 32px rgba(249,116,71,0.50), 0 2px 8px rgba(249,116,71,0.30); }
+    50%       { box-shadow: 0 12px 40px rgba(249,116,71,0.65), 0 4px 16px rgba(249,116,71,0.40); }
+}
+.patient-fab:hover {
+    gap: 10px;
+    padding: 16px 28px;
+    transform: translateY(-3px);
+    box-shadow: 0 14px 40px rgba(249,116,71,0.60);
+    animation: none;
+}
+.patient-fab-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+}
+.patient-fab:hover .patient-fab-icon {
+    transform: rotate(-15deg) scale(1.15);
+}
+.patient-fab-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
     color: #fff;
+    white-space: nowrap;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    letter-spacing: -0.2px;
+    transition:
+        max-width 0.35s cubic-bezier(.34,1.56,.64,1),
+        opacity 0.25s ease;
 }
-.btn-add-icon {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.28);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; font-weight: 900; line-height: 1;
+.patient-fab:hover .patient-fab-label {
+    max-width: 160px;
+    opacity: 1;
 }
 
 /* ── STAT CARDS ──────────────────────────────────────── */
@@ -560,3 +595,48 @@ body::after { display: none; }
 .bs-dial-wrap.zone-borderline .bs-dial-number { color: #27ae60; }
 .bs-dial-wrap.zone-high       .bs-dial-number { color: #1a5276; }
 .bs-dial-wrap.zone-dangerous  .bs-dial-number { color: #e67e22; }
+
+/* ── FLOATING PILL ────────────────────────────────────── */
+.btn-add-reading-pill {
+    position: fixed;
+    top: 24px;
+    right: 32px;
+    z-index: 997;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: linear-gradient(135deg, #c04a20, #F97447);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    box-shadow:
+        0 4px 20px rgba(249,116,71,0.45),
+        0 1px 0 rgba(255,255,255,0.15) inset;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+    opacity: 0;
+    transform: translateY(-8px);
+}
+.btn-add-reading-pill.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.btn-add-reading-pill:hover {
+    transform: translateY(2px) scale(1.03);
+    box-shadow: 0 8px 28px rgba(249,116,71,0.55);
+}
+.btn-add-reading-pill-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    animation: pillPulse 2s ease-in-out infinite;
+}
+@keyframes pillPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.8); }
+}

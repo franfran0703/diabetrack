@@ -174,7 +174,7 @@ public function meals() {
         'success'     => $success,
     ]);
 }
-}
+
 public function appointments() {
     $apptModel = $this->model('AppointmentModel');
     $pid       = $_SESSION['user_id'];
@@ -195,21 +195,6 @@ public function appointments() {
             $apptModel->updateStatus($_POST['appt_id'], $pid, $_POST['status']);
             $success = 'Appointment status updated!';
         }
-public function activity() {
-    $activityModel = $this->model('ActivityModel');
-    $pid           = $_SESSION['user_id'];
-    $error         = null;
-    $success       = null;
-
-    // Handle add
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $activityModel->addActivity($pid, [
-            'activity_name'    => trim($_POST['activity_name']),
-            'duration_minutes' => (int) $_POST['duration_minutes'],
-            'intensity'        => trim($_POST['intensity']),
-            'notes'            => trim($_POST['notes'] ?? ''),
-        ]);
-        $success = 'Activity logged successfully!';
     }
 
     // Handle delete
@@ -238,6 +223,26 @@ public function activity() {
         'success'  => $success,
     ]);
 }
+
+public function activity() {
+    $activityModel = $this->model('ActivityModel');
+    $pid           = $_SESSION['user_id'];
+    $error         = null;
+    $success       = null;
+
+    // Handle add
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $activityModel->addActivity($pid, [
+            'activity_name'    => trim($_POST['activity_name']),
+            'duration_minutes' => (int) $_POST['duration_minutes'],
+            'intensity'        => trim($_POST['intensity']),
+            'notes'            => trim($_POST['notes'] ?? ''),
+        ]);
+        $success = 'Activity logged successfully!';
+    }
+
+    // Handle delete
+    if (isset($_GET['delete'])) {
         $activityModel->deleteLog($_GET['delete'], $pid);
         header('Location: /diabetrack/public/patient/activity');
         exit;
@@ -259,4 +264,5 @@ public function activity() {
         'error'       => $error,
         'success'     => $success,
     ]);
+}
 }

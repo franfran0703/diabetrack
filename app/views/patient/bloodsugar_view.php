@@ -27,12 +27,9 @@ $abnormalCount = count(array_filter($logs, fn($l) => $l['status'] !== 'Normal'))
 <!-- Header -->
 <div class="bs-header">
     <div>
-        <h4>Blood Sugar Logger</h4>
+        <h4>🩸 Blood Sugar Logger</h4>
         <p>Track and monitor your blood glucose levels.</p>
     </div>
-    <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addReadingModal">
-        <span class="btn-add-icon">+</span> Add Reading
-    </button>
 </div>
 
 <!-- Stat Cards -->
@@ -319,7 +316,12 @@ require_once __DIR__ . '/../shared/patient_layout.php';
 
         </div>
     </div>
-</div>
+</div>  
+
+<button class="patient-fab" data-bs-toggle="modal" data-bs-target="#addReadingModal">
+    <span class="patient-fab-icon">🩸</span>
+    <span class="patient-fab-label">Add Reading</span>
+</button>
 
 <!-- Modal slider + type interaction -->
 <script>
@@ -360,4 +362,5 @@ document.querySelectorAll('[data-modal-type]').forEach(btn => {
         document.getElementById('modalReadingTypeInput').value = btn.dataset.modalType;
     });
 });
+
 </script>
