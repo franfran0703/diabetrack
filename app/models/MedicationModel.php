@@ -4,8 +4,6 @@ require_once __DIR__ . '/Model.php';
 
 class MedicationModel extends Model {
 
-    // ── MEDICATIONS (schedule) ─────────────────────────
-
     public function getMedications($patient_id) {
         $stmt = $this->db->prepare("
             SELECT * FROM medications
@@ -65,18 +63,54 @@ class MedicationModel extends Model {
         return $stmt->execute(['id' => $id, 'pid' => $patient_id]);
     }
 
-    // ── MEDICATION LOGS ────────────────────────────────
-
     public function logDose($medication_id, $patient_id, $status) {
         $stmt = $this->db->prepare("
             INSERT INTO medication_logs (medication_id, patient_id, status)
             VALUES (:mid, :pid, :status)
         ");
-        return $stmt->execute([
+        $result = $stmt->execute([
             'mid'    => $medication_id,
             'pid'    => $patient_id,
             'status' => $status
         ]);
+
+        // Auto-generate alert if missed
+        if ($status === 'Missed') {
+            $med = $this->db->prepare("SELECT name FROM medications WHERE id = :mid");
+            $med->execute(['mid' => $medication_id]);
+            $medName = $med->fetchColumn();
+
+            $message = "Medication '{$medName}' was not taken as scheduled.";
+
+            // Alert for patient
+            $this->db->prepare("
+                INSERT INTO alerts (user_id, patient_id, type, message)
+                VALUES (:uid, :pid, 'Missed Dose', :message)
+            ")->execute([
+                'uid'     => $patient_id,
+                'pid'     => $patient_id,
+                'message' => $message,
+            ]);
+
+            // Alert for linked caregivers
+            $cg = $this->db->prepare("
+                SELECT caregiver_id FROM caregiver_links
+                WHERE patient_id = :pid
+            ");
+            $cg->execute(['pid' => $patient_id]);
+            foreach ($cg->fetchAll() as $caregiver) {
+                $this->db->prepare("
+                    INSERT INTO alerts (user_id, patient_id, type, message)
+                    VALUES (:uid, :pid, 'Missed Dose', :message)
+                ")->execute([
+                    'uid'     => $caregiver['caregiver_id'],
+                    'pid'     => $patient_id,
+                    'message' => $message,
+                ]);
+            }
+        }
+
+        return $result;
     }
 
     public function getTodayLogs($patient_id) {
@@ -119,7 +153,6 @@ class MedicationModel extends Model {
         return $stmt->fetch();
     }
 
-    // Check if a dose was already logged today for a medication
     public function alreadyLoggedToday($medication_id, $patient_id) {
         $stmt = $this->db->prepare("
             SELECT COUNT(*) FROM medication_logs
