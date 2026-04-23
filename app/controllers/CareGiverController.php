@@ -356,4 +356,45 @@ public function medication() {
         'todayTotals' => $todayTotals,
     ]);
 }
+public function alerts() {
+    $patient      = $this->getLinkedPatient();
+    $allAlerts    = [];
+    $unreadCount  = 0;
+    $stats        = ['total' => 0, 'high' => 0, 'missed' => 0, 'other' => 0];
+
+    if ($patient) {
+        $pid = $patient['id'];
+
+        // Mark all as read when caregiver opens this page
+        $this->db->prepare("
+            UPDATE alerts SET is_read = 1
+            WHERE user_id = :pid
+        ")->execute(['pid' => $pid]);
+
+        // Get all alerts
+        $stmt = $this->db->prepare("
+            SELECT * FROM alerts
+            WHERE user_id = :pid
+            ORDER BY created_at DESC
+        ");
+        $stmt->execute(['pid' => $pid]);
+        $allAlerts = $stmt->fetchAll();
+
+        // Stats
+        $stats['total'] = count($allAlerts);
+        foreach ($allAlerts as $a) {
+            if (str_contains($a['type'], 'Sugar'))  $stats['high']++;
+            elseif (str_contains($a['type'], 'Dose') ||
+                    str_contains($a['type'], 'Missed')) $stats['missed']++;
+            else $stats['other']++;
+        }
+    }
+
+    $this->view('caregiver/alerts_view', [
+        'name'       => $_SESSION['user_name'],
+        'patient'    => $patient,
+        'allAlerts'  => $allAlerts,
+        'stats'      => $stats,
+    ]);
+}
 }

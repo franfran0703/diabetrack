@@ -12,7 +12,7 @@ $url = rtrim($url, '/');
 $url = filter_var($url, FILTER_SANITIZE_URL);
 $parts = explode('/', $url);
 
-$controllerName = isset($parts[0]) ? ucfirst($parts[0]) . 'Controller' : 'HomeController';
+$controllerName = isset($parts[0]) ? ucfirst(strtolower($parts[0])) . 'Controller' : 'HomeController';
 $method         = isset($parts[1]) ? $parts[1] : 'index';
 $param          = isset($parts[2]) ? $parts[2] : null;
 
