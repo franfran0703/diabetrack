@@ -4,7 +4,7 @@ $activeMenu = 'dashboard';
 
 ob_start();
 
-$hour = (int) date('H');
+$hour         = (int) date('H');
 $timeGreeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
 $todayLabel   = date('l, F j, Y');
 ?>
@@ -12,93 +12,124 @@ $todayLabel   = date('l, F j, Y');
 <link href="/diabetrack/public/assets/css/caregiver_layout.css?v=<?= time() ?>" rel="stylesheet">
 <link href="/diabetrack/public/assets/css/caregiver_dashboard.css?v=<?= time() ?>" rel="stylesheet">
 
-<!-- GREETING -->
-<div class="cgd-greeting">
-    <div class="cgd-eyebrow"><?= $timeGreeting ?>, Caregiver</div>
-    <h1 class="cgd-title">
-        <span class="highlight"><?= htmlspecialchars($name) ?></span> 
-    </h1>
-    <p class="cgd-sub">Here's your patient's health overview for today.</p>
-    <div class="cgd-date-pill">📅 <?= $todayLabel ?></div>
-</div>
+<!-- ═══════════════════════════════════════════════════════
+     HERO ROW — greeting (left) + patient card (right)
+     ═══════════════════════════════════════════════════════ -->
+<div class="cgd-hero">
 
-<!-- BIG PATIENT CARD -->
-<?php if ($patient): ?>
-<div class="cgd-patient-card">
-    <div class="cgd-patient-avatar">
-        <?= strtoupper(substr($patient['name'], 0, 1)) ?>
+    <!-- LEFT: GREETING PANEL -->
+    <div class="cgd-greeting-panel">
+        <div>
+            <div class="cgd-eyebrow"><?= $timeGreeting ?>, Caregiver</div>
+            <h1 class="cgd-title">
+                Welcome back,<br>
+                <span class="highlight"><?= htmlspecialchars($name) ?></span>
+            </h1>
+            <p class="cgd-sub">Here's your patient's health overview for today.</p>
+        </div>
+        <div class="cgd-date-pill">📅 <?= $todayLabel ?></div>
     </div>
-    <div class="cgd-patient-info">
-        <div class="cgd-patient-name"><?= htmlspecialchars($patient['name']) ?></div>
-        <div class="cgd-patient-email">📧 <?= htmlspecialchars($patient['email']) ?></div>
+
+    <!-- RIGHT: PATIENT CARD -->
+    <?php if ($patient): ?>
+    <div class="cgd-patient-card">
+
+        <div class="cgd-patient-top">
+            <div class="cgd-patient-avatar">
+                <?= strtoupper(substr($patient['name'], 0, 1)) ?>
+            </div>
+            <div>
+                <div class="cgd-patient-name"><?= htmlspecialchars($patient['name']) ?></div>
+                <div class="cgd-patient-email">📧 <?= htmlspecialchars($patient['email']) ?></div>
+            </div>
+        </div>
+
         <div class="cgd-patient-tags">
             <span class="cgd-patient-tag">🔗 Linked Patient</span>
             <span class="cgd-patient-tag">🩺 Under Your Care</span>
             <?php if ($latestSugar): ?>
             <span class="cgd-patient-tag">
-                Last logged: <?= date('M d, h:i A', strtotime($latestSugar['logged_at'])) ?>
+                Last log: <?= date('M d, h:i A', strtotime($latestSugar['logged_at'])) ?>
             </span>
             <?php endif; ?>
         </div>
+
+        <!-- Latest reading — bottom of card -->
+        <div class="cgd-patient-reading">
+            <div class="cgd-reading-left">
+                <div class="cgd-reading-label">Latest Blood Sugar</div>
+                <div class="cgd-reading-val">
+                    <?= $latestSugar ? $latestSugar['reading'] : '—' ?><span class="cgd-reading-unit"><?= $latestSugar ? 'mg/dL' : '' ?></span>
+                </div>
+            </div>
+            <div class="cgd-reading-status <?= $latestSugar ? strtolower($latestSugar['status']) : 'none' ?>">
+                <?php if ($latestSugar): ?>
+                    <?= $latestSugar['status']==='High' ? '🔴' : ($latestSugar['status']==='Low' ? '🟡' : '🟢') ?>
+                    <?= $latestSugar['status'] ?>
+                <?php else: ?>
+                    No logs yet
+                <?php endif; ?>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Latest reading panel -->
-    <div class="cgd-patient-reading">
-        <div class="cgd-reading-label">Latest Blood Sugar</div>
-        <?php if ($latestSugar): ?>
-        <div class="cgd-reading-val">
-            <?= $latestSugar['reading'] ?><span class="cgd-reading-unit">mg/dL</span>
+    <?php else: ?>
+    <div class="cgd-no-patient">
+        <div style="font-size:3rem;margin-bottom:12px;">🔗</div>
+        <div class="cgd-no-patient-title">No Patient Linked Yet</div>
+        <div class="cgd-no-patient-sub">
+            <a href="/diabetrack/public/caregiver/patients"
+               style="color:#fbab6e;font-weight:700;">Link a patient</a>
+            to start monitoring their health.
         </div>
-        <div class="cgd-reading-status <?= strtolower($latestSugar['status']) ?>">
-            <?= $latestSugar['status']==='High' ? '🔴' : ($latestSugar['status']==='Low' ? '🟡' : '🟢') ?>
-            <?= $latestSugar['status'] ?>
-        </div>
-        <?php else: ?>
-        <div class="cgd-reading-val" style="font-size:2.4rem;color:#d4917a;">—</div>
-        <div class="cgd-reading-status none">No logs yet</div>
-        <?php endif; ?>
     </div>
+    <?php endif; ?>
+
 </div>
 
-<?php else: ?>
-<div class="cgd-no-patient">
-    <div style="font-size:3rem;margin-bottom:16px;">🔗</div>
-    <div class="cgd-no-patient-title">No Patient Linked Yet</div>
-    <div class="cgd-no-patient-sub">
-        <a href="/diabetrack/public/caregiver/patients"
-           style="color:#fbab6e;font-weight:700;">Link a patient</a>
-        to start monitoring their health.
-    </div>
-</div>
-<?php endif; ?>
+<!-- ═══════════════════════════════════════════════════════
+     ACTIVITY STRIP — 4 equal tiles, full width
+     ═══════════════════════════════════════════════════════ -->
+<div class="cgd-activity-strip">
 
-<!-- MINI STAT ROW -->
-<div class="cgd-stat-row">
-    <div class="cgd-stat-mini glass">
-        <div class="cgd-stat-mini-icon">📊</div>
-        <div class="cgd-stat-mini-val"><?= $totalLogs ?></div>
-        <div class="cgd-stat-mini-label">Logs This Week</div>
-    </div>
-    <div class="cgd-stat-mini peach">
-        <div class="cgd-stat-mini-icon">💊</div>
-        <div class="cgd-stat-mini-val"><?= $missedMeds ?></div>
-        <div class="cgd-stat-mini-label">Missed Doses Today</div>
-    </div>
-    <div class="cgd-stat-mini glass-warm">
-        <div class="cgd-stat-mini-icon">🔔</div>
-        <div class="cgd-stat-mini-val"><?= $unreadAlerts ?></div>
-        <div class="cgd-stat-mini-label">Unread Alerts</div>
-    </div>
-    <div class="cgd-stat-mini danger-glass">
-        <div class="cgd-stat-mini-icon">⚠️</div>
-        <div class="cgd-stat-mini-val">
-        <?= $abnormalReadings ?? 0 ?>
+    <div class="cgd-activity-tile glass">
+        <div class="cgd-tile-icon">📊</div>
+        <div>
+            <div class="cgd-tile-val"><?= $totalLogs ?></div>
+            <div class="cgd-tile-label">Logs This Week</div>
         </div>
-        <div class="cgd-stat-mini-label">Abnormal Readings</div>
     </div>
+
+    <div class="cgd-activity-tile peach">
+        <div class="cgd-tile-icon">💊</div>
+        <div>
+            <div class="cgd-tile-val"><?= $missedMeds ?></div>
+            <div class="cgd-tile-label">Missed Doses Today</div>
+        </div>
+    </div>
+
+    <div class="cgd-activity-tile glass-warm">
+        <div class="cgd-tile-icon">🔔</div>
+        <div>
+            <div class="cgd-tile-val"><?= $unreadAlerts ?></div>
+            <div class="cgd-tile-label">Unread Alerts</div>
+        </div>
+    </div>
+
+    <div class="cgd-activity-tile danger">
+        <div class="cgd-tile-icon">⚠️</div>
+        <div>
+            <div class="cgd-tile-val"><?= $abnormalReadings ?? 0 ?></div>
+            <div class="cgd-tile-label">Abnormal Readings</div>
+        </div>
+    </div>
+
 </div>
 
-<!-- BOTTOM ROW: ALERT FEED + QUICK NAV -->
+<!-- ═══════════════════════════════════════════════════════
+     BOTTOM ROW — alert feed (left) + quick nav (right)
+     ═══════════════════════════════════════════════════════ -->
 <div class="cgd-bottom">
 
     <!-- ALERT FEED -->
@@ -148,6 +179,14 @@ $todayLabel   = date('l, F j, Y');
             <div>
                 <div class="cgd-nav-title">Medication</div>
                 <div class="cgd-nav-sub">Check today's schedule</div>
+            </div>
+            <div class="cgd-nav-arrow">→</div>
+        </a>
+        <a href="/diabetrack/public/caregiver/meals" class="cgd-nav-item glass">
+            <div class="cgd-nav-icon">🥗</div>
+            <div>
+                <div class="cgd-nav-title">Meal Monitor</div>
+                <div class="cgd-nav-sub">Track diet &amp; nutrition</div>
             </div>
             <div class="cgd-nav-arrow">→</div>
         </a>

@@ -3,10 +3,19 @@ $pageTitle  = 'Meal Monitor';
 $activeMenu = 'meals';
 ob_start();
 
-$carbPct = $todayTotals['total_meals'] > 0
+$carbPct   = $todayTotals['total_meals'] > 0
     ? min(round((float)$todayTotals['total_carbs'] / 130 * 100), 100)
     : 0;
 $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
+
+// Bento tile helper
+function bentoStatus($val, $max) {
+    $pct = $max > 0 ? ($val / $max * 100) : 0;
+    if ($pct >= 100) return ['badge' => 'Over limit', 'class' => 'over'];
+    if ($pct >= 75)  return ['badge' => 'Near limit', 'class' => 'warn'];
+    if ($pct > 0)    return ['badge' => 'On track',   'class' => 'good'];
+    return                  ['badge' => 'No data',    'class' => 'neutral'];
+}
 ?>
 
 <link href="/diabetrack/public/assets/css/caregiver_layout.css?v=<?= time() ?>" rel="stylesheet">
@@ -40,56 +49,123 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
 
 <?php else: ?>
 
-<!-- TOP SUMMARY ROW -->
-<div class="cgml-summary-row">
+<!-- ═══════════════════════════════════════════════════════
+     HERO — full-width carb progress
+     ═══════════════════════════════════════════════════════ -->
+<div class="cgml-carb-hero">
 
-    <!-- Big carbs hero -->
-    <div class="cgml-carbs-hero">
-        <div class="cgml-carbs-circle">🍚</div>
-        <div class="cgml-carbs-info">
-            <div class="cgml-carbs-val">
+    <!-- Left: icon + big number -->
+    <div class="cgml-carb-hero-left">
+        <div class="cgml-carb-circle">🍚</div>
+        <div>
+            <div class="cgml-carb-val">
                 <?= round($todayTotals['total_carbs'], 1) ?><small>g</small>
             </div>
-            <div class="cgml-carbs-label">Total Carbs Today</div>
-            <div class="cgml-carb-bar-wrap">
-                <div class="cgml-carb-bar-track">
-                    <div class="cgml-carb-bar-fill <?= $carbClass ?>"
-                         style="width:<?= $carbPct ?>%;"></div>
-                </div>
-                <div class="cgml-carb-bar-label">
-                    <?= $carbPct ?>% of 130g daily limit
-                    <?php if ($carbPct >= 100): ?>
-                        ⚠️ Limit exceeded!
-                    <?php elseif ($carbPct >= 75): ?>
-                        ⚠️ Approaching limit
-                    <?php endif; ?>
-                </div>
-            </div>
+            <div class="cgml-carb-sublabel">Total Carbs Today</div>
         </div>
     </div>
 
-    <!-- Meals count -->
-    <div class="cgml-meals-count">
-        <div class="cgml-count-label">Meals Today</div>
-        <div class="cgml-count-val"><?= $todayTotals['total_meals'] ?></div>
-        <div class="cgml-count-sub">
-            <?= date('l, M d') ?>
+    <div class="cgml-carb-hero-divider"></div>
+
+    <!-- Centre: progress bar fills remaining space -->
+    <div class="cgml-carb-hero-bar">
+        <div class="cgml-bar-header">
+            <div class="cgml-bar-pct"><?= $carbPct ?>%</div>
+            <div class="cgml-bar-limit">of 130g daily limit</div>
+        </div>
+        <div class="cgml-bar-track">
+            <div class="cgml-bar-fill <?= $carbClass ?>" style="width:<?= $carbPct ?>%;"></div>
+        </div>
+        <div class="cgml-bar-note">
+            <?php if ($carbPct >= 100): ?>
+                ⚠️ Daily carb limit exceeded!
+            <?php elseif ($carbPct >= 75): ?>
+                ⚠️ Approaching the daily limit
+            <?php else: ?>
+                ✅ Within safe range
+            <?php endif; ?>
         </div>
     </div>
 
-    <!-- Calories -->
-    <div class="cgml-calories-panel">
-        <div class="cgml-calories-label">Calories Today</div>
-        <div class="cgml-calories-val">
-            <?= round($todayTotals['total_calories']) ?><small>kcal</small>
+    <div class="cgml-carb-hero-divider"></div>
+
+    <!-- Right: quick summary pills -->
+    <div class="cgml-carb-hero-right">
+        <div class="cgml-hero-pill">
+            <span style="font-size:0.9rem;">🍽️</span>
+            <span class="cgml-hero-pill-val"><?= $todayTotals['total_meals'] ?></span>
+            <span class="cgml-hero-pill-label">Meals today</span>
         </div>
-        <div class="cgml-calories-sub">Total energy intake</div>
+        <div class="cgml-hero-pill">
+            <span style="font-size:0.9rem;">🔥</span>
+            <span class="cgml-hero-pill-val"><?= round($todayTotals['total_calories']) ?></span>
+            <span class="cgml-hero-pill-label">kcal</span>
+        </div>
+        <div class="cgml-hero-pill">
+            <span style="font-size:0.9rem;">📅</span>
+            <span class="cgml-hero-pill-label"><?= date('l, M d') ?></span>
+        </div>
     </div>
 
 </div>
 
-<!-- SPLIT LAYOUT -->
-<div class="cgml-split">
+<!-- ═══════════════════════════════════════════════════════
+     BENTO — 3-column macro tiles
+     ═══════════════════════════════════════════════════════ -->
+<?php
+$tiles = [
+    [
+        'icon'  => '🥩',
+        'label' => 'Protein',
+        'val'   => round($todayTotals['total_protein'], 1),
+        'unit'  => 'g',
+        'max'   => 60,
+        'color' => '#22c55e',
+    ],
+    [
+        'icon'  => '🧈',
+        'label' => 'Fat',
+        'val'   => round($todayTotals['total_fat'], 1),
+        'unit'  => 'g',
+        'max'   => 65,
+        'color' => '#f59e0b',
+    ],
+    [
+        'icon'  => '🌾',
+        'label' => 'Fiber',
+        'val'   => round($todayTotals['total_fiber'], 1),
+        'unit'  => 'g',
+        'max'   => 25,
+        'color' => '#86efac',
+    ],
+];
+?>
+<div class="cgml-bento">
+    <?php foreach ($tiles as $t):
+        $pct    = $t['max'] > 0 ? min(round($t['val'] / $t['max'] * 100), 100) : 0;
+        $status = bentoStatus($t['val'], $t['max']);
+    ?>
+    <div class="cgml-bento-tile">
+        <div class="cgml-bento-top">
+            <div class="cgml-bento-icon"><?= $t['icon'] ?></div>
+            <span class="cgml-bento-badge <?= $status['class'] ?>"><?= $status['badge'] ?></span>
+        </div>
+        <div>
+            <div class="cgml-bento-val"><?= $t['val'] ?><small><?= $t['unit'] ?></small></div>
+            <div class="cgml-bento-label"><?= $t['label'] ?></div>
+        </div>
+        <div class="cgml-bento-bar-track">
+            <div class="cgml-bento-bar-fill"
+                 style="width:<?= $pct ?>%;background:<?= $t['color'] ?>;"></div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     BODY — meal feed (left) + nutrition sidebar (right)
+     ═══════════════════════════════════════════════════════ -->
+<div class="cgml-body">
 
     <!-- LEFT: MEAL FEED -->
     <div class="cgml-feed-panel">
@@ -114,9 +190,9 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
                 <div class="cgml-feed-name"><?= htmlspecialchars($meal['meal_name']) ?></div>
                 <div class="cgml-feed-meta">
                     <?php if ($meal['calories']): ?>🔥 <?= $meal['calories'] ?> kcal &nbsp;·&nbsp; <?php endif; ?>
-                    <?php if ($meal['protein']): ?>🥩 <?= $meal['protein'] ?>g protein &nbsp;·&nbsp; <?php endif; ?>
-                    <?php if ($meal['sugar']): ?>🍬 <?= $meal['sugar'] ?>g sugar &nbsp;·&nbsp; <?php endif; ?>
-                    <?php if ($meal['notes']): ?>"<?= htmlspecialchars($meal['notes']) ?>"<?php endif; ?>
+                    <?php if ($meal['protein']):  ?>🥩 <?= $meal['protein'] ?>g protein &nbsp;·&nbsp; <?php endif; ?>
+                    <?php if ($meal['sugar']):    ?>🍬 <?= $meal['sugar'] ?>g sugar &nbsp;·&nbsp; <?php endif; ?>
+                    <?php if ($meal['notes']):    ?>"<?= htmlspecialchars($meal['notes']) ?>"<?php endif; ?>
                 </div>
                 <span class="cgml-feed-type"><?= $meal['meal_type'] ?></span>
             </div>
@@ -133,32 +209,27 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
         <?php endif; ?>
     </div>
 
-    <!-- RIGHT: NUTRITION ANALYSIS -->
+    <!-- RIGHT: NUTRITION SIDEBAR -->
     <div class="cgml-nutrition-panel">
 
-        <!-- Breakdown card -->
+        <!-- Nutrient breakdown -->
         <div class="cgml-breakdown">
             <div class="cgml-panel-label">Today's Nutrition</div>
-
             <?php
             $nutrients = [
-                ['icon' => '🍚', 'name' => 'Carbohydrates', 'val' => round($todayTotals['total_carbs'], 1),    'unit' => 'g',   'max' => 130, 'color' => '#F97447'],
-                ['icon' => '🍬', 'name' => 'Sugar',          'val' => round($todayTotals['total_sugar'], 1),    'unit' => 'g',   'max' => 50,  'color' => '#ef4444'],
-                ['icon' => '🥩', 'name' => 'Protein',        'val' => round($todayTotals['total_protein'], 1),  'unit' => 'g',   'max' => 60,  'color' => '#22c55e'],
-                ['icon' => '🧈', 'name' => 'Fat',             'val' => round($todayTotals['total_fat'], 1),      'unit' => 'g',   'max' => 65,  'color' => '#f59e0b'],
-                ['icon' => '🌾', 'name' => 'Fiber',           'val' => round($todayTotals['total_fiber'], 1),    'unit' => 'g',   'max' => 25,  'color' => '#86efac'],
+                ['icon' => '🍚', 'name' => 'Carbohydrates', 'val' => round($todayTotals['total_carbs'],   1), 'unit' => 'g', 'max' => 130, 'color' => '#F97447'],
+                ['icon' => '🍬', 'name' => 'Sugar',          'val' => round($todayTotals['total_sugar'],   1), 'unit' => 'g', 'max' => 50,  'color' => '#ef4444'],
+                ['icon' => '🥩', 'name' => 'Protein',        'val' => round($todayTotals['total_protein'], 1), 'unit' => 'g', 'max' => 60,  'color' => '#22c55e'],
+                ['icon' => '🧈', 'name' => 'Fat',             'val' => round($todayTotals['total_fat'],     1), 'unit' => 'g', 'max' => 65,  'color' => '#f59e0b'],
+                ['icon' => '🌾', 'name' => 'Fiber',           'val' => round($todayTotals['total_fiber'],   1), 'unit' => 'g', 'max' => 25,  'color' => '#86efac'],
             ];
             foreach ($nutrients as $n):
                 $pct = $n['max'] > 0 ? min(round($n['val'] / $n['max'] * 100), 100) : 0;
             ?>
             <div class="cgml-nutrient-row">
                 <div class="cgml-nutrient-top">
-                    <span class="cgml-nutrient-name">
-                        <?= $n['icon'] ?> <?= $n['name'] ?>
-                    </span>
-                    <span class="cgml-nutrient-val">
-                        <?= $n['val'] ?><?= $n['unit'] ?>
-                    </span>
+                    <span class="cgml-nutrient-name"><?= $n['icon'] ?> <?= $n['name'] ?></span>
+                    <span class="cgml-nutrient-val"><?= $n['val'] ?><?= $n['unit'] ?></span>
                 </div>
                 <div class="cgml-nutrient-track">
                     <div class="cgml-nutrient-fill"
@@ -169,9 +240,9 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
             <?php endforeach; ?>
         </div>
 
-        <!-- Safe zone limits -->
+        <!-- Daily limits -->
         <div class="cgml-safe-zone">
-            <div class="cgml-safe-title">Daily Limits for Diabetics</div>
+            <div class="cgml-panel-label">Daily Limits for Diabetics</div>
             <?php
             $limits = [
                 ['icon' => '🍚', 'name' => 'Carbohydrates', 'limit' => '≤ 130g'],
@@ -191,7 +262,9 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
     </div>
 </div>
 
-<!-- HISTORY TABLE -->
+<!-- ═══════════════════════════════════════════════════════
+     HISTORY TABLE — full width
+     ═══════════════════════════════════════════════════════ -->
 <div class="cgml-table-panel">
     <div class="cgml-panel-label">
         Meal History — <?= htmlspecialchars($patient['name']) ?>
@@ -216,7 +289,7 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
                     <th>Protein</th>
                     <th>Fat</th>
                     <th>GI</th>
-                    <th>Date & Time</th>
+                    <th>Date &amp; Time</th>
                 </tr>
             </thead>
             <tbody>
@@ -225,10 +298,10 @@ $carbClass = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
                     <td class="cgml-table-name"><?= htmlspecialchars($log['meal_name']) ?></td>
                     <td><span class="cgml-type-pill"><?= $log['meal_type'] ?></span></td>
                     <td class="cgml-table-val"><?= $log['carbs'] ?>g</td>
-                    <td class="cgml-table-muted"><?= $log['calories'] ? $log['calories'] . ' kcal' : '—' ?></td>
-                    <td class="cgml-table-muted"><?= $log['sugar'] ? $log['sugar'] . 'g' : '—' ?></td>
-                    <td class="cgml-table-muted"><?= $log['protein'] ? $log['protein'] . 'g' : '—' ?></td>
-                    <td class="cgml-table-muted"><?= $log['fat'] ? $log['fat'] . 'g' : '—' ?></td>
+                    <td class="cgml-table-muted"><?= $log['calories']       ? $log['calories'] . ' kcal' : '—' ?></td>
+                    <td class="cgml-table-muted"><?= $log['sugar']          ? $log['sugar']    . 'g'     : '—' ?></td>
+                    <td class="cgml-table-muted"><?= $log['protein']        ? $log['protein']  . 'g'     : '—' ?></td>
+                    <td class="cgml-table-muted"><?= $log['fat']            ? $log['fat']      . 'g'     : '—' ?></td>
                     <td class="cgml-table-muted"><?= $log['glycemic_index'] ?? '—' ?></td>
                     <td class="cgml-table-muted" style="white-space:nowrap;">
                         <?= date('M d, Y h:i A', strtotime($log['logged_at'])) ?>

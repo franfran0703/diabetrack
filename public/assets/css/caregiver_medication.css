@@ -28,7 +28,7 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     gap: 20px;
 }
 .cgmed-eyebrow {
@@ -97,97 +97,230 @@ body {
     font-weight: 600;
 }
 
-/* ── SUMMARY BAR ──────────────────────────────────────── */
-/* Horizontal row of 4 glass panels */
-.cgmed-summary {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 24px;
+/* ── PLANNER — full-width time-track ─────────────────── */
+.cgmed-planner {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 28px;
+    padding: 28px 32px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    margin-bottom: 14px;
 }
-.cgmed-sum-panel {
-    border-radius: 20px;
-    padding: 20px 22px;
+.cgmed-planner-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    transition: transform 0.2s;
+    justify-content: space-between;
+    margin-bottom: 22px;
 }
-.cgmed-sum-panel:hover { transform: translateY(-2px); }
-
-.cgmed-sum-panel.glass {
+.cgmed-planner-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cgmed-planner-label::after {
+    content: '';
+    width: 40px; height: 1px;
     background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.10);
-    backdrop-filter: blur(16px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
 }
-.cgmed-sum-panel.glass-warm {
-    background: rgba(249,116,71,0.10);
-    border: 1.5px solid rgba(249,116,71,0.20);
-    backdrop-filter: blur(16px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
-}
-.cgmed-sum-panel.peach {
-    background: linear-gradient(145deg, #FDE8DC, #fdd5be);
-    border: 1.5px solid rgba(249,116,71,0.2);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
-}
-.cgmed-sum-panel.danger-glass {
-    background: rgba(220,38,38,0.10);
-    border: 1.5px solid rgba(220,38,38,0.20);
-    backdrop-filter: blur(16px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+.cgmed-planner-date {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: rgba(255,180,130,0.38);
 }
 
-.cgmed-sum-icon {
-    width: 44px; height: 44px;
-    border-radius: 13px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
+/* Time ruler */
+.cgmed-ruler-track {
+    display: flex;
+    border-bottom: 1.5px solid rgba(255,255,255,0.06);
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    /* left margin matching the med label column */
+    padding-left: 154px;
+}
+.cgmed-ruler-tick {
+    flex: 1;
+    text-align: center;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: rgba(255,180,130,0.22);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    position: relative;
+}
+.cgmed-ruler-tick::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+}
+.cgmed-ruler-tick.now {
+    color: rgba(249,116,71,0.6);
+    font-weight: 800;
+}
+.cgmed-ruler-tick.now::after {
+    background: rgba(249,116,71,0.5);
+    height: 6px;
+}
+
+/* Track rows */
+.cgmed-track-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.cgmed-track-row {
+    display: flex;
+    align-items: center;
+    min-height: 50px;
+    position: relative;
+}
+
+/* Fixed label column */
+.cgmed-track-label {
+    width: 150px;
+    flex-shrink: 0;
+    padding-right: 4px;
+}
+.cgmed-track-med-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #ffe8d6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cgmed-track-med-dose {
+    font-size: 0.64rem;
+    color: rgba(255,180,130,0.32);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Bar area */
+.cgmed-track-bar {
+    flex: 1;
+    position: relative;
+    height: 50px;
+    border-left: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Grid columns inside bar */
+.cgmed-track-grid {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    pointer-events: none;
+}
+.cgmed-track-grid-col {
+    flex: 1;
+    border-right: 1px solid rgba(255,255,255,0.03);
+}
+.cgmed-track-grid-col:last-child { border-right: none; }
+
+/* Pill positioned by time percentage */
+.cgmed-track-pill {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 32px;
+    min-width: 90px;
+    border-radius: 100px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+    transition: transform 0.15s, box-shadow 0.15s;
+    z-index: 2;
+    cursor: default;
+}
+.cgmed-track-pill:hover {
+    transform: translateY(calc(-50% - 2px));
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+.cgmed-track-pill.taken {
+    background: rgba(34,197,94,0.15);
+    border: 1.5px solid rgba(34,197,94,0.28);
+    color: #86efac;
+}
+.cgmed-track-pill.missed {
+    background: rgba(220,38,38,0.15);
+    border: 1.5px solid rgba(220,38,38,0.25);
+    color: #fca5a5;
+}
+.cgmed-track-pill.pending {
+    background: rgba(249,116,71,0.13);
+    border: 1.5px solid rgba(249,116,71,0.22);
+    color: #fbab6e;
+}
+.cgmed-pill-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
     flex-shrink: 0;
 }
-.glass      .cgmed-sum-icon { background: rgba(255,255,255,0.10); }
-.glass-warm .cgmed-sum-icon { background: rgba(249,116,71,0.15); }
-.peach      .cgmed-sum-icon { background: rgba(249,116,71,0.15); border: 1.5px solid rgba(249,116,71,0.2); }
-.danger-glass .cgmed-sum-icon { background: rgba(220,38,38,0.15); }
+.cgmed-track-pill.taken   .cgmed-pill-dot { background: #22c55e; box-shadow: 0 0 4px rgba(34,197,94,0.6); }
+.cgmed-track-pill.missed  .cgmed-pill-dot { background: #ef4444; box-shadow: 0 0 4px rgba(220,38,38,0.6); }
+.cgmed-track-pill.pending .cgmed-pill-dot { background: #F97447; box-shadow: 0 0 4px rgba(249,116,71,0.5); }
 
-.cgmed-sum-val {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 2rem;
-    line-height: 1;
-    letter-spacing: -1.5px;
-}
-.glass      .cgmed-sum-val { color: #ffe8d6; }
-.glass-warm .cgmed-sum-val { color: #fbab6e; }
-.peach      .cgmed-sum-val { color: #c04a20; }
-.danger-glass .cgmed-sum-val { color: #fca5a5; }
-
-.cgmed-sum-label {
-    font-size: 0.72rem;
+.cgmed-pill-time {
+    opacity: 0.5;
     font-weight: 600;
-    margin-top: 3px;
+    font-size: 0.62rem;
 }
-.glass      .cgmed-sum-label { color: rgba(255,200,160,0.45); }
-.glass-warm .cgmed-sum-label { color: rgba(255,180,130,0.5); }
-.peach      .cgmed-sum-label { color: #b8927e; }
-.danger-glass .cgmed-sum-label { color: rgba(252,165,165,0.6); }
 
-/* ── MAIN CONTENT ROW ─────────────────────────────────── */
-.cgmed-main {
+/* NOW indicator */
+.cgmed-now-indicator {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1.5px;
+    background: rgba(249,116,71,0.45);
+    border-radius: 2px;
+    z-index: 3;
+    pointer-events: none;
+}
+.cgmed-now-indicator::before {
+    content: 'NOW';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: rgba(249,116,71,0.55);
+    white-space: nowrap;
+}
+
+/* ── BODY — med list left, status sidebar right ───────── */
+.cgmed-body {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 16px;
-    margin-bottom: 16px;
+    grid-template-columns: 1fr 256px;
+    gap: 14px;
+    margin-bottom: 14px;
     align-items: start;
 }
 
-/* ── TIMELINE PANEL ───────────────────────────────────── */
-.cgmed-timeline-panel {
+/* ── MED LIST ─────────────────────────────────────────── */
+.cgmed-med-list {
     background: rgba(255,255,255,0.04);
     border: 1.5px solid rgba(255,255,255,0.08);
     border-radius: 24px;
-    padding: 28px;
+    padding: 26px 28px;
     backdrop-filter: blur(12px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
@@ -197,128 +330,118 @@ body {
     font-weight: 800;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
-.cgmed-timeline-panel .cgmed-panel-label {
-    color: rgba(255,180,130,0.5);
-}
-.cgmed-timeline-panel .cgmed-panel-label::after {
+.cgmed-med-list .cgmed-panel-label { color: rgba(255,180,130,0.5); }
+.cgmed-med-list .cgmed-panel-label::after,
+.cgmed-table-panel .cgmed-panel-label::after {
     content: '';
-    flex: 1;
-    height: 1px;
+    flex: 1; height: 1px;
     background: rgba(255,255,255,0.06);
-    border-radius: 1px;
+}
+.cgmed-table-panel .cgmed-panel-label::after {
+    background: rgba(249,116,71,0.12);
+    height: 1.5px;
 }
 
-/* Timeline items */
-.cgmed-timeline {
+.cgmed-med-card {
     display: flex;
-    flex-direction: column;
-    gap: 0;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    margin-bottom: 6px;
+    border: 1.5px solid transparent;
+    transition: all 0.18s;
     position: relative;
 }
-
-/* Vertical line */
-.cgmed-timeline::before {
+.cgmed-med-card:last-child { margin-bottom: 0; }
+.cgmed-med-card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.07);
+}
+/* Left accent bar */
+.cgmed-med-card::before {
     content: '';
     position: absolute;
-    left: 19px;
-    top: 0; bottom: 0;
-    width: 2px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px;
+    border-radius: 100px;
+    opacity: 0;
+    transition: opacity 0.18s;
 }
+.cgmed-med-card:hover::before { opacity: 1; }
+.cgmed-med-card.taken::before   { background: #22c55e; }
+.cgmed-med-card.missed::before  { background: #ef4444; }
+.cgmed-med-card.pending::before { background: #F97447; }
 
-.cgmed-tl-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 14px 0;
-    position: relative;
-}
-
-/* Timeline dot */
-.cgmed-tl-dot {
+.cgmed-med-icon {
     width: 40px; height: 40px;
-    border-radius: 50%;
+    border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
     font-size: 1rem;
     flex-shrink: 0;
-    position: relative;
-    z-index: 1;
 }
-.cgmed-tl-dot.taken {
-    background: rgba(34,197,94,0.15);
-    border: 2px solid rgba(34,197,94,0.3);
-}
-.cgmed-tl-dot.missed {
-    background: rgba(220,38,38,0.15);
-    border: 2px solid rgba(220,38,38,0.25);
-}
-.cgmed-tl-dot.pending {
-    background: rgba(249,116,71,0.12);
-    border: 2px solid rgba(249,116,71,0.2);
-}
+.cgmed-med-card.taken   .cgmed-med-icon { background: rgba(34,197,94,0.12);  border: 1.5px solid rgba(34,197,94,0.2); }
+.cgmed-med-card.missed  .cgmed-med-icon { background: rgba(220,38,38,0.12);  border: 1.5px solid rgba(220,38,38,0.2); }
+.cgmed-med-card.pending .cgmed-med-icon { background: rgba(249,116,71,0.12); border: 1.5px solid rgba(249,116,71,0.2); }
 
-.cgmed-tl-content {
-    flex: 1;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 16px;
-    padding: 14px 16px;
-    transition: background 0.15s;
-}
-.cgmed-tl-content:hover {
-    background: rgba(255,255,255,0.07);
-}
-
-.cgmed-tl-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-}
-.cgmed-tl-name {
+.cgmed-med-info { flex: 1; min-width: 0; }
+.cgmed-med-name {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 0.87rem;
     color: #ffe8d6;
+    margin-bottom: 3px;
 }
-.cgmed-tl-badge {
-    font-size: 0.68rem;
-    font-weight: 800;
-    padding: 3px 10px;
-    border-radius: 100px;
-}
-.cgmed-tl-badge.taken   { background: rgba(34,197,94,0.15);  color: #86efac; }
-.cgmed-tl-badge.missed  { background: rgba(220,38,38,0.15);  color: #fca5a5; }
-.cgmed-tl-badge.pending { background: rgba(249,116,71,0.15); color: #fbab6e; }
-
-.cgmed-tl-meta {
-    font-size: 0.74rem;
-    color: rgba(255,200,160,0.45);
+.cgmed-med-meta {
+    font-size: 0.71rem;
+    color: rgba(255,200,160,0.4);
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
 }
-
-/* ── ALERT PANEL — right ──────────────────────────────── */
-.cgmed-alert-panel {
+.cgmed-med-right {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+}
+.cgmed-med-time {
+    font-size: 0.68rem;
+    color: rgba(255,180,130,0.3);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.cgmed-med-badge {
+    font-size: 0.61rem;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 100px;
+    white-space: nowrap;
+}
+.cgmed-med-badge.taken   { background: rgba(34,197,94,0.15);  color: #86efac; }
+.cgmed-med-badge.missed  { background: rgba(220,38,38,0.15);  color: #fca5a5; }
+.cgmed-med-badge.pending { background: rgba(249,116,71,0.14); color: #fbab6e; }
+
+/* ── STATUS SIDEBAR ───────────────────────────────────── */
+.cgmed-status-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* Top — missed count — peach */
 .cgmed-missed-hero {
     background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
     border: 1.5px solid rgba(249,116,71,0.22);
     border-radius: 22px;
-    padding: 24px;
+    padding: 22px;
     text-align: center;
     box-shadow: 0 8px 32px rgba(0,0,0,0.25);
     position: relative;
@@ -329,88 +452,83 @@ body {
 .cgmed-missed-hero::before {
     content: '💊';
     position: absolute;
-    right: -10px; bottom: -10px;
-    font-size: 80px;
+    right: -8px; bottom: -8px;
+    font-size: 68px;
     opacity: 0.08;
     transform: rotate(-15deg);
     pointer-events: none;
 }
+.cgmed-missed-eyebrow {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c4714a;
+    margin-bottom: 10px;
+}
 .cgmed-missed-count {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 4rem;
+    font-size: 3.4rem;
     color: #c04a20;
     line-height: 1;
     letter-spacing: -3px;
 }
-.cgmed-missed-label {
-    font-size: 0.78rem;
-    color: #b8927e;
-    font-weight: 600;
-    margin-top: 6px;
-}
 .cgmed-missed-sub {
     font-family: 'Instrument Serif', serif;
     font-style: italic;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #a0714f;
-    margin-top: 4px;
+    margin-top: 6px;
 }
 
-/* Middle — schedule count — glass warm */
-.cgmed-schedule-count {
-    background: rgba(249,116,71,0.10);
-    border: 1.5px solid rgba(249,116,71,0.18);
-    border-radius: 22px;
-    padding: 20px 22px;
-    backdrop-filter: blur(16px);
+.cgmed-stat-tile {
+    border-radius: 16px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    gap: 12px;
     transition: transform 0.2s;
 }
-.cgmed-schedule-count:hover { transform: translateY(-2px); }
-.cgmed-schedule-num {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 2.4rem;
-    color: #fbab6e;
-    line-height: 1;
-    letter-spacing: -2px;
-}
-.cgmed-schedule-text {
-    font-size: 0.75rem;
-    color: rgba(255,180,130,0.5);
-    font-weight: 600;
-}
+.cgmed-stat-tile:hover { transform: translateY(-2px); }
+.cgmed-stat-tile.warm   { background: rgba(249,116,71,0.09);  border: 1.5px solid rgba(249,116,71,0.17);  backdrop-filter: blur(12px); }
+.cgmed-stat-tile.green  { background: rgba(34,197,94,0.08);   border: 1.5px solid rgba(34,197,94,0.17);   backdrop-filter: blur(12px); }
+.cgmed-stat-tile.glass  { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px); }
+.cgmed-stat-tile.danger { background: rgba(220,38,38,0.08);   border: 1.5px solid rgba(220,38,38,0.16);   backdrop-filter: blur(12px); }
 
-.cgmed-taken-count {
-    background: rgba(34,197,94,0.08);
-    border: 1.5px solid rgba(34,197,94,0.18);
-    border-radius: 22px;
-    padding: 20px 22px;
-    backdrop-filter: blur(16px);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-    transition: transform 0.2s;
+.cgmed-tile-icon {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
 }
-.cgmed-taken-count:hover { transform: translateY(-2px); }
-.cgmed-taken-num {
+.cgmed-stat-tile.warm   .cgmed-tile-icon { background: rgba(249,116,71,0.14); }
+.cgmed-stat-tile.green  .cgmed-tile-icon { background: rgba(34,197,94,0.12); }
+.cgmed-stat-tile.glass  .cgmed-tile-icon { background: rgba(255,255,255,0.07); }
+.cgmed-stat-tile.danger .cgmed-tile-icon { background: rgba(220,38,38,0.14); }
+
+.cgmed-tile-val {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 2.4rem;
-    color: #86efac;
+    font-size: 1.7rem;
     line-height: 1;
-    letter-spacing: -2px;
+    letter-spacing: -1px;
 }
-.cgmed-taken-text {
-    font-size: 0.75rem;
-    color: rgba(134,239,172,0.5);
+.cgmed-stat-tile.warm   .cgmed-tile-val { color: #fbab6e; }
+.cgmed-stat-tile.green  .cgmed-tile-val { color: #86efac; }
+.cgmed-stat-tile.glass  .cgmed-tile-val { color: #ffe8d6; }
+.cgmed-stat-tile.danger .cgmed-tile-val { color: #fca5a5; }
+
+.cgmed-tile-label {
+    font-size: 0.66rem;
     font-weight: 600;
+    margin-top: 2px;
 }
+.cgmed-stat-tile.warm   .cgmed-tile-label { color: rgba(255,180,130,0.42); }
+.cgmed-stat-tile.green  .cgmed-tile-label { color: rgba(134,239,172,0.42); }
+.cgmed-stat-tile.glass  .cgmed-tile-label { color: rgba(255,200,160,0.38); }
+.cgmed-stat-tile.danger .cgmed-tile-label { color: rgba(252,165,165,0.48); }
 
 /* ── HISTORY TABLE ────────────────────────────────────── */
 .cgmed-table-panel {
@@ -420,16 +538,7 @@ body {
     padding: 28px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.25);
 }
-.cgmed-table-panel .cgmed-panel-label {
-    color: #c4714a;
-}
-.cgmed-table-panel .cgmed-panel-label::after {
-    content: '';
-    flex: 1;
-    height: 1.5px;
-    background: rgba(249,116,71,0.15);
-    border-radius: 1px;
-}
+.cgmed-table-panel .cgmed-panel-label { color: #c4714a; }
 
 .cgmed-table {
     width: 100%;
@@ -454,7 +563,7 @@ body {
 }
 .cgmed-table tr:last-child td { border-bottom: none; }
 .cgmed-table tr:hover td { background: rgba(249,116,71,0.03); }
-.cgmed-table-name { font-weight: 800; color: #1a0800; }
+.cgmed-table-name  { font-weight: 800; color: #1a0800; }
 .cgmed-table-muted { color: #b8927e; }
 
 .cgmed-tpill {
@@ -480,16 +589,16 @@ body {
     font-size: 0.88rem;
     font-weight: 700;
 }
-.cgmed-timeline-panel .cgmed-empty-text { color: rgba(255,200,160,0.4); }
-.cgmed-table-panel    .cgmed-empty-text { color: #c4714a; }
+.cgmed-planner     .cgmed-empty-text { color: rgba(255,200,160,0.4); }
+.cgmed-med-list    .cgmed-empty-text { color: rgba(255,200,160,0.4); }
+.cgmed-table-panel .cgmed-empty-text { color: #c4714a; }
 
 /* ── ANIMATIONS ───────────────────────────────────────── */
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-.cgmed-header          { animation: fadeUp 0.5s ease both 0.05s; }
-.cgmed-summary         { animation: fadeUp 0.5s ease both 0.10s; }
-.cgmed-timeline-panel  { animation: fadeUp 0.5s ease both 0.18s; }
-.cgmed-alert-panel     { animation: fadeUp 0.5s ease both 0.22s; }
-.cgmed-table-panel     { animation: fadeUp 0.5s ease both 0.28s; }
+.cgmed-header      { animation: fadeUp 0.5s ease both 0.05s; }
+.cgmed-planner     { animation: fadeUp 0.5s ease both 0.10s; }
+.cgmed-body        { animation: fadeUp 0.5s ease both 0.17s; }
+.cgmed-table-panel { animation: fadeUp 0.5s ease both 0.24s; }
