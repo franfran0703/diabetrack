@@ -23,9 +23,37 @@ body {
         );
 }
 
-/* ── GREETING ─────────────────────────────────────────── */
-.cgd-greeting {
-    margin-bottom: 28px;
+/* ── HERO ROW — greeting left, patient card right ─────── */
+.cgd-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+    align-items: stretch;
+}
+
+/* ── LEFT: GREETING PANEL ─────────────────────────────── */
+.cgd-greeting-panel {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 28px;
+    padding: 36px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+.cgd-greeting-panel::before {
+    content: '👋';
+    position: absolute;
+    right: -16px; bottom: -16px;
+    font-size: 120px;
+    opacity: 0.05;
+    transform: rotate(-10deg);
+    pointer-events: none;
 }
 .cgd-eyebrow {
     font-size: 0.65rem;
@@ -33,7 +61,7 @@ body {
     letter-spacing: 3px;
     text-transform: uppercase;
     color: rgba(255,180,130,0.5);
-    margin-bottom: 8px;
+    margin-bottom: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -48,11 +76,12 @@ body {
 .cgd-title {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 2.8rem;
+    font-size: 2.6rem;
     letter-spacing: -2px;
     color: #ffe8d6;
-    margin: 0 0 4px;
-    line-height: 1;
+    margin: 0 0 6px;
+    line-height: 1.05;
+    position: relative; z-index: 1;
 }
 .cgd-title .highlight {
     background: linear-gradient(120deg, #fbab6e, #fdd5be);
@@ -63,9 +92,10 @@ body {
 .cgd-sub {
     font-family: 'Instrument Serif', serif;
     font-style: italic;
-    font-size: 1rem;
-    color: rgba(255,200,160,0.5);
-    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255,200,160,0.45);
+    margin: 0 0 20px;
+    position: relative; z-index: 1;
 }
 .cgd-date-pill {
     display: inline-flex;
@@ -76,129 +106,134 @@ body {
     border: 1px solid rgba(249,116,71,0.2);
     font-size: 0.72rem;
     font-weight: 700;
-    padding: 5px 14px;
+    padding: 6px 14px;
     border-radius: 100px;
-    margin-top: 12px;
+    width: fit-content;
+    position: relative; z-index: 1;
 }
 
-/* ── BIG PATIENT CARD ─────────────────────────────────── */
+/* ── RIGHT: PATIENT CARD ──────────────────────────────── */
 .cgd-patient-card {
     background: linear-gradient(145deg, #FDE8DC 0%, #fdd5be 55%, #fcc8ab 100%);
     border: 1.5px solid rgba(249,116,71,0.22);
     border-radius: 28px;
-    padding: 32px 36px;
-    margin-bottom: 16px;
+    padding: 32px;
     box-shadow: 0 12px 48px rgba(0,0,0,0.35), 0 2px 8px rgba(249,116,71,0.15);
     display: flex;
-    align-items: center;
-    gap: 28px;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
     position: relative;
     overflow: hidden;
     transition: transform 0.2s;
 }
 .cgd-patient-card:hover { transform: translateY(-2px); }
 .cgd-patient-card::before {
-    content: '👤';
+    content: '🩺';
     position: absolute;
-    right: -20px; bottom: -20px;
-    font-size: 160px;
+    right: -16px; bottom: -16px;
+    font-size: 130px;
     opacity: 0.06;
     transform: rotate(-10deg);
     pointer-events: none;
 }
 
+/* Top of patient card */
+.cgd-patient-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    position: relative; z-index: 1;
+}
 .cgd-patient-avatar {
-    width: 80px; height: 80px;
+    width: 64px; height: 64px;
     border-radius: 50%;
     background: linear-gradient(135deg, #F97447, #fbab6e);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 2rem;
+    font-size: 1.6rem;
     color: #fff;
-    box-shadow: 0 6px 24px rgba(249,116,71,0.45);
+    box-shadow: 0 6px 20px rgba(249,116,71,0.4);
     flex-shrink: 0;
-    position: relative; z-index: 1;
 }
-.cgd-patient-info { flex: 1; position: relative; z-index: 1; }
 .cgd-patient-name {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     color: #1a0800;
-    letter-spacing: -1px;
+    letter-spacing: -0.8px;
     line-height: 1;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 .cgd-patient-email {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: #b8927e;
     font-weight: 500;
-    margin-bottom: 12px;
 }
 .cgd-patient-tags {
     display: flex;
-    align-items: center;
-    gap: 8px;
     flex-wrap: wrap;
+    gap: 6px;
+    position: relative; z-index: 1;
 }
 .cgd-patient-tag {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 800;
-    padding: 5px 14px;
+    padding: 4px 12px;
     border-radius: 100px;
-    background: rgba(249,116,71,0.15);
+    background: rgba(249,116,71,0.14);
     color: #c04a20;
-    border: 1px solid rgba(249,116,71,0.2);
+    border: 1px solid rgba(249,116,71,0.18);
 }
 
-/* Right side of patient card — latest reading */
+/* Bottom of patient card — reading */
 .cgd-patient-reading {
-    text-align: center;
-    padding: 20px 32px;
-    background: rgba(255,255,255,0.45);
-    border-radius: 20px;
-    border: 1.5px solid rgba(249,116,71,0.15);
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.4);
+    border-radius: 16px;
+    border: 1.5px solid rgba(249,116,71,0.12);
+    padding: 16px 20px;
     position: relative; z-index: 1;
 }
 .cgd-reading-label {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 800;
     letter-spacing: 2px;
     text-transform: uppercase;
     color: #c4714a;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 .cgd-reading-val {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 3.2rem;
+    font-size: 2.6rem;
     color: #c04a20;
     line-height: 1;
-    letter-spacing: -3px;
+    letter-spacing: -2px;
 }
 .cgd-reading-unit {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #d4917a;
     font-weight: 600;
     margin-left: 2px;
     letter-spacing: 0;
 }
 .cgd-reading-status {
-    margin-top: 10px;
     display: inline-flex;
     align-items: center;
     gap: 5px;
     font-size: 0.72rem;
     font-weight: 800;
-    padding: 5px 14px;
+    padding: 6px 14px;
     border-radius: 100px;
 }
-.cgd-reading-status.normal  { background: rgba(22,163,74,0.12);  color: #166534; }
-.cgd-reading-status.high    { background: rgba(220,38,38,0.12);  color: #b91c1c; }
-.cgd-reading-status.low     { background: rgba(217,119,6,0.12);  color: #92400e; }
-.cgd-reading-status.none    { background: rgba(249,116,71,0.10); color: #c04a20; }
+.cgd-reading-status.normal { background: rgba(22,163,74,0.12);  color: #166534; }
+.cgd-reading-status.high   { background: rgba(220,38,38,0.12);  color: #b91c1c; }
+.cgd-reading-status.low    { background: rgba(217,119,6,0.12);  color: #92400e; }
+.cgd-reading-status.none   { background: rgba(249,116,71,0.10); color: #c04a20; }
 
 /* No patient state */
 .cgd-no-patient {
@@ -208,99 +243,104 @@ body {
     padding: 60px;
     text-align: center;
     backdrop-filter: blur(8px);
-    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 .cgd-no-patient-title {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
     font-size: 1.1rem;
     color: #ffe8d6;
-    margin-bottom: 8px;
 }
 .cgd-no-patient-sub {
     font-size: 0.85rem;
     color: rgba(255,200,160,0.45);
 }
 
-/* ── MINI STAT ROW ────────────────────────────────────── */
-.cgd-stat-row {
+/* ── ACTIVITY STRIP — full width, 4 stats ────────────── */
+.cgd-activity-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
-.cgd-stat-mini {
+.cgd-activity-tile {
     border-radius: 20px;
-    padding: 20px;
+    padding: 20px 22px;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 16px;
     transition: transform 0.2s;
     position: relative;
     overflow: hidden;
 }
-.cgd-stat-mini:hover { transform: translateY(-3px); }
+.cgd-activity-tile:hover { transform: translateY(-2px); }
 
-.cgd-stat-mini.glass {
+.cgd-activity-tile.glass {
     background: rgba(255,255,255,0.06);
     border: 1.5px solid rgba(255,255,255,0.10);
     backdrop-filter: blur(16px);
     box-shadow: 0 6px 24px rgba(0,0,0,0.2);
 }
-.cgd-stat-mini.glass-warm {
+.cgd-activity-tile.glass-warm {
     background: rgba(249,116,71,0.10);
     border: 1.5px solid rgba(249,116,71,0.18);
     backdrop-filter: blur(16px);
     box-shadow: 0 6px 24px rgba(0,0,0,0.2);
 }
-.cgd-stat-mini.peach {
+.cgd-activity-tile.peach {
     background: linear-gradient(145deg, #FDE8DC, #fdd5be);
     border: 1.5px solid rgba(249,116,71,0.2);
     box-shadow: 0 8px 28px rgba(0,0,0,0.25);
 }
-.cgd-stat-mini.danger-glass {
+.cgd-activity-tile.danger {
     background: rgba(220,38,38,0.10);
     border: 1.5px solid rgba(220,38,38,0.18);
     backdrop-filter: blur(16px);
     box-shadow: 0 6px 24px rgba(0,0,0,0.2);
 }
 
-.cgd-stat-mini-icon {
-    font-size: 1.2rem;
-    width: 38px; height: 38px;
-    border-radius: 11px;
+.cgd-tile-icon {
+    width: 42px; height: 42px;
+    border-radius: 13px;
     display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
-.glass       .cgd-stat-mini-icon { background: rgba(255,255,255,0.10); }
-.glass-warm  .cgd-stat-mini-icon { background: rgba(249,116,71,0.15); }
-.peach       .cgd-stat-mini-icon { background: rgba(249,116,71,0.15); }
-.danger-glass .cgd-stat-mini-icon { background: rgba(220,38,38,0.15); }
+.cgd-activity-tile.glass       .cgd-tile-icon { background: rgba(255,255,255,0.10); }
+.cgd-activity-tile.glass-warm  .cgd-tile-icon { background: rgba(249,116,71,0.15); }
+.cgd-activity-tile.peach       .cgd-tile-icon { background: rgba(249,116,71,0.15); }
+.cgd-activity-tile.danger      .cgd-tile-icon { background: rgba(220,38,38,0.15); }
 
-.cgd-stat-mini-val {
+.cgd-tile-val {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 1.8rem;
+    font-size: 2rem;
     line-height: 1;
     letter-spacing: -1.5px;
 }
-.glass       .cgd-stat-mini-val { color: #ffe8d6; }
-.glass-warm  .cgd-stat-mini-val { color: #fbab6e; }
-.peach       .cgd-stat-mini-val { color: #c04a20; }
-.danger-glass .cgd-stat-mini-val { color: #fca5a5; }
+.cgd-activity-tile.glass       .cgd-tile-val { color: #ffe8d6; }
+.cgd-activity-tile.glass-warm  .cgd-tile-val { color: #fbab6e; }
+.cgd-activity-tile.peach       .cgd-tile-val { color: #c04a20; }
+.cgd-activity-tile.danger      .cgd-tile-val { color: #fca5a5; }
 
-.cgd-stat-mini-label {
+.cgd-tile-label {
     font-size: 0.72rem;
     font-weight: 600;
+    margin-top: 3px;
 }
-.glass       .cgd-stat-mini-label { color: rgba(255,200,160,0.45); }
-.glass-warm  .cgd-stat-mini-label { color: rgba(255,180,130,0.5); }
-.peach       .cgd-stat-mini-label { color: #b8927e; }
-.danger-glass .cgd-stat-mini-label { color: rgba(252,165,165,0.55); }
+.cgd-activity-tile.glass       .cgd-tile-label { color: rgba(255,200,160,0.45); }
+.cgd-activity-tile.glass-warm  .cgd-tile-label { color: rgba(255,180,130,0.5); }
+.cgd-activity-tile.peach       .cgd-tile-label { color: #b8927e; }
+.cgd-activity-tile.danger      .cgd-tile-label { color: rgba(252,165,165,0.55); }
 
-/* ── BOTTOM ROW ───────────────────────────────────────── */
+/* ── BOTTOM ROW — alert feed + quick nav ──────────────── */
 .cgd-bottom {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 300px;
     gap: 16px;
     align-items: start;
 }
@@ -330,25 +370,23 @@ body {
     content: '';
     flex: 1; height: 1px;
     background: rgba(255,255,255,0.06);
-    border-radius: 1px;
 }
 
 .cgd-alert-item {
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    padding: 14px 0;
+    padding: 13px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
     transition: opacity 0.15s;
 }
 .cgd-alert-item:last-child { border-bottom: none; }
 .cgd-alert-item:hover { opacity: 0.85; }
-
 .cgd-alert-dot {
-    width: 38px; height: 38px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1rem;
+    font-size: 0.95rem;
     flex-shrink: 0;
     margin-top: 1px;
 }
@@ -356,129 +394,120 @@ body {
 .cgd-alert-dot.low    { background: rgba(217,119,6,0.18); }
 .cgd-alert-dot.missed { background: rgba(249,116,71,0.15); }
 .cgd-alert-dot.good   { background: rgba(34,197,94,0.15); }
-
 .cgd-alert-title {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     color: #ffe8d6;
     margin-bottom: 3px;
 }
 .cgd-alert-msg {
-    font-size: 0.75rem;
+    font-size: 0.73rem;
     color: rgba(255,200,160,0.45);
     font-weight: 500;
     line-height: 1.4;
 }
 .cgd-alert-time {
-    font-size: 0.68rem;
-    color: rgba(255,180,130,0.35);
+    font-size: 0.67rem;
+    color: rgba(255,180,130,0.32);
     font-weight: 600;
     margin-left: auto;
     flex-shrink: 0;
     white-space: nowrap;
     margin-top: 2px;
 }
-
 .cgd-alert-empty {
     text-align: center;
     padding: 40px 0;
     color: rgba(255,200,160,0.35);
 }
 .cgd-alert-empty-icon { font-size: 2rem; margin-bottom: 10px; }
-.cgd-alert-empty-text { font-size:0.85rem; font-weight:600; }
+.cgd-alert-empty-text { font-size: 0.85rem; font-weight: 600; }
 
-/* ── QUICK NAV PANELS ─────────────────────────────────── */
+/* ── QUICK NAV ────────────────────────────────────────── */
 .cgd-nav-stack {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 .cgd-nav-item {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 18px 20px;
-    border-radius: 20px;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 18px;
     text-decoration: none;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.18s, box-shadow 0.18s;
     position: relative;
     overflow: hidden;
 }
-.cgd-nav-item:hover {
-    transform: translateX(4px);
-}
+.cgd-nav-item:hover { transform: translateX(4px); }
 
 .cgd-nav-item.peach {
     background: linear-gradient(145deg, #FDE8DC, #fdd5be);
     border: 1.5px solid rgba(249,116,71,0.2);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
 }
 .cgd-nav-item.glass {
     background: rgba(255,255,255,0.06);
     border: 1.5px solid rgba(255,255,255,0.10);
     backdrop-filter: blur(16px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 .cgd-nav-item.glass-warm {
     background: rgba(249,116,71,0.10);
     border: 1.5px solid rgba(249,116,71,0.18);
     backdrop-filter: blur(16px);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 
 .cgd-nav-icon {
-    width: 44px; height: 44px;
-    border-radius: 14px;
+    width: 40px; height: 40px;
+    border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     flex-shrink: 0;
 }
-.peach     .cgd-nav-icon { background: rgba(249,116,71,0.15); }
-.glass     .cgd-nav-icon { background: rgba(255,255,255,0.10); }
-.glass-warm .cgd-nav-icon { background: rgba(249,116,71,0.15); }
+.cgd-nav-item.peach      .cgd-nav-icon { background: rgba(249,116,71,0.15); }
+.cgd-nav-item.glass      .cgd-nav-icon { background: rgba(255,255,255,0.10); }
+.cgd-nav-item.glass-warm .cgd-nav-icon { background: rgba(249,116,71,0.15); }
 
 .cgd-nav-title {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
 }
-.peach      .cgd-nav-title { color: #1a0800; }
-.glass      .cgd-nav-title { color: #ffe8d6; }
-.glass-warm .cgd-nav-title { color: #fbab6e; }
+.cgd-nav-item.peach      .cgd-nav-title { color: #1a0800; }
+.cgd-nav-item.glass      .cgd-nav-title { color: #ffe8d6; }
+.cgd-nav-item.glass-warm .cgd-nav-title { color: #fbab6e; }
 
 .cgd-nav-sub {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 500;
     margin-top: 2px;
 }
-.peach      .cgd-nav-sub { color: #b8927e; }
-.glass      .cgd-nav-sub { color: rgba(255,200,160,0.4); }
-.glass-warm .cgd-nav-sub { color: rgba(255,180,130,0.5); }
+.cgd-nav-item.peach      .cgd-nav-sub { color: #b8927e; }
+.cgd-nav-item.glass      .cgd-nav-sub { color: rgba(255,200,160,0.4); }
+.cgd-nav-item.glass-warm .cgd-nav-sub { color: rgba(255,180,130,0.5); }
 
 .cgd-nav-arrow {
     margin-left: auto;
     font-size: 0.85rem;
     flex-shrink: 0;
-    opacity: 0.4;
+    opacity: 0.35;
     transition: opacity 0.15s, transform 0.15s;
 }
-.cgd-nav-item:hover .cgd-nav-arrow {
-    opacity: 1;
-    transform: translateX(3px);
-}
-.peach      .cgd-nav-arrow { color: #c04a20; }
-.glass      .cgd-nav-arrow { color: #fbab6e; }
-.glass-warm .cgd-nav-arrow { color: #fbab6e; }
+.cgd-nav-item:hover .cgd-nav-arrow { opacity: 1; transform: translateX(3px); }
+.cgd-nav-item.peach      .cgd-nav-arrow { color: #c04a20; }
+.cgd-nav-item.glass      .cgd-nav-arrow { color: #fbab6e; }
+.cgd-nav-item.glass-warm .cgd-nav-arrow { color: #fbab6e; }
 
 /* ── ANIMATIONS ───────────────────────────────────────── */
 @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-.cgd-greeting     { animation: fadeUp 0.5s ease both 0.05s; }
-.cgd-patient-card { animation: fadeUp 0.5s ease both 0.10s; }
-.cgd-no-patient   { animation: fadeUp 0.5s ease both 0.10s; }
-.cgd-stat-row     { animation: fadeUp 0.5s ease both 0.16s; }
-.cgd-alert-panel  { animation: fadeUp 0.5s ease both 0.22s; }
-.cgd-nav-stack    { animation: fadeUp 0.5s ease both 0.26s; }
+.cgd-hero            { animation: fadeUp 0.5s ease both 0.05s; }
+.cgd-activity-strip  { animation: fadeUp 0.5s ease both 0.12s; }
+.cgd-alert-panel     { animation: fadeUp 0.5s ease both 0.19s; }
+.cgd-nav-stack       { animation: fadeUp 0.5s ease both 0.23s; }
