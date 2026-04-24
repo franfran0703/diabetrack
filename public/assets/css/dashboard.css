@@ -371,3 +371,531 @@ body {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── CARD CLICKABLE ──────────────────────────────────── */
+.db-stat-card {
+    cursor: pointer;
+}
+.db-stat-card .db-card-hint {
+    position: absolute;
+    bottom: 18px;
+    right: 20px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+}
+.db-stat-card:hover .db-card-hint { color: rgba(255,255,255,0.75); }
+
+/* ── MODAL OVERLAY ───────────────────────────────────── */
+.db-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,8,0,0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+.db-modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ── MODAL BOX ───────────────────────────────────────── */
+.db-modal {
+    background: #fff;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 80px rgba(168,56,24,0.22), 0 4px 16px rgba(0,0,0,0.12);
+    transform: translateY(20px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+    scrollbar-width: none;
+}
+.db-modal::-webkit-scrollbar { display: none; }
+.db-modal-overlay.open .db-modal {
+    transform: translateY(0) scale(1);
+}
+
+/* Modal header strip */
+.db-modal-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1.5px solid rgba(249,116,71,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 2;
+    border-radius: 28px 28px 0 0;
+}
+.db-modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.db-modal-icon {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.db-modal-icon.coral  { background: #FDE8DC; }
+.db-modal-icon.terra  { background: #fde0d0; }
+.db-modal-icon.ember  { background: #fcd8c4; }
+.db-modal-icon.blush  { background: #fcd0b8; }
+
+.db-modal-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #1a0800;
+    letter-spacing: -0.5px;
+}
+.db-modal-subtitle {
+    font-size: 0.72rem;
+    color: #b8927e;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.db-modal-close {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #FFF8F5;
+    border: 1.5px solid rgba(249,116,71,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #c04a20;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.15s;
+}
+.db-modal-close:hover {
+    background: #FDE8DC;
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Modal body */
+.db-modal-body {
+    padding: 24px 28px 28px;
+}
+
+/* ── BLOOD SUGAR MODAL ───────────────────────────────── */
+.db-bs-chart-wrap {
+    background: #FFF8F5;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1.5px solid rgba(249,116,71,0.1);
+}
+.db-bs-zones {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.db-bs-zone {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #7a4a30;
+}
+.db-bs-zone-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+}
+.db-bs-stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+}
+.db-bs-stat {
+    background: #FFF8F5;
+    border: 1.5px solid rgba(249,116,71,0.12);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+}
+.db-bs-stat-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: #c04a20;
+    letter-spacing: -1px;
+    line-height: 1;
+}
+.db-bs-stat-label {
+    font-size: 0.65rem;
+    color: #b8927e;
+    font-weight: 700;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ── MEDICATION MODAL ────────────────────────────────── */
+.db-med-progress {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #FFF8F5;
+    border-radius: 18px;
+    padding: 20px;
+    border: 1.5px solid rgba(249,116,71,0.1);
+    margin-bottom: 16px;
+}
+.db-med-ring {
+    position: relative;
+    width: 80px; height: 80px;
+    flex-shrink: 0;
+}
+.db-med-ring svg {
+    transform: rotate(-90deg);
+    width: 80px; height: 80px;
+}
+.db-med-ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: #c04a20;
+}
+.db-med-progress-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    color: #1a0800;
+    margin-bottom: 4px;
+}
+.db-med-progress-sub {
+    font-size: 0.75rem;
+    color: #b8927e;
+    font-weight: 500;
+}
+
+.db-med-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(249,116,71,0.08);
+    margin-bottom: 8px;
+    background: #FFF8F5;
+    transition: border-color 0.15s;
+}
+.db-med-item:last-child { margin-bottom: 0; }
+.db-med-item:hover { border-color: rgba(249,116,71,0.22); }
+.db-med-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.db-med-dot.taken   { background: #22c55e; box-shadow: 0 0 5px rgba(34,197,94,0.4); }
+.db-med-dot.missed  { background: #ef4444; box-shadow: 0 0 5px rgba(239,68,68,0.4); }
+.db-med-dot.pending { background: #F97447; box-shadow: 0 0 5px rgba(249,116,71,0.4); }
+.db-med-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: #1a0800;
+    flex: 1;
+}
+.db-med-meta {
+    font-size: 0.7rem;
+    color: #b8927e;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.db-med-pill {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 100px;
+}
+.db-med-pill.taken   { background: #d4f7e8; color: #0f7a45; }
+.db-med-pill.missed  { background: #fde8e8; color: #b91c1c; }
+.db-med-pill.pending { background: #FDE8DC; color: #c04a20; }
+
+/* ── NUTRITION MODAL ─────────────────────────────────── */
+.db-nut-hero {
+    background: linear-gradient(135deg, #c04a20, #e8743f);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.db-nut-hero-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 3rem;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+.db-nut-hero-val small {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 0;
+    margin-left: 2px;
+}
+.db-nut-hero-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 600;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+.db-nut-hero-right {
+    text-align: right;
+}
+.db-nut-limit {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.55);
+    font-weight: 700;
+}
+.db-nut-pct {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+.db-nut-bar-track {
+    height: 8px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+.db-nut-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.7);
+    transition: width 1s ease;
+}
+
+.db-nut-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
+}
+.db-nut-row:last-child { border-bottom: none; }
+.db-nut-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: #FDE8DC;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.db-nut-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #3a1a08;
+    flex: 1;
+}
+.db-nut-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: #c04a20;
+}
+.db-nut-mini-track {
+    width: 80px;
+    height: 5px;
+    background: rgba(249,116,71,0.1);
+    border-radius: 100px;
+    overflow: hidden;
+}
+.db-nut-mini-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s ease;
+}
+
+/* ── ACTIVITY MODAL ──────────────────────────────────── */
+.db-act-ring-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: #FFF8F5;
+    border-radius: 18px;
+    padding: 24px;
+    border: 1.5px solid rgba(249,116,71,0.1);
+    margin-bottom: 16px;
+}
+.db-act-ring {
+    position: relative;
+    width: 120px; height: 120px;
+    flex-shrink: 0;
+}
+.db-act-ring svg {
+    transform: rotate(-90deg);
+    width: 120px; height: 120px;
+}
+.db-act-ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.db-act-ring-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: #c04a20;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.db-act-ring-unit {
+    font-size: 0.6rem;
+    color: #b8927e;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+.db-act-ring-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.db-act-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.db-act-stat-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: #FDE8DC;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.db-act-stat-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    color: #1a0800;
+    line-height: 1;
+}
+.db-act-stat-label {
+    font-size: 0.67rem;
+    color: #b8927e;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.db-act-log-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #FFF8F5;
+    border: 1.5px solid rgba(249,116,71,0.08);
+    margin-bottom: 8px;
+}
+.db-act-log-item:last-child { margin-bottom: 0; }
+.db-act-log-icon {
+    width: 36px; height: 36px;
+    border-radius: 11px;
+    background: #FDE8DC;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.db-act-log-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 0.84rem;
+    color: #1a0800;
+    flex: 1;
+}
+.db-act-log-meta {
+    font-size: 0.68rem;
+    color: #b8927e;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.db-act-log-dur {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 0.88rem;
+    color: #c04a20;
+}
+
+.db-modal-empty {
+    text-align: center;
+    padding: 36px 0;
+    color: #c4714a;
+}
+.db-modal-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.db-modal-empty-text {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #b8927e;
+}
+.db-modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #F97447;
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 100px;
+    background: #FDE8DC;
+    border: 1.5px solid rgba(249,116,71,0.2);
+    transition: background 0.15s, transform 0.15s;
+}
+.db-modal-link:hover {
+    background: #F97447;
+    color: #fff;
+    transform: translateY(-2px);
+}

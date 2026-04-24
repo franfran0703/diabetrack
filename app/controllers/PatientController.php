@@ -11,7 +11,7 @@ class PatientController extends Controller {
         }
     }
 
-    public function dashboard() {
+      public function dashboard() {
     $bloodSugarModel = $this->model('BloodSugarModel');
     $medModel        = $this->model('MedicationModel');
     $mealModel       = $this->model('MealModel');
@@ -21,29 +21,42 @@ class PatientController extends Controller {
     $latest = $bloodSugarModel->getLatest($pid);
 
     // Blood sugar
-    $latestBloodSugar       = $latest['reading']      ?? null;
-    $latestBloodSugarStatus = $latest['status']        ?? null;
+    $latestBloodSugar       = $latest['reading']  ?? ($latest['blood_sugar_level'] ?? null);
+    $latestBloodSugarStatus = $latest['status']   ?? null;
+    $last7                  = $bloodSugarModel->getLast7($pid);
 
-    // Medications logged today
-    $todayStats = $medModel->getTodayStats($pid);
-    $medsToday  = $todayStats['total'] ?? null;
+    // Medications
+    $medications = $medModel->getMedications($pid);
+    $todayLogs   = $medModel->getTodayLogs($pid);
+    $todayStats  = $medModel->getTodayStats($pid);
+    $loggedToday = [];
+    foreach ($medications as $med) {
+        $loggedToday[$med['id']] = $medModel->alreadyLoggedToday($med['id'], $pid);
+    }
 
-    // Carbs today
+    // Meals
     $todayTotals = $mealModel->getTodayTotals($pid);
-    $carbsToday  = ($todayTotals['total_meals'] > 0)  ? $todayTotals['total_carbs']   : null;
 
-    // Activity minutes today
+    // Activity
     $activityTotals = $activityModel->getTodayTotals($pid);
-    $activityToday  = ($activityTotals['total_activities'] > 0)  ? $activityTotals['total_minutes']   : null;
+    $last7Days      = $activityModel->getLast7Days($pid);
+    $activityToday  = ($activityTotals['total_activities'] ?? 0) > 0
+                        ? $activityTotals['total_minutes']
+                        : null;
 
     $this->view('patient/dashboard_view', [
         'name'                   => $_SESSION['user_name'],
         'latest'                 => $latest,
         'latestBloodSugar'       => $latestBloodSugar,
         'latestBloodSugarStatus' => $latestBloodSugarStatus,
-        'medsToday'              => $medsToday,
-        'carbsToday'             => $carbsToday,
+        'last7'                  => $last7,
+        'medications'            => $medications,
+        'todayLogs'              => $todayLogs,
+        'todayStats'             => $todayStats,
+        'loggedToday'            => $loggedToday,
+        'todayTotals'            => $todayTotals,
         'activityToday'          => $activityToday,
+        'last7Days'              => $last7Days,
     ]);
 }
 
@@ -247,6 +260,63 @@ public function appointments() {
         'counts'   => $counts,
         'error'    => $error,
         'success'  => $success,
+    ]);
+}
+
+public function education() {
+    $this->view('patient/education_view', [
+        'name' => $_SESSION['user_name'],
+    ]);
+}
+
+public function nearby() {
+    $this->view('patient/nearby_view', [
+        'name' => $_SESSION['user_name'],
+    ]);
+}
+
+public function reports() {
+    $bloodSugarModel = $this->model('BloodSugarModel');
+    $medModel        = $this->model('MedicationModel');
+    $mealModel       = $this->model('MealModel');
+    $activityModel   = $this->model('ActivityModel');
+    $apptModel       = $this->model('AppointmentModel');
+    $pid             = $_SESSION['user_id'];
+
+    $logs       = $bloodSugarModel->getLogs($pid);
+    $latestBS   = $bloodSugarModel->getLatest($pid);
+
+    // 7-day average
+    $last7 = $bloodSugarModel->getLast7($pid);
+    $bsAvg = null;
+    if (!empty($last7)) {
+        $bsAvg = round(array_sum(array_column($last7, 'reading')) / count($last7));
+    }
+
+    $medications = $medModel->getMedications($pid);
+    $todayStats  = $medModel->getTodayStats($pid);
+    $allLogs     = $medModel->getAllLogs($pid);
+
+    $todayTotals    = $mealModel->getTodayTotals($pid);
+    $actTodayTotals = $activityModel->getTodayTotals($pid);
+    $weekTotals     = $activityModel->getWeekTotals($pid);
+
+    $appts = $apptModel->getAll($pid);
+
+    $this->view('patient/reports_view', [
+        'name'          => $_SESSION['user_name'],
+        'logs'          => $logs,
+        'bsLogs'        => $logs,
+        'latestBS'      => $latestBS,
+        'bsAvg'         => $bsAvg,
+        'bsCount'       => count($logs),
+        'medications'   => $medications,
+        'todayStats'    => $todayStats,
+        'allLogs'       => $allLogs,
+        'todayTotals'   => $todayTotals,
+        'weekTotals'    => $weekTotals,
+        'activityTodayMins' => $actTodayTotals['total_minutes'] ?? 0,
+        'appts'         => $appts,
     ]);
 }
 
