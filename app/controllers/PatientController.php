@@ -12,14 +12,40 @@ class PatientController extends Controller {
     }
 
     public function dashboard() {
-        $bloodSugarModel = $this->model('BloodSugarModel');
-        $latest = $bloodSugarModel->getLatest($_SESSION['user_id']);
+    $bloodSugarModel = $this->model('BloodSugarModel');
+    $medModel        = $this->model('MedicationModel');
+    $mealModel       = $this->model('MealModel');
+    $activityModel   = $this->model('ActivityModel');
 
-        $this->view('patient/dashboard_view', [
-            'name'   => $_SESSION['user_name'],
-            'latest' => $latest
-        ]);
-    }
+    $pid    = $_SESSION['user_id'];
+    $latest = $bloodSugarModel->getLatest($pid);
+
+    // Blood sugar
+    $latestBloodSugar       = $latest['reading']      ?? null;
+    $latestBloodSugarStatus = $latest['status']        ?? null;
+
+    // Medications logged today
+    $todayStats = $medModel->getTodayStats($pid);
+    $medsToday  = $todayStats['total'] ?? null;
+
+    // Carbs today
+    $todayTotals = $mealModel->getTodayTotals($pid);
+    $carbsToday  = ($todayTotals['total_meals'] > 0)  ? $todayTotals['total_carbs']   : null;
+
+    // Activity minutes today
+    $activityTotals = $activityModel->getTodayTotals($pid);
+    $activityToday  = ($activityTotals['total_activities'] > 0)  ? $activityTotals['total_minutes']   : null;
+
+    $this->view('patient/dashboard_view', [
+        'name'                   => $_SESSION['user_name'],
+        'latest'                 => $latest,
+        'latestBloodSugar'       => $latestBloodSugar,
+        'latestBloodSugarStatus' => $latestBloodSugarStatus,
+        'medsToday'              => $medsToday,
+        'carbsToday'             => $carbsToday,
+        'activityToday'          => $activityToday,
+    ]);
+}
 
     public function bloodsugar() {
         $bloodSugarModel = $this->model('BloodSugarModel');

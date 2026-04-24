@@ -1,0 +1,369 @@
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+
+body {
+    background-color: #1C0F0A;
+    background-image:
+        repeating-linear-gradient(0deg,   rgba(249,116,71,0.07) 0px, rgba(249,116,71,0.07) 1px, transparent 1px, transparent 24px),
+        repeating-linear-gradient(90deg,  rgba(249,116,71,0.07) 0px, rgba(249,116,71,0.07) 1px, transparent 1px, transparent 24px);
+    font-family: 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ───────────────────────────────────────────── */
+.cgr-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 20px;
+}
+.cgr-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.cgr-eyebrow::before {
+    content: '';
+    width: 24px; height: 2px;
+    background: rgba(255,180,130,0.4);
+    border-radius: 2px;
+    display: inline-block;
+}
+.cgr-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    letter-spacing: -1.5px;
+    color: #ffe8d6;
+    margin: 0;
+    line-height: 1;
+}
+.cgr-title span {
+    background: linear-gradient(120deg, #fbab6e, #fdd5be);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.cgr-patient-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 100px;
+    padding: 8px 16px 8px 8px;
+    backdrop-filter: blur(8px);
+}
+.cgr-patient-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900; font-size: 0.85rem; color: #fff;
+}
+.cgr-patient-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.82rem; font-weight: 700; color: #ffe8d6;
+}
+.cgr-patient-label {
+    font-size: 0.65rem;
+    color: rgba(255,200,160,0.45);
+    font-weight: 600;
+}
+
+/* ── RANGE SELECTOR ───────────────────────────────────── */
+.cgr-range-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.cgr-range-btn {
+    padding: 9px 20px;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    border: 1.5px solid rgba(249,116,71,0.2);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,200,160,0.6);
+    backdrop-filter: blur(8px);
+}
+.cgr-range-btn:hover {
+    background: rgba(249,116,71,0.12);
+    color: #fbab6e;
+    border-color: rgba(249,116,71,0.3);
+}
+.cgr-range-btn.active {
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(249,116,71,0.4);
+}
+
+/* Custom date form */
+.cgr-custom-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(249,116,71,0.15);
+    border-radius: 100px;
+    padding: 6px 16px;
+    backdrop-filter: blur(8px);
+}
+.cgr-date-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255,200,160,0.7);
+    cursor: pointer;
+}
+.cgr-date-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.6) sepia(1) saturate(2) hue-rotate(330deg);
+    cursor: pointer;
+}
+.cgr-custom-sep {
+    font-size: 0.75rem;
+    color: rgba(255,180,130,0.4);
+    font-weight: 600;
+}
+.cgr-custom-submit {
+    padding: 5px 14px;
+    background: rgba(249,116,71,0.2);
+    border: 1.5px solid rgba(249,116,71,0.3);
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #fbab6e;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.cgr-custom-submit:hover {
+    background: rgba(249,116,71,0.35);
+}
+
+/* Download button */
+.cgr-download-btn {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, #F97447, #fbab6e);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 6px 20px rgba(249,116,71,0.4);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.cgr-download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(249,116,71,0.52);
+    color: #fff;
+}
+
+/* ── STATS ROW ────────────────────────────────────────── */
+.cgr-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+.cgr-stat {
+    border-radius: 20px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+.cgr-stat:hover { transform: translateY(-2px); }
+
+.cgr-stat.peach {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be);
+    border: 1.5px solid rgba(249,116,71,0.2);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+}
+.cgr-stat.glass {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.cgr-stat.glass-warm {
+    background: rgba(249,116,71,0.10);
+    border: 1.5px solid rgba(249,116,71,0.18);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.cgr-stat.glass-green {
+    background: rgba(34,197,94,0.08);
+    border: 1.5px solid rgba(34,197,94,0.18);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.cgr-stat::after {
+    content: attr(data-illus);
+    position: absolute;
+    right: -10px; top: -10px;
+    font-size: 70px; opacity: 0.10;
+    transform: rotate(15deg);
+    pointer-events: none;
+}
+
+.cgr-stat-icon {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+}
+.peach     .cgr-stat-icon { background: rgba(249,116,71,0.15); }
+.glass     .cgr-stat-icon { background: rgba(255,255,255,0.10); }
+.glass-warm .cgr-stat-icon { background: rgba(249,116,71,0.15); }
+.glass-green .cgr-stat-icon { background: rgba(34,197,94,0.12); }
+
+.cgr-stat-val {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 1.8rem;
+    line-height: 1;
+    letter-spacing: -1.5px;
+}
+.peach      .cgr-stat-val { color: #c04a20; }
+.glass      .cgr-stat-val { color: #ffe8d6; }
+.glass-warm .cgr-stat-val { color: #fbab6e; }
+.glass-green .cgr-stat-val { color: #86efac; }
+
+.cgr-stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+.peach      .cgr-stat-label { color: #b8927e; }
+.glass      .cgr-stat-label { color: rgba(255,200,160,0.45); }
+.glass-warm .cgr-stat-label { color: rgba(255,180,130,0.5); }
+.glass-green .cgr-stat-label { color: rgba(134,239,172,0.55); }
+
+.cgr-stat-sub {
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin-top: 2px;
+}
+.peach      .cgr-stat-sub { color: #d4917a; }
+.glass      .cgr-stat-sub { color: rgba(255,200,160,0.35); }
+.glass-warm .cgr-stat-sub { color: rgba(255,180,130,0.4); }
+.glass-green .cgr-stat-sub { color: rgba(134,239,172,0.4); }
+
+/* ── SECTION PANELS ───────────────────────────────────── */
+.cgr-section {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 24px 28px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    margin-bottom: 14px;
+}
+.cgr-section-label {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,180,130,0.5);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cgr-section-label::after {
+    content: '';
+    flex: 1; height: 1px;
+    background: rgba(255,255,255,0.06);
+}
+
+/* Table */
+.cgr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.82rem;
+}
+.cgr-table th {
+    color: rgba(255,180,130,0.45);
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 0 14px 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.cgr-table td {
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+    color: rgba(255,200,160,0.7);
+}
+.cgr-table tr:last-child td { border-bottom: none; }
+.cgr-table tr:hover td { background: rgba(255,255,255,0.02); }
+.cgr-table-name { font-weight: 700; color: #ffe8d6; }
+.cgr-table-val  { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; color: #fbab6e; }
+
+/* Status pill */
+.cgr-pill {
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 100px;
+}
+.cgr-pill.normal  { background: rgba(34,197,94,0.12);  color: #86efac; }
+.cgr-pill.high    { background: rgba(220,38,38,0.15);  color: #fca5a5; }
+.cgr-pill.low     { background: rgba(245,158,11,0.15); color: #fcd34d; }
+.cgr-pill.taken   { background: rgba(34,197,94,0.12);  color: #86efac; }
+.cgr-pill.missed  { background: rgba(220,38,38,0.12);  color: #fca5a5; }
+.cgr-pill.light   { background: rgba(34,197,94,0.10);  color: #86efac; }
+.cgr-pill.moderate{ background: rgba(249,116,71,0.12); color: #fbab6e; }
+.cgr-pill.intense { background: rgba(220,38,38,0.12);  color: #fca5a5; }
+
+/* Empty state */
+.cgr-empty {
+    text-align: center;
+    padding: 32px 0;
+    color: rgba(255,200,160,0.35);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.cgr-header    { animation: fadeUp 0.5s ease both 0.05s; }
+.cgr-range-bar { animation: fadeUp 0.5s ease both 0.10s; }
+.cgr-stats-row { animation: fadeUp 0.5s ease both 0.16s; }
+.cgr-section   { animation: fadeUp 0.5s ease both 0.22s; }
