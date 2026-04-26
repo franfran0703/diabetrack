@@ -20,10 +20,12 @@
     <!-- LEFT — Form -->
     <div class="auth-left">
         <div>
-            <a href="/diabetrack/public/" class="auth-brand">
-                <div class="auth-brand-pill">🩺</div>
-                <span class="auth-brand-name">DiabeTrack</span>
-            </a>
+       <a href="/diabetrack/public/" class="auth-brand">
+    <div class="auth-brand-pill">
+        <img src="/diabetrack/public/assets/img/diabetrack-icon.png" style="width:32px;height:32px;object-fit:contain;">
+    </div>
+    <span class="auth-brand-name">DiabeTrack</span>
+</a>
 
             <div class="auth-heading">Start your <span>journey.</span></div>
             <div class="auth-subheading">Create your free DiabeTrack account today.</div>

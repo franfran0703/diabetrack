@@ -90,10 +90,9 @@ body::before {
 .brand-pill {
     width: 30px; height: 30px;
     border-radius: 9px;
-    background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    background: transparent;
+    box-shadow: none;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.85rem;
-    box-shadow: 0 3px 10px var(--coral-glow);
 }
 .brand-name {
     font-family: 'Nunito', sans-serif;

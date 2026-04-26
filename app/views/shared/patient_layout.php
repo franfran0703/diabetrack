@@ -6,9 +6,20 @@
     <title>DiabeTrack — <?= $pageTitle ?? 'Dashboard' ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="/diabetrack/public/assets/css/patient_layout.css?=1.0" rel="stylesheet">
+    <link href="/diabetrack/public/assets/css/patient_layout.css?<?= time() ?>" rel="stylesheet">
 </head>
 <body>
+
+<?php
+// Always fetch pending caregiver request count for the nav badge
+if (empty($pendingCaregiverRequests)) {
+    require_once __DIR__ . '/../../../config/Database.php';
+    $__db = (new Database())->connect();
+    $__s = $__db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE patient_id = :pid AND status = 'pending'");
+    $__s->execute(['pid' => $_SESSION['user_id']]);
+    $pendingCaregiverRequests = $__s->fetchColumn();
+}
+?>
 
 <div class="page-wrap">
 
@@ -18,10 +29,13 @@
         <!-- Floating Nav Pill -->
         <div class="floatnav">
 
-            <div class="brand">
-                <div class="brand-pill">🩺</div>
+        <div class="brand">
+                <div class="brand-pill">
+                    <img src="/diabetrack/public/assets/img/diabetrack-icon.png" 
+                         alt="" style="width:22px;height:22px;object-fit:contain;">
+                </div>
                 <span class="brand-name">DiabeTrack</span>
-            </div>
+            </div>  
 
             <div class="nav-item">
                 <a href="/diabetrack/public/patient/dashboard"
@@ -105,6 +119,26 @@
                             <div>
                                 <div class="drop-title">Nearby Services</div>
                                 <div class="drop-desc">Clinics &amp; pharmacies near you</div>
+                            </div>
+                            <a class="drop-row" href="/diabetrack/public/patient/caregiverRequests">
+                            <div class="drop-icon" style="position:relative;">
+                                <i class="bi bi-person-check-fill"></i>
+                                <?php if (!empty($pendingCaregiverRequests) && $pendingCaregiverRequests > 0): ?>
+                                <span style="position:absolute;top:-4px;right:-4px;background:#f97447;color:#fff;font-size:0.6rem;font-weight:700;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;">
+                                    <?= $pendingCaregiverRequests ?>
+                                </span>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <div class="drop-title">
+                                    Caregivers
+                                    <?php if (!empty($pendingCaregiverRequests) && $pendingCaregiverRequests > 0): ?>
+                                    <span style="background:#f97447;color:#fff;font-size:0.65rem;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:6px;">
+                                        <?= $pendingCaregiverRequests ?> new
+                                    </span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="drop-desc">Manage who monitors your data</div>
                             </div>
                         </a>
                     </div>
