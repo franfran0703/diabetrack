@@ -81,9 +81,9 @@ $actDash    = round($actCircum * ($actPct / 100), 2);
         <p class="db-greeting-sub">Here's your health summary for today.</p>
         <div class="db-date-pill">📅 <?= $todayLabel ?></div>
     </div>
-    <div class="db-banner-right">
-        <div class="db-banner-illus">🩺</div>
-        <div class="db-banner-status"><?= $bsEmoji ?> <?= $bsStatus ?></div>
+    <div class="db-banner-illus">
+    <img src="/diabetrack/public/assets/img/diabetrack-icon.png" 
+    style="width:90px;height:auto;object-fit:contain;opacity:0.85;">
     </div>
 </div>
 

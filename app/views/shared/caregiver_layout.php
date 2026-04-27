@@ -16,23 +16,27 @@
 
         <!-- Floating Nav Pill -->
         <div class="floatnav">
+
             <div class="brand">
-                <div class="brand-pill">🩺</div>
+                <div class="brand-pill">
+                    <img src="/diabetrack/public/assets/img/diabetrack-icon.png" 
+                         alt="" style="width:22px;height:22px;object-fit:contain;">
+                </div>
                 <span class="brand-name">DiabeTrack</span>
             </div>
 
-            <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/dashboard"
-                class="nav-btn <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-grid-fill"></i></span>
-                    Dashboard
-                </a>
-            </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/patients"
                 class="nav-btn <?= ($activeMenu ?? '') === 'patients' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
                     My Patients
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="/diabetrack/public/caregiver/dashboard"
+                class="nav-btn <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
+                    <span class="nav-icon"><i class="bi bi-grid-fill"></i></span>
+                    Dashboard
                 </a>
             </div>
             <div class="nav-item">
@@ -49,7 +53,6 @@
                     Medication
                 </a>
             </div>
-
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/meals"
                 class="nav-btn <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
@@ -57,7 +60,6 @@
                     Meals
                 </a>
             </div>
-            
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/alerts"
                 class="nav-btn <?= ($activeMenu ?? '') === 'alerts' ? 'active' : '' ?>">
@@ -72,7 +74,9 @@
                     Reports
                 </a>
             </div>
+
         </div>
+        <!-- end floatnav -->
 
         <!-- User Chip -->
         <div class="user-chip">
