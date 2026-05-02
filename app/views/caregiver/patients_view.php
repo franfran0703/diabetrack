@@ -63,8 +63,9 @@ ob_start();
 
             <!-- Actions -->
             <div class="cgp-patient-actions">
-                <a href="/diabetrack/public/caregiver/bloodsugar" class="cgp-btn-view">
-                    🩸 View Logs →
+                <a href="/diabetrack/public/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?php echo urlencode('/diabetrack/public/caregiver/dashboard') ?>" class="cgp-btn-view">
+    🩸 View Logs →
+</a>
                 </a>
                 <a href="/diabetrack/public/caregiver/patients?unlink=<?= $p['id'] ?>"
                    onclick="return confirm('Unlink <?= htmlspecialchars($p['name']) ?>? This cannot be undone.')"

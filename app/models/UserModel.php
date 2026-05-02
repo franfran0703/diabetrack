@@ -32,4 +32,19 @@ class UserModel extends Model {
         $stmt->execute(['id' => $id]);
         return $stmt->fetch();
     }
+
+    // Update name and email
+    public function updateInfo($id, $name, $email) {
+        $stmt = $this->db->prepare("
+            UPDATE users SET name = :name, email = :email WHERE id = :id
+        ");
+        return $stmt->execute(['name' => $name, 'email' => $email, 'id' => $id]);
+    }
+
+    // Update password (hashed)
+    public function updatePassword($id, $newPassword) {
+        $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+        $stmt = $this->db->prepare("UPDATE users SET password = :password WHERE id = :id");
+        return $stmt->execute(['password' => $hashed, 'id' => $id]);
+    }
 }

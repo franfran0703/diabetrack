@@ -1,62 +1,68 @@
 @import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
 @import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
 
+/* ── BASE — matches activity.css, education.css, reports.css ── */
 body {
-    background-color: #1C0F0A;
-    background-image:
-        repeating-linear-gradient(0deg,   rgba(249,116,71,0.07) 0px, rgba(249,116,71,0.07) 1px, transparent 1px, transparent 24px),
-        repeating-linear-gradient(90deg,  rgba(249,116,71,0.07) 0px, rgba(249,116,71,0.07) 1px, transparent 1px, transparent 24px);
     font-family: 'DM Sans', sans-serif;
+    position: relative;
+    min-height: 100vh;
+    background-color: #FFF8F5;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(249,116,71,0.08) 0px,
+            rgba(249,116,71,0.08) 1px,
+            transparent 1px,
+            transparent 24px
+        );
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── PAGE HEADER ──────────────────────────────────────── */
+/* ── HEADER ───────────────────────────────────────────── */
 .appt-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
     margin-bottom: 28px;
-    gap: 20px;
 }
 .appt-eyebrow {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 3px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(255,180,130,0.5);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.appt-eyebrow::before {
-    content: '';
-    width: 24px; height: 2px;
-    background: rgba(255,180,130,0.4);
-    border-radius: 2px;
-    display: inline-block;
+    color: #d4917a;
+    margin-bottom: 6px;
 }
 .appt-title {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 2.2rem;
-    letter-spacing: -1.5px;
-    color: #ffe8d6;
-    margin: 0;
-    line-height: 1;
+    font-size: 2.4rem;
+    color: #2d1a0e;
+    margin: 0 0 6px;
+    line-height: 1.1;
+    letter-spacing: -1px;
 }
 .appt-title span {
-    background: linear-gradient(120deg, #fbab6e, #fdd5be);
+    background: linear-gradient(120deg, #c04a20 0%, #F97447 45%, #fbab6e 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+.appt-sub {
+    font-size: 0.88rem;
+    color: #a0714f;
+    margin: 0;
+    font-weight: 500;
 }
 
 /* ── ALERTS ───────────────────────────────────────────── */
 .appt-alert {
     border-radius: 16px;
     padding: 14px 20px;
-    font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 700;
     font-size: 0.88rem;
     margin-bottom: 24px;
@@ -65,45 +71,36 @@ body {
     gap: 10px;
 }
 .appt-alert.success {
-    background: rgba(34,197,94,0.10);
-    border: 1.5px solid rgba(34,197,94,0.22);
-    color: #86efac;
+    background: rgba(52,211,153,0.10);
+    border: 1.5px solid rgba(52,211,153,0.25);
+    color: #0f7a45;
 }
 .appt-alert.error {
-    background: rgba(220,38,38,0.10);
-    border: 1.5px solid rgba(220,38,38,0.22);
-    color: #fca5a5;
+    background: rgba(220,38,38,0.08);
+    border: 1.5px solid rgba(220,38,38,0.2);
+    color: #b91c1c;
 }
 
-/* ── STAT PILLS ROW ───────────────────────────────────── */
+/* ── STAT PILLS ───────────────────────────────────────── */
 .appt-pills {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
 }
 .appt-pill {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 18px;
+    padding: 8px 20px;
     border-radius: 100px;
-    backdrop-filter: blur(8px);
     white-space: nowrap;
 }
-.appt-pill.upcoming {
-    background: rgba(249,116,71,0.12);
-    border: 1.5px solid rgba(249,116,71,0.22);
-}
-.appt-pill.completed {
-    background: rgba(34,197,94,0.10);
-    border: 1.5px solid rgba(34,197,94,0.2);
-}
-.appt-pill.cancelled {
-    background: rgba(220,38,38,0.10);
-    border: 1.5px solid rgba(220,38,38,0.2);
-}
+.appt-pill.upcoming  { background: rgba(249,116,71,0.10); border: 1.5px solid rgba(249,116,71,0.22); }
+.appt-pill.completed { background: rgba(52,211,153,0.09); border: 1.5px solid rgba(52,211,153,0.22); }
+.appt-pill.cancelled { background: rgba(220,38,38,0.08);  border: 1.5px solid rgba(220,38,38,0.18); }
+
 .appt-pill-val {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
@@ -111,86 +108,84 @@ body {
     line-height: 1;
     letter-spacing: -0.5px;
 }
-.upcoming  .appt-pill-val { color: #fbab6e; }
-.completed .appt-pill-val { color: #86efac; }
-.cancelled .appt-pill-val { color: #fca5a5; }
+.upcoming  .appt-pill-val { color: #c04a20; }
+.completed .appt-pill-val { color: #0f7a45; }
+.cancelled .appt-pill-val { color: #b91c1c; }
+
 .appt-pill-label {
     font-size: 0.72rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-.upcoming  .appt-pill-label { color: rgba(255,180,130,0.55); }
-.completed .appt-pill-label { color: rgba(134,239,172,0.55); }
-.cancelled .appt-pill-label { color: rgba(252,165,165,0.55); }
+.upcoming  .appt-pill-label { color: #d4917a; }
+.completed .appt-pill-label { color: #5aad88; }
+.cancelled .appt-pill-label { color: #d48080; }
 
-/* ── MAIN SPLIT LAYOUT ────────────────────────────────── */
+/* ── SPLIT LAYOUT ─────────────────────────────────────── */
 .appt-split {
     display: grid;
-    grid-template-columns: 420px 1fr;
-    gap: 16px;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
     align-items: start;
 }
 
 /* ── LEFT — CALENDAR ──────────────────────────────────── */
 .appt-calendar-panel {
-    background: linear-gradient(155deg, #FDE8DC, #fdd5be, #fcc8ab);
-    border: 1.5px solid rgba(249,116,71,0.22);
+    background: linear-gradient(135deg, #2d1a0e 0%, #5a2d18 60%, #8b3a1a 100%);
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 28px;
     padding: 28px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 2px 8px rgba(249,116,71,0.15);
+    box-shadow: 0 10px 36px rgba(249,116,71,0.30);
     position: sticky;
     top: 20px;
 }
 
-/* Calendar nav */
 .cal-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
 }
 .cal-month {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 1.1rem;
-    color: #1a0800;
-    letter-spacing: -0.5px;
+    font-size: 1.05rem;
+    color: #fff;
+    letter-spacing: -0.3px;
 }
 .cal-nav-btn {
     width: 34px; height: 34px;
     border-radius: 10px;
-    background: rgba(249,116,71,0.12);
-    border: 1.5px solid rgba(249,116,71,0.2);
+    background: rgba(255,255,255,0.18);
+    border: 1.5px solid rgba(255,255,255,0.25);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.9rem;
-    color: #c04a20;
-    transition: all 0.15s;
+    font-size: 0.95rem;
+    color: #fff;
     font-weight: 800;
+    transition: all 0.15s;
 }
 .cal-nav-btn:hover {
-    background: rgba(249,116,71,0.25);
+    background: rgba(255,255,255,0.30);
     transform: scale(1.08);
 }
 
-/* Weekday headers */
 .cal-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 .cal-weekday {
     text-align: center;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 800;
-    color: #c4714a;
+    color: rgba(255,255,255,0.6);
     letter-spacing: 1.5px;
     text-transform: uppercase;
     padding: 4px 0;
 }
 
-/* Day grid */
 .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -198,7 +193,7 @@ body {
 }
 .cal-day {
     aspect-ratio: 1;
-    border-radius: 10px;
+    border-radius: 9px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -208,106 +203,94 @@ body {
     position: relative;
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 700;
-    font-size: 0.85rem;
-    color: #3a1a08;
-    gap: 2px;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.8);
 }
-.cal-day:hover {
-    background: rgba(249,116,71,0.12);
-    color: #c04a20;
-}
-.cal-day.empty {
-    cursor: default;
-    opacity: 0;
-    pointer-events: none;
-}
+.cal-day:hover        { background: rgba(255,255,255,0.18); color: #fff; }
+.cal-day.empty        { cursor: default; opacity: 0; pointer-events: none; }
+.cal-day.past         { opacity: 0.45; }
 .cal-day.today {
-    background: linear-gradient(135deg, #F97447, #fbab6e);
+    background: rgba(255,255,255,0.28);
     color: #fff;
-    box-shadow: 0 4px 12px rgba(249,116,71,0.4);
     font-weight: 900;
+    border: 1.5px solid rgba(255,255,255,0.5);
 }
-.cal-day.today:hover {
-    background: linear-gradient(135deg, #e8622a, #F97447);
-    color: #fff;
+.cal-day.selected {
+    background: #fff;
+    color: #c04a20;
+    font-weight: 900;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
 }
+.cal-day.selected:hover { background: #fff; color: #c04a20; }
 .cal-day.has-appt::after {
     content: '';
-    width: 5px; height: 5px;
+    width: 4px; height: 4px;
     border-radius: 50%;
-    background: #c04a20;
+    background: rgba(255,255,255,0.9);
     position: absolute;
-    bottom: 4px;
+    bottom: 3px;
 }
-.cal-day.today.has-appt::after { background: rgba(255,255,255,0.8); }
-.cal-day.selected {
-    background: rgba(192,74,32,0.15);
-    color: #c04a20;
-    border: 1.5px solid rgba(192,74,32,0.3);
-    font-weight: 900;
-}
-.cal-day.other-month {
-    opacity: 0.35;
-}
-.cal-day.past {
-    opacity: 0.5;
-}
+.cal-day.selected.has-appt::after { background: #F97447; }
 
-/* Selected date label */
 .cal-selected-label {
-    margin-top: 20px;
+    margin-top: 18px;
     padding-top: 16px;
-    border-top: 1.5px solid rgba(249,116,71,0.12);
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.72rem;
+    border-top: 1.5px solid rgba(255,255,255,0.18);
+    font-size: 0.6rem;
     font-weight: 800;
-    color: #c4714a;
-    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 2px;
     text-transform: uppercase;
     text-align: center;
 }
 .cal-selected-date {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 1.1rem;
-    color: #1a0800;
+    font-size: 0.95rem;
+    color: #fff;
     text-align: center;
-    margin-top: 4px;
-    letter-spacing: -0.3px;
+    margin-top: 5px;
+    letter-spacing: -0.2px;
 }
 
-/* ── RIGHT — APPOINTMENT LIST ─────────────────────────── */
+/* ── RIGHT COLUMN ─────────────────────────────────────── */
 .appt-right {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
 
-/* Section label */
 .appt-section-label {
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-    color: rgba(255,180,130,0.5);
-    margin-bottom: 14px;
+    color: #c4714a;
+    margin-bottom: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 .appt-section-label::after {
     content: '';
-    flex: 1; height: 1px;
-    background: rgba(255,255,255,0.06);
+    flex: 1;
+    height: 1.5px;
+    background: rgba(249,116,71,0.12);
+    border-radius: 1px;
 }
 
+/* Next appointment hero card */
 .appt-next-card {
-    background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
-    border: 1.5px solid rgba(249,116,71,0.22);
+    background: rgba(255,255,255,0.72);
+    border: 1.5px solid rgba(249,116,71,0.14);
     border-radius: 24px;
-    padding: 24px 28px;
-    box-shadow: 0 10px 36px rgba(0,0,0,0.28);
+    padding: 24px 26px;
+    box-shadow:
+        0 4px 6px rgba(249,116,71,0.04),
+        0 10px 40px rgba(249,116,71,0.10),
+        0 1px 0 rgba(255,255,255,0.9) inset;
+    backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
     gap: 20px;
@@ -321,24 +304,25 @@ body {
     position: absolute;
     right: -16px; bottom: -16px;
     font-size: 100px;
-    opacity: 0.07;
+    opacity: 0.04;
     transform: rotate(-10deg);
     pointer-events: none;
 }
+
 .appt-next-date-box {
-    background: rgba(249,116,71,0.15);
-    border: 1.5px solid rgba(249,116,71,0.22);
+    background: linear-gradient(135deg, #F97447, #fbab6e);
     border-radius: 16px;
     padding: 12px 16px;
     text-align: center;
     flex-shrink: 0;
     min-width: 64px;
     position: relative; z-index: 1;
+    box-shadow: 0 6px 18px rgba(249,116,71,0.35);
 }
 .appt-next-month {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 800;
-    color: #c4714a;
+    color: rgba(255,255,255,0.75);
     letter-spacing: 1.5px;
     text-transform: uppercase;
 }
@@ -346,28 +330,28 @@ body {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
     font-size: 2rem;
-    color: #c04a20;
+    color: #fff;
     line-height: 1;
     letter-spacing: -1.5px;
 }
 .appt-next-weekday {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 700;
-    color: #b8927e;
+    color: rgba(255,255,255,0.7);
 }
 .appt-next-info { flex: 1; position: relative; z-index: 1; }
 .appt-next-label {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 800;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #c4714a;
-    margin-bottom: 6px;
+    color: #d4917a;
+    margin-bottom: 5px;
 }
 .appt-next-doctor {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     color: #1a0800;
     letter-spacing: -0.5px;
     margin-bottom: 4px;
@@ -375,7 +359,7 @@ body {
 .appt-next-time {
     font-family: 'Instrument Serif', serif;
     font-style: italic;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: #a0714f;
 }
 .appt-next-badge {
@@ -386,36 +370,39 @@ body {
     font-weight: 800;
     padding: 5px 14px;
     border-radius: 100px;
-    background: rgba(249,116,71,0.15);
+    background: rgba(249,116,71,0.10);
     color: #c04a20;
+    border: 1px solid rgba(249,116,71,0.18);
     margin-top: 10px;
 }
 
-/* Appointment list panel — glass -->
+/* Appointment list panel */
 .appt-list-panel {
-    background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.72);
+    border: 1.5px solid rgba(249,116,71,0.14);
     border-radius: 24px;
-    padding: 24px;
+    padding: 20px 24px;
     backdrop-filter: blur(12px);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+    box-shadow:
+        0 4px 6px rgba(249,116,71,0.04),
+        0 10px 40px rgba(249,116,71,0.10),
+        0 1px 0 rgba(255,255,255,0.9) inset;
 }
 
-/* Individual appointment row */
 .appt-row {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 13px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.08);
     transition: all 0.15s;
 }
 .appt-row:last-child { border-bottom: none; }
 .appt-row:hover { padding-left: 6px; }
 
 .appt-row-date {
-    background: rgba(249,116,71,0.12);
-    border: 1.5px solid rgba(249,116,71,0.18);
+    background: rgba(249,116,71,0.08);
+    border: 1.5px solid rgba(249,116,71,0.14);
     border-radius: 12px;
     padding: 8px 12px;
     text-align: center;
@@ -425,7 +412,7 @@ body {
 .appt-row-month {
     font-size: 0.58rem;
     font-weight: 800;
-    color: rgba(255,180,130,0.6);
+    color: #d4917a;
     letter-spacing: 1.5px;
     text-transform: uppercase;
 }
@@ -433,25 +420,23 @@ body {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 900;
     font-size: 1.3rem;
-    color: #fbab6e;
+    color: #c04a20;
     line-height: 1;
     letter-spacing: -1px;
 }
-
 .appt-row-info { flex: 1; }
 .appt-row-doctor {
     font-family: 'Cabinet Grotesk', sans-serif;
     font-weight: 800;
     font-size: 0.88rem;
-    color: #ffe8d6;
+    color: #1a0800;
     margin-bottom: 3px;
 }
 .appt-row-meta {
     font-size: 0.72rem;
-    color: rgba(255,200,160,0.45);
+    color: #b8927e;
     font-weight: 500;
 }
-
 .appt-row-actions {
     display: flex;
     align-items: center;
@@ -459,18 +444,16 @@ body {
     flex-shrink: 0;
 }
 
-/* Status badge */
 .appt-status {
     font-size: 0.65rem;
     font-weight: 800;
     padding: 4px 12px;
     border-radius: 100px;
 }
-.appt-status.upcoming  { background: rgba(249,116,71,0.15); color: #fbab6e; border: 1px solid rgba(249,116,71,0.22); }
-.appt-status.completed { background: rgba(34,197,94,0.12);  color: #86efac; border: 1px solid rgba(34,197,94,0.2); }
-.appt-status.cancelled { background: rgba(220,38,38,0.12);  color: #fca5a5; border: 1px solid rgba(220,38,38,0.18); }
+.appt-status.upcoming  { background: rgba(249,116,71,0.10); color: #c04a20; border: 1px solid rgba(249,116,71,0.2); }
+.appt-status.completed { background: rgba(52,211,153,0.10); color: #0f7a45; border: 1px solid rgba(52,211,153,0.2); }
+.appt-status.cancelled { background: rgba(220,38,38,0.08);  color: #b91c1c; border: 1px solid rgba(220,38,38,0.15); }
 
-/* Action buttons */
 .appt-btn {
     font-size: 0.65rem;
     font-weight: 800;
@@ -482,44 +465,35 @@ body {
     transition: all 0.15s;
     white-space: nowrap;
 }
-.appt-btn-done {
-    background: rgba(34,197,94,0.12);
-    color: #86efac;
-    border: 1.5px solid rgba(34,197,94,0.2);
-}
-.appt-btn-done:hover { background: rgba(34,197,94,0.22); }
-.appt-btn-cancel {
-    background: rgba(220,38,38,0.10);
-    color: #fca5a5;
-    border: 1.5px solid rgba(220,38,38,0.18);
-}
-.appt-btn-cancel:hover { background: rgba(220,38,38,0.22); }
+.appt-btn-done   { background: rgba(52,211,153,0.10); color: #0f7a45; border: 1.5px solid rgba(52,211,153,0.22); }
+.appt-btn-done:hover   { background: rgba(52,211,153,0.20); }
+.appt-btn-cancel { background: rgba(220,38,38,0.08);  color: #b91c1c; border: 1.5px solid rgba(220,38,38,0.18); }
+.appt-btn-cancel:hover { background: rgba(220,38,38,0.16); }
+
 .appt-del-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 30px; height: 30px;
     border-radius: 9px;
-    background: rgba(220,38,38,0.08);
-    border: 1.5px solid rgba(220,38,38,0.15);
-    color: #fca5a5;
+    background: rgba(220,38,38,0.07);
+    border: 1.5px solid rgba(220,38,38,0.14);
+    color: #c0392b;
     font-size: 0.85rem;
     cursor: pointer;
     text-decoration: none;
     transition: all 0.15s;
 }
-.appt-del-btn:hover {
-    background: rgba(220,38,38,0.2);
-    transform: scale(1.08);
-}
+.appt-del-btn:hover { background: rgba(220,38,38,0.16); transform: scale(1.08); }
 
-/* Tips panel — glass warm */
+/* Tips panel */
 .appt-tips-panel {
-    background: rgba(249,116,71,0.08);
-    border: 1.5px solid rgba(249,116,71,0.15);
+    background: rgba(255,255,255,0.65);
+    border: 1.5px solid rgba(249,116,71,0.12);
     border-radius: 22px;
     padding: 20px 22px;
     backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px rgba(249,116,71,0.03), 0 10px 36px rgba(249,116,71,0.08);
 }
 .appt-tips-title {
     font-family: 'Cabinet Grotesk', sans-serif;
@@ -527,78 +501,62 @@ body {
     font-weight: 800;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: rgba(255,180,130,0.5);
+    color: #c4714a;
     margin-bottom: 12px;
 }
 .appt-tip-item {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 7px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(249,116,71,0.07);
 }
 .appt-tip-item:last-child { border-bottom: none; }
 .appt-tip-icon {
-    width: 26px; height: 26px;
+    width: 28px; height: 28px;
     border-radius: 8px;
-    background: rgba(249,116,71,0.12);
+    background: rgba(249,116,71,0.08);
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     flex-shrink: 0;
 }
 .appt-tip-text {
-    font-size: 0.75rem;
-    color: rgba(255,200,160,0.5);
+    font-size: 0.76rem;
+    color: #a0714f;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.5;
+    padding-top: 4px;
 }
 
-/* No next appointment state */
+/* No next / empty states */
 .appt-no-next {
-    background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.65);
+    border: 1.5px solid rgba(249,116,71,0.12);
     border-radius: 24px;
     padding: 40px;
     text-align: center;
     backdrop-filter: blur(8px);
 }
 .appt-no-next-icon { font-size: 2.5rem; margin-bottom: 12px; }
-.appt-no-next-title {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 0.95rem;
-    color: rgba(255,200,160,0.5);
-    margin-bottom: 6px;
-}
-.appt-no-next-sub {
-    font-size: 0.78rem;
-    color: rgba(255,200,160,0.3);
-}
+.appt-no-next-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem; color: #a0714f; margin-bottom: 6px; }
+.appt-no-next-sub   { font-size: 0.78rem; color: #c4917a; }
 
-/* Empty list state */
-.appt-empty {
-    text-align: center;
-    padding: 40px 0;
-}
-.appt-empty-icon { font-size: 2rem; margin-bottom: 10px; }
-.appt-empty-text {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: rgba(255,200,160,0.4);
-}
+.appt-empty         { text-align: center; padding: 40px 0; }
+.appt-empty-icon    { font-size: 2rem; margin-bottom: 10px; }
+.appt-empty-text    { font-family: 'Cabinet Grotesk', sans-serif; font-size: 0.88rem; font-weight: 700; color: #c4917a; }
 
 /* ── MODAL ────────────────────────────────────────────── */
 .appt-modal-overlay {
     display: none;
     position: fixed; inset: 0;
-    background: rgba(26,8,0,0.65);
+    background: rgba(26,8,0,0.45);
     z-index: 999;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(4px);
 }
 .appt-modal-overlay.open { display: flex; }
+
 .appt-modal {
     background: linear-gradient(155deg, #fff3ed, #fde8dc, #fcc8ab);
     border: 1.5px solid rgba(249,116,71,0.25);
@@ -606,7 +564,7 @@ body {
     padding: 32px;
     width: 100%;
     max-width: 460px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(249,116,71,0.22);
     position: relative;
     animation: modalIn 0.3s cubic-bezier(.34,1.56,.64,1);
 }
@@ -615,77 +573,52 @@ body {
     to   { opacity:1; transform:scale(1)    translateY(0); }
 }
 .appt-modal-close {
-    position: absolute;
-    top: 16px; right: 16px;
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: rgba(249,116,71,0.12);
-    border: none; cursor: pointer;
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(249,116,71,0.12); border: none; cursor: pointer;
     font-size: 1rem; color: #c4714a;
     display: flex; align-items: center; justify-content: center;
     transition: background 0.15s;
 }
 .appt-modal-close:hover { background: rgba(249,116,71,0.25); }
-.appt-modal-title {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900; font-size: 1.2rem;
-    color: #1a0800; margin-bottom: 4px;
-}
-.appt-modal-sub { font-size: 0.8rem; color: #b8927e; margin-bottom: 24px; }
-.appt-form-label {
-    display: block;
-    font-size: 0.72rem; font-weight: 800;
-    color: #b8927e; letter-spacing: 1px;
-    text-transform: uppercase; margin-bottom: 7px;
+.appt-modal-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 1.2rem; color: #1a0800; margin-bottom: 4px; }
+.appt-modal-sub   { font-size: 0.8rem; color: #b8927e; margin-bottom: 24px; }
+
+.appt-form-group  { margin-bottom: 16px; }
+.appt-form-label  {
+    display: block; font-size: 0.72rem; font-weight: 800;
+    color: #b8927e; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 7px;
 }
 .appt-form-input,
 .appt-form-textarea {
-    width: 100%;
-    background: rgba(255,255,255,0.7);
-    border: 1.5px solid rgba(249,116,71,0.22);
-    border-radius: 14px;
-    padding: 12px 15px;
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.88rem; color: #1a0800;
-    outline: none;
+    width: 100%; background: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(249,116,71,0.22); border-radius: 14px;
+    padding: 12px 15px; font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 0.88rem; color: #1a0800; outline: none; box-sizing: border-box;
     transition: border-color 0.15s, box-shadow 0.15s;
 }
 .appt-form-input:focus,
-.appt-form-textarea:focus {
-    border-color: #F97447;
-    box-shadow: 0 0 0 3px rgba(249,116,71,0.12);
-}
+.appt-form-textarea:focus { border-color: #F97447; box-shadow: 0 0 0 3px rgba(249,116,71,0.12); }
 .appt-form-input::placeholder,
 .appt-form-textarea::placeholder { color: rgba(184,146,126,0.5); }
 .appt-form-textarea { resize: none; }
-.appt-form-group { margin-bottom: 16px; }
+
 .appt-save-btn {
-    width: 100%;
-    padding: 14px; margin-top: 8px;
+    width: 100%; padding: 14px; margin-top: 8px;
     background: linear-gradient(135deg, #c04a20, #F97447, #fbab6e);
     color: #fff; border: none; border-radius: 100px;
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.9rem; font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 6px 22px rgba(249,116,71,0.42);
+    font-family: 'Cabinet Grotesk', sans-serif; font-size: 0.9rem; font-weight: 800;
+    cursor: pointer; box-shadow: 0 6px 22px rgba(249,116,71,0.42);
     transition: transform 0.15s, box-shadow 0.15s;
 }
-.appt-save-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(249,116,71,0.52);
-}
+.appt-save-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(249,116,71,0.52); }
 
 /* ── FAB ──────────────────────────────────────────────── */
 .patient-fab {
-    position: fixed;
-    bottom: 32px; right: 32px;
-    z-index: 998;
-    display: flex;
-    align-items: center;
-    gap: 0; overflow: hidden;
+    position: fixed; bottom: 32px; right: 32px; z-index: 998;
+    display: flex; align-items: center; gap: 0; overflow: hidden;
     background: linear-gradient(135deg, #c04a20, #F97447, #fbab6e);
-    border: none; border-radius: 100px;
-    padding: 16px 20px; cursor: pointer;
+    border: none; border-radius: 100px; padding: 16px 20px; cursor: pointer;
     box-shadow: 0 8px 32px rgba(249,116,71,0.50), 0 2px 8px rgba(249,116,71,0.30);
     transition: gap 0.35s cubic-bezier(.34,1.56,.64,1), padding 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s, transform 0.2s;
     animation: fabPulse 3s ease-in-out infinite;
@@ -694,31 +627,21 @@ body {
     0%, 100% { box-shadow: 0 8px 32px rgba(249,116,71,0.50), 0 2px 8px rgba(249,116,71,0.30); }
     50%       { box-shadow: 0 12px 40px rgba(249,116,71,0.65), 0 4px 16px rgba(249,116,71,0.40); }
 }
-.patient-fab:hover {
-    gap: 10px; padding: 16px 28px;
-    transform: translateY(-3px);
-    box-shadow: 0 14px 40px rgba(249,116,71,0.60);
-    animation: none;
-}
-.patient-fab-icon {
-    font-size: 1.4rem; line-height: 1; flex-shrink: 0;
-    transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
-}
+.patient-fab:hover { gap: 10px; padding: 16px 28px; transform: translateY(-3px); box-shadow: 0 14px 40px rgba(249,116,71,0.60); animation: none; }
+.patient-fab-icon  { font-size: 1.4rem; line-height: 1; flex-shrink: 0; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); }
 .patient-fab:hover .patient-fab-icon { transform: rotate(-15deg) scale(1.15); }
 .patient-fab-label {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 800; font-size: 0.88rem; color: #fff;
-    white-space: nowrap; max-width: 0; overflow: hidden; opacity: 0;
-    letter-spacing: -0.2px;
+    font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 0.88rem; color: #fff;
+    white-space: nowrap; max-width: 0; overflow: hidden; opacity: 0; letter-spacing: -0.2px;
     transition: max-width 0.35s cubic-bezier(.34,1.56,.64,1), opacity 0.25s ease;
 }
 .patient-fab:hover .patient-fab-label { max-width: 160px; opacity: 1; }
 
 /* ── ANIMATIONS ───────────────────────────────────────── */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-.appt-header  { animation: fadeUp 0.5s ease both 0.05s; }
-.appt-pills   { animation: fadeUp 0.5s ease both 0.10s; }
-.appt-split   { animation: fadeUp 0.5s ease both 0.16s; }
+.appt-header { animation: fadeSlideUp 0.5s ease both 0.05s; }
+.appt-pills  { animation: fadeSlideUp 0.5s ease both 0.10s; }
+.appt-split  { animation: fadeSlideUp 0.5s ease both 0.16s; }

@@ -6,6 +6,7 @@ ob_start();
 
 $hour         = (int) date('H');
 $timeGreeting = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+$firstName = ucfirst(strtolower(explode(' ', trim($name))[0]));
 $todayLabel   = date('l, F j, Y');
 
 // ── Blood sugar ──────────────────────────────────────────
@@ -76,7 +77,7 @@ $actDash    = round($actCircum * ($actPct / 100), 2);
     <div class="db-banner-left">
         <div class="db-greeting-eyebrow"><?= $timeGreeting ?></div>
         <h1 class="db-greeting-name">
-            Hello, <span class="name-highlight"><?= htmlspecialchars($name) ?></span>
+            Hello, <span class="name-highlight"><?= htmlspecialchars($firstName) ?></span>
         </h1>
         <p class="db-greeting-sub">Here's your health summary for today.</p>
         <div class="db-date-pill">📅 <?= $todayLabel ?></div>

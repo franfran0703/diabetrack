@@ -3,7 +3,6 @@ $pageTitle  = 'Appointments';
 $activeMenu = 'appointments';
 ob_start();
 
-// Build appointment dates map for calendar dots
 $apptDates = [];
 foreach ($all as $appt) {
     $d = date('Y-m-d', strtotime($appt['appointment_date']));
@@ -20,8 +19,9 @@ $currentMonth = (int)date('m');
 <!-- HEADER -->
 <div class="appt-header">
     <div>
-        <div class="appt-eyebrow">Schedule</div>
-        <h1 class="appt-title">📅 My <span>Appointments</span></h1>
+        <div class="appt-eyebrow">📅 Schedule</div>
+        <h1 class="appt-title">My <span>Appointments</span></h1>
+        <p class="appt-sub">View, book, and manage your doctor visits.</p>
     </div>
 </div>
 
@@ -68,13 +68,11 @@ $currentMonth = (int)date('m');
 
         <div class="cal-grid" id="calGrid"></div>
 
-        <div class="cal-selected-label">Selected</div>
-        <div class="cal-selected-date" id="calSelectedDate">
-            <?= date('F j, Y') ?>
-        </div>
+        <div class="cal-selected-label">Selected Date</div>
+        <div class="cal-selected-date" id="calSelectedDate"><?= date('F j, Y') ?></div>
     </div>
 
-    <!-- RIGHT — APPOINTMENT DETAILS -->
+    <!-- RIGHT — DETAILS -->
     <div class="appt-right">
 
         <!-- Next appointment hero -->
@@ -105,12 +103,12 @@ $currentMonth = (int)date('m');
         <div class="appt-no-next">
             <div class="appt-no-next-icon">📅</div>
             <div class="appt-no-next-title">No upcoming appointments</div>
-            <div class="appt-no-next-sub">Use the + button to schedule one.</div>
+            <div class="appt-no-next-sub">Tap the button below to schedule one.</div>
         </div>
         <?php endif; ?>
 
-        <!-- Upcoming list -->
-        <div class="appt-section-label" style="margin-top:8px;">All Appointments</div>
+        <!-- All appointments list -->
+        <div class="appt-section-label" style="margin-top:4px;">All Appointments</div>
         <div class="appt-list-panel">
             <?php if (empty($all)): ?>
             <div class="appt-empty">
@@ -128,15 +126,12 @@ $currentMonth = (int)date('m');
                     <div class="appt-row-doctor">Dr. <?= htmlspecialchars($appt['doctor_name']) ?></div>
                     <div class="appt-row-meta">
                         🕐 <?= date('h:i A', strtotime($appt['appointment_date'])) ?>
-                        <?php if ($appt['notes']): ?>
-                        &nbsp;·&nbsp; <?= htmlspecialchars($appt['notes']) ?>
-                        <?php endif; ?>
+                        <?php if ($appt['notes']): ?>&nbsp;·&nbsp; <?= htmlspecialchars($appt['notes']) ?><?php endif; ?>
                     </div>
                 </div>
                 <div class="appt-row-actions">
                     <span class="appt-status <?= strtolower($appt['status']) ?>">
-                        <?= $appt['status'] === 'Upcoming' ? '📅' :
-                           ($appt['status'] === 'Completed' ? '✅' : '❌') ?>
+                        <?= $appt['status'] === 'Upcoming' ? '📅' : ($appt['status'] === 'Completed' ? '✅' : '❌') ?>
                         <?= $appt['status'] ?>
                     </span>
                     <?php if ($appt['status'] === 'Upcoming'): ?>
@@ -162,17 +157,15 @@ $currentMonth = (int)date('m');
             <?php endif; ?>
         </div>
 
-        <!-- Tips -->
+        <!-- Before your visit tips -->
         <div class="appt-tips-panel">
-            <div class="appt-tips-title">Before Your Visit</div>
-            <?php
-            $tips = [
+            <div class="appt-tips-title">🩺 Before Your Visit</div>
+            <?php foreach ([
                 ['🩸', 'Bring your blood sugar trend report'],
                 ['💊', 'List all current medications & dosages'],
                 ['🥗', 'Note any diet changes or concerns'],
                 ['❓', 'Prepare questions for your doctor'],
-            ];
-            foreach ($tips as [$icon, $text]): ?>
+            ] as [$icon, $text]): ?>
             <div class="appt-tip-item">
                 <div class="appt-tip-icon"><?= $icon ?></div>
                 <div class="appt-tip-text"><?= $text ?></div>
@@ -203,7 +196,10 @@ $currentMonth = (int)date('m');
                        min="<?= date('Y-m-d\TH:i') ?>">
             </div>
             <div class="appt-form-group">
-                <label class="appt-form-label">Notes <span style="font-size:0.65rem;color:rgba(184,146,126,0.5);text-transform:lowercase;font-weight:600;">optional</span></label>
+                <label class="appt-form-label">
+                    Notes
+                    <span style="font-size:0.65rem;color:#c4937e;text-transform:lowercase;font-weight:600;letter-spacing:0;">optional</span>
+                </label>
                 <textarea name="notes" class="appt-form-textarea" rows="2"
                           placeholder="e.g. Bring blood sugar log, fasting required"></textarea>
             </div>
@@ -219,11 +215,10 @@ $currentMonth = (int)date('m');
 </button>
 
 <script>
-// ── CALENDAR ────────────────────────────────────────────
 const apptDates  = <?= json_encode(array_keys($apptDates)) ?>;
 const todayStr   = '<?= $today ?>';
 let   viewYear   = <?= $currentYear ?>;
-let   viewMonth  = <?= $currentMonth ?>; // 1-based
+let   viewMonth  = <?= $currentMonth ?>;
 let   selectedDate = todayStr;
 
 const monthNames = ['January','February','March','April','May','June',
@@ -233,20 +228,18 @@ function renderCalendar() {
     document.getElementById('calMonthLabel').textContent =
         monthNames[viewMonth - 1] + ' ' + viewYear;
 
-    const grid     = document.getElementById('calGrid');
+    const grid = document.getElementById('calGrid');
     grid.innerHTML = '';
 
-    const firstDay  = new Date(viewYear, viewMonth - 1, 1).getDay(); // 0=Sun
+    const firstDay    = new Date(viewYear, viewMonth - 1, 1).getDay();
     const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
 
-    // Empty slots
     for (let i = 0; i < firstDay; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'cal-day empty';
-        grid.appendChild(empty);
+        const e = document.createElement('div');
+        e.className = 'cal-day empty';
+        grid.appendChild(e);
     }
 
-    // Day cells
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = viewYear + '-'
             + String(viewMonth).padStart(2,'0') + '-'
@@ -256,26 +249,22 @@ function renderCalendar() {
         cell.className = 'cal-day';
         cell.textContent = d;
 
-        if (dateStr === todayStr)      cell.classList.add('today');
-        if (dateStr === selectedDate)  cell.classList.add('selected');
+        if (dateStr === todayStr)        cell.classList.add('today');
+        if (dateStr === selectedDate)    cell.classList.add('selected');
         if (apptDates.includes(dateStr)) cell.classList.add('has-appt');
-        if (dateStr < todayStr)        cell.classList.add('past');
+        if (dateStr < todayStr)          cell.classList.add('past');
 
-        cell.addEventListener('click', () => selectDay(dateStr, d));
+        cell.addEventListener('click', () => selectDay(dateStr));
         grid.appendChild(cell);
     }
 }
 
-function selectDay(dateStr, day) {
+function selectDay(dateStr) {
     selectedDate = dateStr;
     renderCalendar();
-
-    // Update label
     const d = new Date(dateStr + 'T00:00:00');
     document.getElementById('calSelectedDate').textContent =
         d.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-    // Pre-fill the modal date
     const input = document.getElementById('apptDateInput');
     if (input) input.value = dateStr + 'T09:00';
 }
@@ -291,28 +280,15 @@ function nextMonth() {
     renderCalendar();
 }
 
-// ── MODAL ────────────────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
 document.querySelectorAll('.appt-modal-overlay').forEach(m => {
     m.addEventListener('click', function(e) {
         if (e.target === this) this.classList.remove('open');
     });
 });
 
-// Input focus styles
-document.querySelectorAll('.appt-form-input, .appt-form-textarea').forEach(f => {
-    f.addEventListener('focus', () => {
-        f.style.borderColor = '#F97447';
-        f.style.boxShadow   = '0 0 0 3px rgba(249,116,71,0.12)';
-    });
-    f.addEventListener('blur', () => {
-        f.style.borderColor = 'rgba(249,116,71,0.22)';
-        f.style.boxShadow   = 'none';
-    });
-});
-
-// Init
 renderCalendar();
 </script>
 
