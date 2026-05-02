@@ -43,6 +43,15 @@ class PatientController extends Controller {
     $activityToday  = ($activityTotals['total_activities'] ?? 0) > 0
                         ? $activityTotals['total_minutes']
                         : null;
+    // Pending caregiver requests count
+    require_once __DIR__ . '/../../config/Database.php';
+    $__db = (new Database())->connect();
+    $__stmt = $__db->prepare("
+        SELECT COUNT(*) FROM caregiver_links
+        WHERE patient_id = :pid AND status = 'pending'
+    ");
+    $__stmt->execute(['pid' => $pid]);
+    $pendingCaregiverRequests = $__stmt->fetchColumn();
 
     $this->view('patient/dashboard_view', [
         'name'                   => $_SESSION['user_name'],
@@ -57,6 +66,7 @@ class PatientController extends Controller {
         'todayTotals'            => $todayTotals,
         'activityToday'          => $activityToday,
         'last7Days'              => $last7Days,
+        'pendingCaregiverRequests' => $pendingCaregiverRequests,
     ]);
 }
 
@@ -359,6 +369,72 @@ public function activity() {
         'last7Days'   => $last7Days,
         'error'       => $error,
         'success'     => $success,
+    ]);
+}
+public function caregiverRequests() {
+    require_once __DIR__ . '/../../config/Database.php';
+    $db = (new Database())->connect();
+    $pid = $_SESSION['user_id'];
+
+    // Handle accept
+    if (isset($_GET['accept'])) {
+        $stmt = $db->prepare("
+            UPDATE caregiver_links 
+            SET status = 'accepted', linked_at = NOW()
+            WHERE caregiver_id = :cid AND patient_id = :pid AND status = 'pending'
+        ");
+        $stmt->execute(['cid' => $_GET['accept'], 'pid' => $pid]);
+        header('Location: /diabetrack/public/patient/caregiverRequests');
+        exit;
+    }
+
+    // Handle decline
+    if (isset($_GET['decline'])) {
+        $stmt = $db->prepare("
+            UPDATE caregiver_links 
+            SET status = 'declined'
+            WHERE caregiver_id = :cid AND patient_id = :pid AND status = 'pending'
+        ");
+        $stmt->execute(['cid' => $_GET['decline'], 'pid' => $pid]);
+        header('Location: /diabetrack/public/patient/caregiverRequests');
+        exit;
+    }
+
+    // Handle remove (patient removes an accepted caregiver)
+    if (isset($_GET['remove'])) {
+        $stmt = $db->prepare("
+            DELETE FROM caregiver_links
+            WHERE caregiver_id = :cid AND patient_id = :pid
+        ");
+        $stmt->execute(['cid' => $_GET['remove'], 'pid' => $pid]);
+        header('Location: /diabetrack/public/patient/caregiverRequests');
+        exit;
+    }
+
+    // Get pending requests
+    $stmt = $db->prepare("
+        SELECT u.id, u.name, u.email, cl.requested_at FROM users u
+        JOIN caregiver_links cl ON cl.caregiver_id = u.id
+        WHERE cl.patient_id = :pid AND cl.status = 'pending'
+        ORDER BY cl.requested_at DESC
+    ");
+    $stmt->execute(['pid' => $pid]);
+    $pendingRequests = $stmt->fetchAll();
+
+    // Get accepted caregivers
+    $stmt = $db->prepare("
+        SELECT u.id, u.name, u.email, cl.linked_at FROM users u
+        JOIN caregiver_links cl ON cl.caregiver_id = u.id
+        WHERE cl.patient_id = :pid AND cl.status = 'accepted'
+        ORDER BY cl.linked_at DESC
+    ");
+    $stmt->execute(['pid' => $pid]);
+    $activeCaregivers = $stmt->fetchAll();
+
+    $this->view('patient/caregiver_requests_view', [
+        'name'             => $_SESSION['user_name'],
+        'pendingRequests'  => $pendingRequests,
+        'activeCaregivers' => $activeCaregivers,
     ]);
 }
 }

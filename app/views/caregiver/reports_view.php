@@ -2,13 +2,79 @@
 $pageTitle  = 'Health Reports';
 $activeMenu = 'reports';
 ob_start();
-
-$pdfUrl = '/diabetrack/public/caregiver/reports?pdf=1&range=' . $range
-        . '&date_from=' . $dateFrom . '&date_to=' . $dateTo;
 ?>
 
 <link href="/diabetrack/public/assets/css/caregiver_layout.css?v=<?= time() ?>" rel="stylesheet">
 <link href="/diabetrack/public/assets/css/caregiver_reports.css?v=<?= time() ?>" rel="stylesheet">
+
+<style>
+@media print {
+    /* Hide all navigation and UI chrome */
+    .topbar,
+    .floatnav,
+    .user-chip,
+    .cgr-range-bar,
+    .cgr-download-btn,
+    .patient-switcher {
+        display: none !important;
+    }
+
+    /* Remove page padding/background */
+    body, .page-wrap, .page-body {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .cgr-header::before {
+        content: '';
+        display: block;
+        background-image: url('/diabetrack/public/assets/img/diabetrack-logo.png');
+        background-repeat: no-repeat;
+        background-size: contain;
+        width: 180px;
+        height: 50px;
+        margin-bottom: 12px;
+    }
+
+    .cgr-stat::after {
+    content: none !important;
+    }
+    /* Make report content full width */
+    .cgr-wrap {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* Clean up card shadows for print */
+    .cgr-stat-card,
+    .cgr-section,
+    .cgr-table-wrap {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    /* Print header with patient + date info */
+    .cgr-header::before {
+        content: "DiabeTrack Health Report — Printed " attr(data-date);
+        display: block;
+        font-size: 11px;
+        color: #999;
+        margin-bottom: 8px;
+    }
+
+    /* Avoid breaking tables across pages */
+    tr, .cgr-stat-card {
+        page-break-inside: avoid;
+    }
+
+    .cgr-section {
+        page-break-inside: avoid;
+        margin-bottom: 20px !important;
+        
+    }
+}
+</style>
 
 <!-- HEADER -->
 <div class="cgr-header">
@@ -53,17 +119,16 @@ $pdfUrl = '/diabetrack/public/caregiver/reports?pdf=1&range=' . $range
     <form method="GET" action="/diabetrack/public/caregiver/reports" class="cgr-custom-form">
         <input type="hidden" name="range" value="custom">
         <input type="date" name="date_from" class="cgr-date-input"
-               value="<?= $dateFrom ?>" max="<?= date('Y-m-d') ?>">
+        value="<?= $dateFrom ?>" max="<?= date('Y-m-d') ?>">
         <span class="cgr-custom-sep">→</span>
         <input type="date" name="date_to" class="cgr-date-input"
-               value="<?= $dateTo ?>" max="<?= date('Y-m-d') ?>">
+        value="<?= $dateTo ?>" max="<?= date('Y-m-d') ?>">
         <button type="submit" class="cgr-custom-submit">Apply</button>
     </form>
 
-    <!-- Download PDF -->
-    <a href="<?= $pdfUrl ?>" class="cgr-download-btn" target="_blank">
-        ⬇️ Download PDF
-    </a>
+<button onclick="window.print()" class="cgr-download-btn">
+    🖨 Print Report
+</button>
 </div>
 
 <!-- STATS ROW -->
