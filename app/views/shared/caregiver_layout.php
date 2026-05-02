@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/diabetrack/public/assets/css/caregiver_layout.css?<?= time() ?>" rel="stylesheet">
+    <link href="/diabetrack/public/assets/css/caregiver_chip.css?<?= time() ?>" rel="stylesheet">
 </head>
 <body>
 <div class="page-wrap">
@@ -80,11 +81,11 @@
 
         <!-- User Chip -->
         <div class="user-chip">
+            <a href="/diabetrack/public/caregiver/profile" class="avatar" title="My Profile" style="text-decoration:none;color:inherit;"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></a>
             <div class="user-info">
-                <span class="user-name"><?= htmlspecialchars($_SESSION['user_name']) ?></span>
+                <span class="user-name"><?= htmlspecialchars(ucwords(strtolower($_SESSION['user_name']))) ?></span>
                 <span class="user-role">Caregiver</span>
             </div>
-            <div class="avatar"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></div>
             <a href="/diabetrack/public/auth/logout" class="logout-btn" title="Logout">
                 <i class="bi bi-box-arrow-right"></i>
             </a>
