@@ -431,10 +431,123 @@ public function caregiverRequests() {
     $stmt->execute(['pid' => $pid]);
     $activeCaregivers = $stmt->fetchAll();
 
-    $this->view('patient/caregiver_requests_view', [
+    $this->view('patient/caregiver_request_view', [
         'name'             => $_SESSION['user_name'],
         'pendingRequests'  => $pendingRequests,
         'activeCaregivers' => $activeCaregivers,
     ]);
 }
+
+    // ── Profile page ────────────────────────────────────────
+    public function profile() {
+        $userModel = $this->model('UserModel');
+        $pid  = $_SESSION['user_id'];
+        $user = $userModel->findById($pid);
+
+        require_once __DIR__ . '/../../config/Database.php';
+        $db = (new Database())->connect();
+
+        // Stats
+        $s = $db->prepare("SELECT COUNT(*) FROM blood_sugar_logs WHERE patient_id = :id");
+        $s->execute(['id' => $pid]);
+        $bsCount = (int)$s->fetchColumn();
+
+        $s = $db->prepare("SELECT COUNT(*) FROM medications WHERE patient_id = :id");
+        $s->execute(['id' => $pid]);
+        $medCount = (int)$s->fetchColumn();
+
+        $s = $db->prepare("SELECT COUNT(*) FROM meal_logs WHERE patient_id = :id");
+        $s->execute(['id' => $pid]);
+        $mealCount = (int)$s->fetchColumn();
+
+        $s = $db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE patient_id = :id AND status = 'accepted'");
+        $s->execute(['id' => $pid]);
+        $cgCount = (int)$s->fetchColumn();
+
+        // Linked caregivers with status
+        $s = $db->prepare("
+            SELECT u.id, u.name, u.email, cl.linked_at, cl.status
+            FROM users u
+            JOIN caregiver_links cl ON cl.caregiver_id = u.id
+            WHERE cl.patient_id = :id
+            ORDER BY cl.linked_at DESC
+        ");
+        $s->execute(['id' => $pid]);
+        $caregivers = $s->fetchAll();
+
+        $this->view('patient/profile_view', [
+            'user'       => $user,
+            'stats'      => [
+                'blood_sugar_logs' => $bsCount,
+                'medications'      => $medCount,
+                'meal_logs'        => $mealCount,
+                'caregivers'       => $cgCount,
+            ],
+            'caregivers' => $caregivers,
+        ]);
+    }
+
+    // ── Handle profile form POST ─────────────────────────────
+    public function updateProfile() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /diabetrack/public/patient/profile');
+            exit;
+        }
+
+        $userModel = $this->model('UserModel');
+        $pid    = $_SESSION['user_id'];
+        $action = $_POST['action'] ?? '';
+
+        if ($action === 'info') {
+            $name  = trim($_POST['name']  ?? '');
+            $email = trim($_POST['email'] ?? '');
+
+            if (!$name || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->redirectProfile('patient', 'Invalid name or email.');
+                return;
+            }
+
+            // Check email uniqueness (excluding self)
+            $existing = $userModel->findByEmail($email);
+            if ($existing && (int)$existing['id'] !== $pid) {
+                $this->redirectProfile('patient', 'That email is already in use.');
+                return;
+            }
+
+            $userModel->updateInfo($pid, $name, $email);
+            $_SESSION['user_name'] = $name;
+            $this->redirectProfile('patient', null, 'Profile updated successfully!');
+
+        } elseif ($action === 'password') {
+            $current = $_POST['current_password'] ?? '';
+            $new     = $_POST['new_password']     ?? '';
+            $confirm = $_POST['confirm_password'] ?? '';
+
+            $user = $userModel->findById($pid);
+
+            if (!password_verify($current, $user['password'])) {
+                $this->redirectProfile('patient', 'Current password is incorrect.');
+                return;
+            }
+            if (strlen($new) < 8) {
+                $this->redirectProfile('patient', 'New password must be at least 8 characters.');
+                return;
+            }
+            if ($new !== $confirm) {
+                $this->redirectProfile('patient', 'New passwords do not match.');
+                return;
+            }
+
+            $userModel->updatePassword($pid, $new);
+            $this->redirectProfile('patient', null, 'Password changed successfully!');
+        }
+    }
+
+    private function redirectProfile($role, $error = null, $success = null) {
+        $param = $error
+            ? '?error=' . urlencode($error)
+            : '?success=' . urlencode($success);
+        header("Location: /diabetrack/public/{$role}/profile{$param}");
+        exit;
+    }
 }

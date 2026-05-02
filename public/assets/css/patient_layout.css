@@ -250,56 +250,7 @@ body::before {
 }
 
 /* ── User chip ── */
-.user-chip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
-.user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    text-align: right;
-}
-.user-name {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
-}
-.user-role {
-    font-size: 0.63rem;
-    font-weight: 600;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: #d4917a;
-}
-.avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--grad-a), var(--teal));
-    display: flex; align-items: center; justify-content: center;
-    color: #fff;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 0.85rem;
-    box-shadow: 0 3px 12px var(--coral-glow);
-    flex-shrink: 0;
-}
-.logout-btn {
-    width: 34px; height: 34px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--nav-text);
-    font-size: 1rem;
-    text-decoration: none;
-    transition: background 0.15s, color 0.15s;
-}
-.logout-btn:hover {
-    background: rgba(220,60,60,0.09);
-    color: #c0392b;
-}
+/* Chip styles moved to patient_chip.css */
 
 /* ╔══════════════════════════════════════════╗
    ║  PAGE BODY                               ║

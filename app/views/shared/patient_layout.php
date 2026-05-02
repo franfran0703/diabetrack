@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/diabetrack/public/assets/css/patient_layout.css?<?= time() ?>" rel="stylesheet">
+    <link href="/diabetrack/public/assets/css/patient_chip.css?<?= time() ?>" rel="stylesheet">
 </head>
 <body>
 
@@ -120,7 +121,8 @@ if (empty($pendingCaregiverRequests)) {
                                 <div class="drop-title">Nearby Services</div>
                                 <div class="drop-desc">Clinics &amp; pharmacies near you</div>
                             </div>
-                            <a class="drop-row" href="/diabetrack/public/patient/caregiverRequests">
+                        </a>
+                        <a class="drop-row" href="/diabetrack/public/patient/caregiverRequests">
                             <div class="drop-icon" style="position:relative;">
                                 <i class="bi bi-person-check-fill"></i>
                                 <?php if (!empty($pendingCaregiverRequests) && $pendingCaregiverRequests > 0): ?>
@@ -150,11 +152,11 @@ if (empty($pendingCaregiverRequests)) {
 
         <!-- User chip -->
         <div class="user-chip">
+            <a href="/diabetrack/public/patient/profile" class="avatar" title="My Profile" style="text-decoration:none;color:inherit;"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></a>
             <div class="user-info">
-                <span class="user-name"><?= htmlspecialchars($_SESSION['user_name']) ?></span>
+                <span class="user-name"><?= htmlspecialchars(ucwords(strtolower($_SESSION['user_name']))) ?></span>
                 <span class="user-role">Patient</span>
             </div>
-            <div class="avatar"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></div>
             <a href="/diabetrack/public/auth/logout" class="logout-btn" title="Logout">
                 <i class="bi bi-box-arrow-right"></i>
             </a>
