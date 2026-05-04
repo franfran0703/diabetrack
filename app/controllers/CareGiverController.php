@@ -16,14 +16,15 @@ class CaregiverController extends Controller {
         $this->db   = $database->connect();
     }
 
-   public function patients() {
+    public function patients() {
     $success = null;
     $error   = null;
 
-    // Handle send request
+    // Handle link request
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim($_POST['patient_email']);
 
+        // Find patient by email
         $stmt = $this->db->prepare("
             SELECT * FROM users 
             WHERE email = :email AND role = 'patient' 
@@ -35,7 +36,7 @@ class CaregiverController extends Controller {
         if (!$patient) {
             $error = 'No patient found with that email address.';
         } else {
-            // Check if any link (pending or accepted) already exists
+            // Check if already linked
             $check = $this->db->prepare("
                 SELECT * FROM caregiver_links 
                 WHERE caregiver_id = :cid AND patient_id = :pid
@@ -45,27 +46,19 @@ class CaregiverController extends Controller {
                 'pid' => $patient['id']
             ]);
 
-            $existing = $check->fetch();
-
-            if ($existing) {
-                if ($existing['status'] === 'accepted') {
-                    $error = 'You are already linked to this patient.';
-                } elseif ($existing['status'] === 'pending') {
-                    $error = 'You already sent a request to this patient. Waiting for their approval.';
-                } else {
-                    $error = 'Your previous request was declined by this patient.';
-                }
+            if ($check->fetch()) {
+                $error = 'You are already linked to this patient.';
             } else {
-                // Insert as pending
+                // Create the link
                 $link = $this->db->prepare("
-                    INSERT INTO caregiver_links (caregiver_id, patient_id, status)
-                    VALUES (:cid, :pid, 'pending')
+                    INSERT INTO caregiver_links (caregiver_id, patient_id)
+                    VALUES (:cid, :pid)
                 ");
                 $link->execute([
                     'cid' => $_SESSION['user_id'],
                     'pid' => $patient['id']
                 ]);
-                $success = 'Request sent to ' . $patient['name'] . '! Waiting for their approval.';
+                $success = 'Successfully linked to ' . $patient['name'] . '!';
             }
         }
     }
@@ -80,51 +73,54 @@ class CaregiverController extends Controller {
             'cid' => $_SESSION['user_id'],
             'pid' => $_GET['unlink']
         ]);
-        // Reset active patient if it was this one
-        if (isset($_SESSION['active_patient_id']) && $_SESSION['active_patient_id'] == $_GET['unlink']) {
-            unset($_SESSION['active_patient_id']);
-        }
         header('Location: /diabetrack/public/caregiver/patients');
         exit;
     }
 
-    // Get accepted patients only
+    // Get all linked patients
     $stmt = $this->db->prepare("
-        SELECT u.*, cl.linked_at, cl.status FROM users u
+        SELECT u.*, cl.linked_at FROM users u
         JOIN caregiver_links cl ON cl.patient_id = u.id
-        WHERE cl.caregiver_id = :cid AND cl.status = 'accepted'
+        WHERE cl.caregiver_id = :cid
         ORDER BY cl.linked_at DESC
     ");
     $stmt->execute(['cid' => $_SESSION['user_id']]);
     $linkedPatients = $stmt->fetchAll();
 
-    // Get pending requests (sent by this caregiver, not yet answered)
-    $stmt2 = $this->db->prepare("
-        SELECT u.*, cl.requested_at FROM users u
-        JOIN caregiver_links cl ON cl.patient_id = u.id
-        WHERE cl.caregiver_id = :cid AND cl.status = 'pending'
-        ORDER BY cl.requested_at DESC
-    ");
-    $stmt2->execute(['cid' => $_SESSION['user_id']]);
-    $pendingRequests = $stmt2->fetchAll();
-
     $this->view('caregiver/patients_view', [
-        'name'            => $_SESSION['user_name'],
-        'linkedPatients'  => $linkedPatients,
-        'pendingRequests' => $pendingRequests,
-        'success'         => $success,
-        'error'           => $error,
+        'name'           => $_SESSION['user_name'],
+        'linkedPatients' => $linkedPatients,
+        'success'        => $success,
+        'error'          => $error,
     ]);
 }
+
     // Get the linked patient for this caregiver
     private function getLinkedPatient() {
+        // Get all accepted patients
         $stmt = $this->db->prepare("
             SELECT u.* FROM users u
             JOIN caregiver_links cl ON cl.patient_id = u.id
-            WHERE cl.caregiver_id = :id LIMIT 1
+            WHERE cl.caregiver_id = :id AND cl.status = 'accepted'
+            ORDER BY cl.linked_at ASC
         ");
         $stmt->execute(['id' => $_SESSION['user_id']]);
-        return $stmt->fetch();
+        $patients = $stmt->fetchAll();
+
+        if (empty($patients)) return null;
+
+        // If active patient is set in session and still valid, use it
+        if (isset($_SESSION['active_patient_id'])) {
+            foreach ($patients as $p) {
+                if ($p['id'] == $_SESSION['active_patient_id']) {
+                    return $p;
+                }
+            }
+        }
+
+        // Default to first and save in session
+        $_SESSION['active_patient_id'] = $patients[0]['id'];
+        return $patients[0];
     }
 
     public function dashboard() {
@@ -528,6 +524,12 @@ public function reports() {
         ];
     }
 
+    // Handle PDF download
+    if (isset($_GET['pdf']) && $patient) {
+        $this->generatePDF($patient, $bloodSugar, $medications, $meals, $activities, $stats, $dateFrom, $dateTo);
+        exit;
+    }
+
     $this->view('caregiver/reports_view', [
         'name'        => $_SESSION['user_name'],
         'patient'     => $patient,
@@ -540,5 +542,174 @@ public function reports() {
         'dateFrom'    => $dateFrom,
         'dateTo'      => $dateTo,
     ]);
+}
+public function switchPatient() {
+    $pid = $_GET['pid'] ?? null;
+    if ($pid) {
+        $check = $this->db->prepare("
+            SELECT 1 FROM caregiver_links
+            WHERE caregiver_id = :cid AND patient_id = :pid AND status = 'accepted'
+        ");
+        $check->execute([
+            'cid' => $_SESSION['user_id'],
+            'pid' => $pid
+        ]);
+        if ($check->fetch()) {
+            $_SESSION['active_patient_id'] = $pid;
+        }
+    }
+    $redirect = $_GET['redirect'] ?? '/diabetrack/public/caregiver/dashboard';
+    header('Location: ' . $redirect);
+    exit;
+}
+
+public function profile() {
+    $stmt = $this->db->prepare("SELECT * FROM users WHERE id = :id");
+    $stmt->execute(['id' => $_SESSION['user_id']]);
+    $user = $stmt->fetch();
+
+    // Stats
+    $ap = $this->db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE caregiver_id = :id AND status = 'accepted'");
+    $ap->execute(['id' => $_SESSION['user_id']]);
+
+    $tp = $this->db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE caregiver_id = :id");
+    $tp->execute(['id' => $_SESSION['user_id']]);
+
+    $al = $this->db->prepare("SELECT COUNT(*) FROM alerts WHERE user_id = :id");
+    $al->execute(['id' => $_SESSION['user_id']]);
+
+    $stats = [
+        'active_patients'  => $ap->fetchColumn(),
+        'total_patients'   => $tp->fetchColumn(),
+        'alerts_sent'      => $al->fetchColumn(),
+        'reports_created'  => 0,
+    ];
+
+    // Linked patients for the patients tab
+    $ps = $this->db->prepare("
+        SELECT u.*, cl.linked_at FROM users u
+        JOIN caregiver_links cl ON cl.patient_id = u.id
+        WHERE cl.caregiver_id = :id AND cl.status = 'accepted'
+        ORDER BY cl.linked_at DESC
+    ");
+    $ps->execute(['id' => $_SESSION['user_id']]);
+    $patients = $ps->fetchAll();
+
+    $this->view('caregiver/profile_view', [
+        'name'     => $_SESSION['user_name'],
+        'user'     => $user,
+        'stats'    => $stats,
+        'patients' => $patients,
+    ]);
+}
+
+public function updateProfile() {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'info') {
+        $name  = trim($_POST['name']);
+        $email = trim($_POST['email']);
+
+        // Check email not taken by someone else
+        $check = $this->db->prepare("SELECT id FROM users WHERE email = :email AND id != :id");
+        $check->execute(['email' => $email, 'id' => $_SESSION['user_id']]);
+        if ($check->fetch()) {
+            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('Email already in use.'));
+            exit;
+        }
+
+        $stmt = $this->db->prepare("UPDATE users SET name = :name, email = :email WHERE id = :id");
+        $stmt->execute(['name' => $name, 'email' => $email, 'id' => $_SESSION['user_id']]);
+        $_SESSION['user_name'] = $name;
+        header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Profile updated successfully.'));
+        exit;
+    }
+
+    if ($action === 'password') {
+        $stmt = $this->db->prepare("SELECT password FROM users WHERE id = :id");
+        $stmt->execute(['id' => $_SESSION['user_id']]);
+        $user = $stmt->fetch();
+
+        if (!password_verify($_POST['current_password'], $user['password'])) {
+            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('Current password is incorrect.'));
+            exit;
+        }
+        if ($_POST['new_password'] !== $_POST['confirm_password']) {
+            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('New passwords do not match.'));
+            exit;
+        }
+        if (strlen($_POST['new_password']) < 8) {
+            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('Password must be at least 8 characters.'));
+            exit;
+        }
+
+        $hash = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+        $stmt = $this->db->prepare("UPDATE users SET password = :pw WHERE id = :id");
+        $stmt->execute(['pw' => $hash, 'id' => $_SESSION['user_id']]);
+        header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Password updated successfully.'));
+        exit;
+    }
+
+    header('Location: /diabetrack/public/caregiver/profile');
+    exit;
+}
+public function setup2fa() {
+    require_once __DIR__ . '/../../vendor/autoload.php';
+
+    $db  = $this->db;
+    $uid = $_SESSION['user_id'];
+
+    // Handle enable POST
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enable') {
+        $code   = trim($_POST['code'] ?? '');
+        $secret = trim($_POST['secret'] ?? '');
+
+        $google2fa = new \PragmaRX\Google2FA\Google2FA();
+        $valid     = $google2fa->verifyKey($secret, $code);
+
+        if ($valid) {
+            $db->prepare("UPDATE users SET two_fa_secret = :s, two_fa_enabled = 1 WHERE id = :id")
+               ->execute(['s' => $secret, 'id' => $uid]);
+            header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('2FA enabled successfully!'));
+            exit;
+        } else {
+            // Wrong code — regenerate and show error
+            header('Location: /diabetrack/public/caregiver/setup2fa?error=1');
+            exit;
+        }
+    }
+
+    // Generate new secret
+    $google2fa = new \PragmaRX\Google2FA\Google2FA();
+    $secret    = $google2fa->generateSecretKey();
+
+    $stmt = $db->prepare("SELECT name, email FROM users WHERE id = :id");
+    $stmt->execute(['id' => $uid]);
+    $user = $stmt->fetch();
+
+    $qrUrl = $google2fa->getQRCodeUrl('DiabeTrack', $user['email'], $secret);
+
+    $renderer = new \BaconQrCode\Renderer\ImageRenderer(
+        new \BaconQrCode\Renderer\RendererStyle\RendererStyle(280),
+        new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+    );
+    $writer = new \BaconQrCode\Writer($renderer);
+    $qrSvg  = $writer->writeString($qrUrl);
+
+    $error = isset($_GET['error']) ? 'Invalid code. Please scan again and try.' : null;
+
+    $this->view('caregiver/setup2fa_view', [
+        'name'   => $_SESSION['user_name'],
+        'secret' => $secret,
+        'qrSvg'  => $qrSvg,
+        'error'  => $error,
+    ]);
+}
+
+public function disable2fa() {
+    $this->db->prepare("UPDATE users SET two_fa_enabled = 0, two_fa_secret = NULL WHERE id = :id")
+            ->execute(['id' => $_SESSION['user_id']]);
+    header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('2FA has been disabled.'));
+    exit;
 }
 }

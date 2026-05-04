@@ -602,3 +602,188 @@ body {
 .cgmed-planner     { animation: fadeUp 0.5s ease both 0.10s; }
 .cgmed-body        { animation: fadeUp 0.5s ease both 0.17s; }
 .cgmed-table-panel { animation: fadeUp 0.5s ease both 0.24s; }
+/* ═══════════════════════════════════════════════════════
+   CAREGIVER MEDICATION — Dose Board v2
+   ═══════════════════════════════════════════════════════ */
+
+/* ── No patient ── */
+.cgmed-no-patient {
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(249,116,71,0.15);
+    border-radius: 24px; padding: 60px; text-align: center;
+    backdrop-filter: blur(8px);
+}
+
+/* ── Board wrap: dose list + sidebar ── */
+.cgmed-board-wrap {
+    display: grid;
+    grid-template-columns: 1fr 256px;
+    gap: 14px;
+    margin-bottom: 14px;
+    align-items: start;
+    animation: fadeUp 0.45s ease both 0.1s;
+}
+
+/* ── Dose board panel ── */
+.cgmed-dose-board {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 26px 28px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.cgmed-board-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    gap: 16px;
+}
+.cgmed-board-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900; font-size: 1.05rem; color: #ffe8d6;
+}
+.cgmed-board-sub {
+    font-size: 0.72rem; color: rgba(255,180,130,0.4);
+    font-weight: 600; margin-top: 3px;
+}
+.cgmed-progress-ring-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0;
+}
+.cgmed-ring-label {
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; color: rgba(134,239,172,0.5);
+}
+
+/* ── Dose list ── */
+.cgmed-dose-list { display: flex; flex-direction: column; gap: 8px; }
+
+.cgmed-dose-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
+    transition: border-color 0.18s, background 0.18s, transform 0.18s;
+    position: relative;
+}
+.cgmed-dose-card:hover {
+    background: rgba(255,255,255,0.055);
+    transform: translateX(3px);
+}
+.cgmed-dose-card.taken   { border-color: rgba(34,197,94,0.18);  background: rgba(34,197,94,0.05); }
+.cgmed-dose-card.missed  { border-color: rgba(239,68,68,0.18);  background: rgba(239,68,68,0.05); }
+.cgmed-dose-card.overdue { border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.05); }
+
+/* Left accent bar */
+.cgmed-dose-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px; border-radius: 999px;
+}
+.cgmed-dose-card.taken::before   { background: #22c55e; }
+.cgmed-dose-card.missed::before  { background: #ef4444; }
+.cgmed-dose-card.overdue::before { background: #f59e0b; }
+.cgmed-dose-card.pending::before { background: rgba(249,116,71,0.4); }
+
+/* Time column */
+.cgmed-dose-time-col { width: 46px; flex-shrink: 0; text-align: center; }
+.cgmed-dose-hr {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900; font-size: 0.95rem; color: #ffe8d6; line-height: 1;
+}
+.cgmed-dose-ampm {
+    font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+    color: rgba(255,180,130,0.35); letter-spacing: 0.5px;
+}
+
+/* Status icon */
+.cgmed-dose-status-col { flex-shrink: 0; }
+.cgmed-dose-status-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+}
+.cgmed-dose-status-icon.taken   { background: rgba(34,197,94,0.15);  color: #86efac; }
+.cgmed-dose-status-icon.missed  { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+.cgmed-dose-status-icon.pending { background: rgba(249,116,71,0.12); color: #fbab6e; }
+.cgmed-dose-status-icon.overdue { background: rgba(245,158,11,0.15); color: #fcd34d; }
+
+/* Info */
+.cgmed-dose-info { flex: 1; min-width: 0; }
+.cgmed-dose-name {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800; font-size: 0.88rem; color: #ffe8d6; margin-bottom: 5px;
+}
+.cgmed-dose-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cgmed-dose-meta-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.68rem; font-weight: 600;
+    color: rgba(255,180,130,0.4);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 999px; padding: 2px 8px;
+}
+.cgmed-dose-meta-chip.logged-at { color: rgba(134,239,172,0.6); border-color: rgba(34,197,94,0.15); }
+
+/* Badge */
+.cgmed-dose-badge-col { flex-shrink: 0; }
+.cgmed-dose-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.7rem; font-weight: 800; padding: 5px 12px;
+    border-radius: 999px; white-space: nowrap;
+}
+.cgmed-dose-badge.taken   { background: rgba(34,197,94,0.14);  color: #86efac; }
+.cgmed-dose-badge.missed  { background: rgba(239,68,68,0.14);  color: #fca5a5; }
+.cgmed-dose-badge.pending { background: rgba(249,116,71,0.12); color: #fbab6e; }
+.cgmed-dose-badge.overdue { background: rgba(245,158,11,0.14); color: #fcd34d; }
+
+/* ── Missed hero — two states ── */
+.cgmed-missed-hero {
+    border-radius: 22px; padding: 22px; text-align: center;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.cgmed-missed-hero:hover { transform: translateY(-2px); }
+.cgmed-missed-hero.alert {
+    background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
+    border: 1.5px solid rgba(249,116,71,0.22);
+}
+.cgmed-missed-hero.clear {
+    background: linear-gradient(145deg, #d4f7e8, #bbf7d0, #a7f3d0);
+    border: 1.5px solid rgba(34,197,94,0.22);
+}
+.cgmed-missed-hero::before {
+    content: '💊';
+    position: absolute; right: -8px; bottom: -8px;
+    font-size: 68px; opacity: 0.07;
+    transform: rotate(-15deg); pointer-events: none;
+}
+.cgmed-missed-eyebrow {
+    font-size: 0.58rem; font-weight: 800;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+}
+.alert .cgmed-missed-eyebrow { color: #c4714a; }
+.clear .cgmed-missed-eyebrow { color: #0f7a45; }
+.cgmed-missed-count {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900; font-size: 3.4rem; line-height: 1; letter-spacing: -3px;
+}
+.alert .cgmed-missed-count { color: #c04a20; }
+.clear .cgmed-missed-count { color: #0f7a45; }
+.cgmed-missed-sub {
+    font-family: 'Instrument Serif', serif; font-style: italic;
+    font-size: 0.8rem; margin-top: 6px;
+}
+.alert .cgmed-missed-sub { color: #a0714f; }
+.clear .cgmed-missed-sub { color: #166534; }
+
+@media (max-width: 780px) {
+    .cgmed-board-wrap { grid-template-columns: 1fr; }
+    .cgmed-dose-card  { flex-wrap: wrap; }
+}

@@ -3,24 +3,6 @@ $pageTitle  = 'Medication Monitor';
 $activeMenu = 'medication';
 ob_start();
 
-// Hour slots shown on the ruler — 6 AM to 9 PM
-$rulerHours = [6, 9, 12, 15, 18, 21];
-$dayStart   = 6;   // 6 AM
-$dayEnd     = 22;  // 10 PM  — range = 16 hours
-$dayRange   = $dayEnd - $dayStart;
-
-// Current hour as percentage across the ruler
-$nowHour = (int)date('G') + ((int)date('i') / 60);
-$nowPct  = max(0, min(100, ($nowHour - $dayStart) / $dayRange * 100));
-
-// Helper — schedule_time string → left % on the ruler
-function timeToPercent($timeStr, $dayStart, $dayRange) {
-    $h       = (int)date('G', strtotime($timeStr));
-    $m       = (int)date('i', strtotime($timeStr));
-    $decimal = $h + ($m / 60);
-    return max(0, min(96, ($decimal - $dayStart) / $dayRange * 100));
-}
-
 $pendingCount = 0;
 if (!empty($medications)) {
     $pendingCount = count(array_filter(
@@ -28,9 +10,25 @@ if (!empty($medications)) {
         fn($m) => !($loggedToday[$m['id']] ?? false)
     ));
 }
+
+// Sort medications by schedule_time
+if (!empty($medications)) {
+    usort($medications, fn($a,$b) => strtotime($a['schedule_time']) - strtotime($b['schedule_time']));
+}
+
+// Map logs by med id
+$logMap = [];
+foreach ($todayLogs as $tl) {
+    $key = $tl['medication_id'] ?? null;
+    if (!$key) {
+        foreach ($medications as $m) {
+            if ($m['name'] === $tl['name']) { $key = $m['id']; break; }
+        }
+    }
+    if ($key) $logMap[$key] = $tl;
+}
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_layout.css?v=<?= time() ?>">
 <link href="/diabetrack/public/assets/css/caregiver_medication.css?v=<?= time() ?>" rel="stylesheet">
 
 <!-- HEADER -->
@@ -43,7 +41,7 @@ if (!empty($medications)) {
     <div class="cgmed-patient-chip">
         <div class="cgmed-patient-avatar"><?= strtoupper(substr($patient['name'], 0, 1)) ?></div>
         <div>
-            <div class="cgmed-patient-name"><?= htmlspecialchars($patient['name']) ?></div>
+            <div class="cgmed-patient-name"><?= htmlspecialchars(ucwords(strtolower($patient['name']))) ?></div>
             <div class="cgmed-patient-label">Linked Patient</div>
         </div>
     </div>
@@ -51,7 +49,7 @@ if (!empty($medications)) {
 </div>
 
 <?php if (!$patient): ?>
-<div style="background:rgba(255,255,255,0.05);border:1.5px solid rgba(249,116,71,0.15);border-radius:24px;padding:60px;text-align:center;backdrop-filter:blur(8px);">
+<div class="cgmed-no-patient">
     <div style="font-size:3rem;margin-bottom:16px;">🔗</div>
     <div style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:1.1rem;color:#ffe8d6;margin-bottom:8px;">No Patient Linked</div>
     <div style="font-size:0.85rem;color:rgba(255,200,160,0.55);">
@@ -61,96 +59,35 @@ if (!empty($medications)) {
 
 <?php else: ?>
 
-<!-- ═══════════════════════════════════════════════════════
-     PLANNER — full-width time-track
-     ═══════════════════════════════════════════════════════ -->
-<div class="cgmed-planner">
+<!-- ═══ TODAY'S DOSE BOARD ══════════════════════════════ -->
+<div class="cgmed-board-wrap">
 
-    <div class="cgmed-planner-header">
-        <div class="cgmed-planner-label">Today's Schedule</div>
-        <div class="cgmed-planner-date"><?= date('l, F j, Y') ?></div>
-    </div>
-
-    <!-- Time ruler — offset left to match label column width -->
-    <div class="cgmed-ruler-track">
-        <?php foreach ($rulerHours as $h):
-            $isNow = ($nowHour >= $h && $nowHour < $h + 3);
-        ?>
-        <div class="cgmed-ruler-tick <?= $isNow ? 'now' : '' ?>">
-            <?= date('g A', mktime($h, 0, 0)) ?>
-        </div>
-        <?php endforeach; ?>
-    </div>
-
-    <?php if (empty($medications)): ?>
-    <div class="cgmed-empty">
-        <div class="cgmed-empty-icon">💊</div>
-        <div class="cgmed-empty-text">No medications in schedule.</div>
-    </div>
-    <?php else: ?>
-
-    <div class="cgmed-track-rows">
-        <?php foreach ($medications as $med):
-            $logStatus = null;
-            $logTime   = null;
-            foreach ($todayLogs as $tl) {
-                if (($tl['medication_id'] ?? null) == $med['id'] ||
-                    $tl['name'] === $med['name']) {
-                    $logStatus = $tl['status'];
-                    $logTime   = $tl['logged_at'];
-                    break;
-                }
-            }
-            $logged    = $loggedToday[$med['id']] ?? false;
-            $pillClass = $logged ? strtolower($logStatus ?? 'taken') : 'pending';
-            $pillEmoji = $pillClass === 'taken' ? '✅' : ($pillClass === 'missed' ? '❌' : '⏳');
-            $leftPct   = timeToPercent($med['schedule_time'], $dayStart, $dayRange);
-        ?>
-        <div class="cgmed-track-row">
-
-            <div class="cgmed-track-label">
-                <div class="cgmed-track-med-name"><?= htmlspecialchars($med['name']) ?></div>
-                <div class="cgmed-track-med-dose"><?= htmlspecialchars($med['dosage']) ?></div>
+    <!-- Left: Dose cards -->
+    <div class="cgmed-dose-board">
+        <div class="cgmed-board-header">
+            <div>
+                <div class="cgmed-board-title">Today's Dose Board</div>
+                <div class="cgmed-board-sub"><?= date('l, F j, Y') ?> · <?= count($medications) ?> medication<?= count($medications) !== 1 ? 's' : '' ?> scheduled</div>
             </div>
-
-            <div class="cgmed-track-bar">
-                <!-- Grid lines -->
-                <div class="cgmed-track-grid">
-                    <?php for ($i = 0; $i < count($rulerHours); $i++): ?>
-                    <div class="cgmed-track-grid-col"></div>
-                    <?php endfor; ?>
-                </div>
-
-                <!-- NOW line -->
-                <div class="cgmed-now-indicator" style="left:<?= $nowPct ?>%;"></div>
-
-                <!-- Med pill -->
-                <div class="cgmed-track-pill <?= $pillClass ?>"
-                     style="left:<?= $leftPct ?>%;"
-                     title="<?= htmlspecialchars($med['name']) ?> · <?= date('h:i A', strtotime($med['schedule_time'])) ?>">
-                    <div class="cgmed-pill-dot"></div>
-                    <?= $pillEmoji ?>
-                    <?= htmlspecialchars($med['name']) ?>
-                    <span class="cgmed-pill-time"><?= date('h:i A', strtotime($med['schedule_time'])) ?></span>
-                </div>
+            <div class="cgmed-progress-ring-wrap" title="<?= $todayStats['taken'] ?? 0 ?> of <?= $todayStats['total'] ?? count($medications) ?> taken">
+                <?php
+                $total = max(1, count($medications));
+                $taken = (int)($todayStats['taken'] ?? 0);
+                $pct   = round($taken / $total * 100);
+                $circ  = 2 * M_PI * 22; // r=22
+                $dash  = $circ * $pct / 100;
+                ?>
+                <svg width="60" height="60" viewBox="0 0 60 60">
+                    <circle cx="30" cy="30" r="22" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="5"/>
+                    <circle cx="30" cy="30" r="22" fill="none" stroke="#22c55e" stroke-width="5"
+                            stroke-dasharray="<?= round($dash,1) ?> <?= round($circ,1) ?>"
+                            stroke-dashoffset="<?= round($circ/4, 1) ?>"
+                            stroke-linecap="round"/>
+                    <text x="30" y="34" text-anchor="middle" fill="#86efac"
+                          style="font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:11px;"><?= $pct ?>%</text>
+                </svg>
+                <div class="cgmed-ring-label">Done</div>
             </div>
-
-        </div>
-        <?php endforeach; ?>
-    </div>
-
-    <?php endif; ?>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════
-     BODY — med list (left) + status sidebar (right)
-     ═══════════════════════════════════════════════════════ -->
-<div class="cgmed-body">
-
-    <!-- LEFT: MED LIST -->
-    <div class="cgmed-med-list">
-        <div class="cgmed-panel-label">
-            All Medications — <?= date('M d, Y') ?>
         </div>
 
         <?php if (empty($medications)): ?>
@@ -159,97 +96,119 @@ if (!empty($medications)) {
             <div class="cgmed-empty-text">No medications in schedule.</div>
         </div>
         <?php else: ?>
-        <?php foreach ($medications as $med):
-            $logStatus = null;
-            $logTime   = null;
-            foreach ($todayLogs as $tl) {
-                if (($tl['medication_id'] ?? null) == $med['id'] ||
-                    $tl['name'] === $med['name']) {
-                    $logStatus = $tl['status'];
-                    $logTime   = $tl['logged_at'];
-                    break;
-                }
-            }
-            $logged    = $loggedToday[$med['id']] ?? false;
-            $cardClass = $logged ? strtolower($logStatus ?? 'taken') : 'pending';
-            $icon      = $cardClass === 'taken' ? '✅' : ($cardClass === 'missed' ? '❌' : '⏳');
-        ?>
-        <div class="cgmed-med-card <?= $cardClass ?>">
-            <div class="cgmed-med-icon"><?= $icon ?></div>
-            <div class="cgmed-med-info">
-                <div class="cgmed-med-name"><?= htmlspecialchars($med['name']) ?></div>
-                <div class="cgmed-med-meta">
-                    <span>💊 <?= htmlspecialchars($med['dosage']) ?></span>
-                    <span>·</span>
-                    <span>🕐 <?= date('h:i A', strtotime($med['schedule_time'])) ?></span>
-                    <span>·</span>
-                    <span><?= htmlspecialchars($med['frequency']) ?></span>
-                    <?php if ($logTime): ?>
-                    <span>·</span>
-                    <span style="color:rgba(255,200,160,0.28);">Logged <?= date('h:i A', strtotime($logTime)) ?></span>
+        <div class="cgmed-dose-list">
+            <?php foreach ($medications as $med):
+                $log       = $logMap[$med['id']] ?? null;
+                $logged    = (bool)$log;
+                $status    = $logged ? strtolower($log['status']) : 'pending';
+                $logTime   = $log ? date('h:i A', strtotime($log['logged_at'])) : null;
+                $schedTime = date('h:i A', strtotime($med['schedule_time']));
+
+                // Is this dose overdue?
+                $schedMin  = (int)date('G', strtotime($med['schedule_time'])) * 60 + (int)date('i', strtotime($med['schedule_time']));
+                $nowMin    = (int)date('G') * 60 + (int)date('i');
+                $overdue   = !$logged && ($nowMin > $schedMin + 30);
+            ?>
+            <div class="cgmed-dose-card <?= $status ?> <?= $overdue ? 'overdue' : '' ?>">
+
+                <!-- Time column -->
+                <div class="cgmed-dose-time-col">
+                    <div class="cgmed-dose-hr"><?= date('h:i', strtotime($med['schedule_time'])) ?></div>
+                    <div class="cgmed-dose-ampm"><?= date('A', strtotime($med['schedule_time'])) ?></div>
+                </div>
+
+                <!-- Status indicator -->
+                <div class="cgmed-dose-status-col">
+                    <div class="cgmed-dose-status-icon <?= $status ?>">
+                        <?php if ($status === 'taken'): ?>
+                            <i class="bi bi-check-lg"></i>
+                        <?php elseif ($status === 'missed'): ?>
+                            <i class="bi bi-x-lg"></i>
+                        <?php else: ?>
+                            <i class="bi bi-clock"></i>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="cgmed-dose-info">
+                    <div class="cgmed-dose-name"><?= htmlspecialchars($med['name']) ?></div>
+                    <div class="cgmed-dose-meta">
+                        <span class="cgmed-dose-meta-chip"><i class="bi bi-capsule"></i> <?= htmlspecialchars($med['dosage']) ?></span>
+                        <span class="cgmed-dose-meta-chip"><i class="bi bi-arrow-repeat"></i> <?= $med['frequency'] ?></span>
+                        <?php if ($logTime): ?>
+                        <span class="cgmed-dose-meta-chip logged-at"><i class="bi bi-check2"></i> Logged at <?= $logTime ?></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Status badge -->
+                <div class="cgmed-dose-badge-col">
+                    <?php if ($status === 'taken'): ?>
+                        <span class="cgmed-dose-badge taken"><i class="bi bi-check-circle-fill"></i> Taken</span>
+                    <?php elseif ($status === 'missed'): ?>
+                        <span class="cgmed-dose-badge missed"><i class="bi bi-x-circle-fill"></i> Missed</span>
+                    <?php elseif ($overdue): ?>
+                        <span class="cgmed-dose-badge overdue"><i class="bi bi-exclamation-circle-fill"></i> Overdue</span>
+                    <?php else: ?>
+                        <span class="cgmed-dose-badge pending"><i class="bi bi-clock-fill"></i> Pending</span>
                     <?php endif; ?>
                 </div>
+
             </div>
-            <div class="cgmed-med-right">
-                <div class="cgmed-med-time"><?= date('h:i A', strtotime($med['schedule_time'])) ?></div>
-                <span class="cgmed-med-badge <?= $cardClass ?>">
-                    <?= $logged ? ($logStatus ?? 'Taken') : 'Pending' ?>
-                </span>
-            </div>
+            <?php endforeach; ?>
         </div>
-        <?php endforeach; ?>
         <?php endif; ?>
     </div>
 
-    <!-- RIGHT: STATUS SIDEBAR -->
+    <!-- Right: Status sidebar -->
     <div class="cgmed-status-stack">
 
-        <div class="cgmed-missed-hero">
-            <div class="cgmed-missed-eyebrow">Missed Today</div>
-            <div class="cgmed-missed-count"><?= $todayStats['missed'] ?? 0 ?></div>
-            <div class="cgmed-missed-sub">
-                <?= (($todayStats['missed'] ?? 0) > 0) ? 'Patient needs attention' : 'All clear for today!' ?>
-            </div>
+        <div class="cgmed-missed-hero <?= ($todayStats['missed'] ?? 0) > 0 ? 'alert' : 'clear' ?>">
+            <?php if (($todayStats['missed'] ?? 0) > 0): ?>
+                <div class="cgmed-missed-eyebrow">⚠ Missed Today</div>
+                <div class="cgmed-missed-count"><?= $todayStats['missed'] ?></div>
+                <div class="cgmed-missed-sub">Dose<?= $todayStats['missed'] > 1 ? 's' : '' ?> missed — patient needs attention</div>
+            <?php else: ?>
+                <div class="cgmed-missed-eyebrow">✓ All Clear</div>
+                <div class="cgmed-missed-count" style="color:#0f7a45;">0</div>
+                <div class="cgmed-missed-sub">No missed doses today!</div>
+            <?php endif; ?>
         </div>
 
         <div class="cgmed-stat-tile warm">
-            <div class="cgmed-tile-icon">📋</div>
+            <div class="cgmed-tile-icon"><i class="bi bi-capsule-pill"></i></div>
             <div>
                 <div class="cgmed-tile-val"><?= count($medications) ?></div>
-                <div class="cgmed-tile-label">Medications scheduled</div>
+                <div class="cgmed-tile-label">Meds scheduled</div>
             </div>
         </div>
-
         <div class="cgmed-stat-tile green">
-            <div class="cgmed-tile-icon">✅</div>
+            <div class="cgmed-tile-icon"><i class="bi bi-check-circle-fill"></i></div>
             <div>
                 <div class="cgmed-tile-val"><?= $todayStats['taken'] ?? 0 ?></div>
-                <div class="cgmed-tile-label">Doses taken today</div>
+                <div class="cgmed-tile-label">Doses taken</div>
             </div>
         </div>
-
         <div class="cgmed-stat-tile glass">
-            <div class="cgmed-tile-icon">⏳</div>
+            <div class="cgmed-tile-icon"><i class="bi bi-hourglass-split"></i></div>
             <div>
                 <div class="cgmed-tile-val"><?= $pendingCount ?></div>
                 <div class="cgmed-tile-label">Still pending</div>
             </div>
         </div>
-
         <div class="cgmed-stat-tile danger">
-            <div class="cgmed-tile-icon">📅</div>
+            <div class="cgmed-tile-icon"><i class="bi bi-x-circle-fill"></i></div>
             <div>
-                <div class="cgmed-tile-val"><?= $todayStats['total'] ?? 0 ?></div>
-                <div class="cgmed-tile-label">Logged today</div>
+                <div class="cgmed-tile-val"><?= $todayStats['missed'] ?? 0 ?></div>
+                <div class="cgmed-tile-label">Missed today</div>
             </div>
         </div>
 
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     HISTORY TABLE — full width
-     ═══════════════════════════════════════════════════════ -->
+<!-- HISTORY TABLE -->
 <div class="cgmed-table-panel">
     <div class="cgmed-panel-label">
         Dose History — <?= htmlspecialchars($patient['name']) ?>
@@ -281,7 +240,9 @@ if (!empty($medications)) {
                     <td class="cgmed-table-muted"><?= date('h:i A', strtotime($log['schedule_time'])) ?></td>
                     <td>
                         <span class="cgmed-tpill <?= strtolower($log['status']) ?>">
-                            <?= $log['status'] === 'Taken' ? '✅' : '❌' ?>
+                            <?= $log['status'] === 'Taken'
+                                ? '<i class="bi bi-check-lg"></i>'
+                                : '<i class="bi bi-x-lg"></i>' ?>
                             <?= $log['status'] ?>
                         </span>
                     </td>
