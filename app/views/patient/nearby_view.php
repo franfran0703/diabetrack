@@ -44,12 +44,119 @@ ob_start();
 <!-- RESULTS GRID -->
 <div class="nb-results-grid" id="nbResultsGrid" style="display:none;"></div>
 
-<!-- MAP EMBED PLACEHOLDER -->
+<!-- MAP -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+/* ── Map expand button ── */
+.nb-map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.nb-map-expand-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(249,116,71,0.25);
+    background: rgba(249,116,71,0.07);
+    color: #F97447;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+.nb-map-expand-btn:hover {
+    background: rgba(249,116,71,0.14);
+    border-color: rgba(249,116,71,0.45);
+}
+
+/* ── Fullscreen overlay ── */
+#nbMapOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(6px);
+    animation: mapFadeIn 0.2s ease;
+}
+#nbMapOverlay.active { display: flex; flex-direction: column; }
+
+@keyframes mapFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.nb-overlay-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: rgba(20,8,2,0.9);
+    border-bottom: 1px solid rgba(249,116,71,0.15);
+    flex-shrink: 0;
+}
+.nb-overlay-title {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #ffe8d6;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.nb-overlay-close {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(249,116,71,0.3);
+    background: rgba(249,116,71,0.1);
+    color: #F97447;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.nb-overlay-close:hover { background: rgba(249,116,71,0.25); }
+
+#nbMapFull {
+    flex: 1;
+    width: 100%;
+}
+
+/* Inline map container */
+#nbLeafletMap {
+    width: 100%;
+    height: 420px;
+    border-radius: 16px;
+    cursor: grab;
+}
+#nbLeafletMap:active { cursor: grabbing; }
+</style>
+
 <div class="nb-map-section" id="nbMapSection" style="display:none;">
-    <div class="rep-section-label nb-map-label">Map View</div>
-    <div class="nb-map-wrap" id="nbMapWrap">
-        <iframe id="nbMapFrame" class="nb-map-frame" src="" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="nb-map-header">
+        <div class="rep-section-label nb-map-label" style="margin-bottom:0;">Map View</div>
+        <button class="nb-map-expand-btn" onclick="openMapFullscreen()">
+            ⛶ Expand Map
+        </button>
     </div>
+    <div class="nb-map-wrap">
+        <div id="nbLeafletMap"></div>
+    </div>
+</div>
+
+<!-- Fullscreen map overlay -->
+<div id="nbMapOverlay">
+    <div class="nb-overlay-bar">
+        <div class="nb-overlay-title">🗺 Map View</div>
+        <button class="nb-overlay-close" onclick="closeMapFullscreen()" title="Close">✕</button>
+    </div>
+    <div id="nbMapFull"></div>
 </div>
 
 <!-- TIPS PANEL -->
@@ -198,7 +305,7 @@ function searchNearby(lat, lng) {
 
         hideStatus();
         renderResults(elements, lat, lng, emoji, color, label);
-        updateMap(lat, lng, osm);
+        updateMap(lat, lng, elements, emoji, color);
     })
     .catch(() => {
         showStatus('❌', 'Could not load nearby services. Please check your connection.');
@@ -275,14 +382,102 @@ function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── MAP ──────────────────────────────────────────────────────────────
-function updateMap(lat, lng, type) {
+// ── MAP (Leaflet + OpenStreetMap — no API key) ───────────────────────
+let leafletMap     = null;
+let leafletMapFull = null;
+let markersLayer     = null;
+let markersLayerFull = null;
+let lastItems = [], lastEmoji = '', lastColor = '';
+
+function updateMap(lat, lng, items, emoji, color) {
+    lastItems = items; lastEmoji = emoji; lastColor = color;
+
     const section = document.getElementById('nbMapSection');
-    const frame   = document.getElementById('nbMapFrame');
-    const q       = encodeURIComponent(`${type} near ${lat},${lng}`);
-    frame.src = `https://www.google.com/maps/embed/v1/search?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=${q}&center=${lat},${lng}&zoom=13`;
     section.style.display = 'block';
+
+    if (!leafletMap) {
+        leafletMap = L.map('nbLeafletMap', { scrollWheelZoom: true }).setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(leafletMap);
+    } else {
+        leafletMap.setView([lat, lng], 14);
+        if (markersLayer) markersLayer.clearLayers();
+    }
+
+    markersLayer = L.layerGroup().addTo(leafletMap);
+    addMarkers(markersLayer, lat, lng, items, emoji, color);
+    setTimeout(() => leafletMap.invalidateSize(), 100);
 }
+
+function addMarkers(layer, lat, lng, items, emoji, color) {
+    // User pin
+    L.circleMarker([lat, lng], {
+        radius: 10, color: '#F97447', fillColor: '#F97447',
+        fillOpacity: 0.9, weight: 3
+    }).bindPopup('<b>📍 You are here</b>').addTo(layer);
+
+    // Place markers
+    items.forEach(item => {
+        const iLat = item.lat || item.center?.lat;
+        const iLng = item.lon || item.center?.lon;
+        if (!iLat || !iLng) return;
+
+        const name    = item.tags?.name || 'Unnamed';
+        const address = buildAddress(item.tags);
+        const phone   = item.tags?.phone || item.tags?.['contact:phone'] || null;
+        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${iLat},${iLng}`;
+
+        const icon = L.divIcon({
+            className: '',
+            html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:2px solid #fff;">${emoji}</div>`,
+            iconSize: [32, 32], iconAnchor: [16, 16]
+        });
+
+        L.marker([iLat, iLng], { icon })
+            .bindPopup(`
+                <b style="font-size:0.9rem;">${name}</b><br>
+                ${address ? `<span style="color:#888;font-size:0.8rem;">📍 ${address}</span><br>` : ''}
+                ${phone   ? `<span style="font-size:0.8rem;">📞 ${phone}</span><br>` : ''}
+                <a href="${mapsUrl}" target="_blank" style="font-size:0.8rem;color:#F97447;">🗺 Open in Google Maps</a>
+            `)
+            .addTo(layer);
+    });
+}
+
+// ── Fullscreen expand / close ─────────────────────────────────────────
+function openMapFullscreen() {
+    const overlay = document.getElementById('nbMapOverlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    if (!leafletMapFull) {
+        leafletMapFull = L.map('nbMapFull', { scrollWheelZoom: true });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(leafletMapFull);
+    }
+
+    setTimeout(() => {
+        leafletMapFull.invalidateSize();
+        if (leafletMap) leafletMapFull.setView(leafletMap.getCenter(), leafletMap.getZoom());
+        if (markersLayerFull) markersLayerFull.clearLayers();
+        markersLayerFull = L.layerGroup().addTo(leafletMapFull);
+        if (leafletMap) {
+            const c = leafletMap.getCenter();
+            addMarkers(markersLayerFull, c.lat, c.lng, lastItems, lastEmoji, lastColor);
+        }
+    }, 50);
+}
+
+function closeMapFullscreen() {
+    document.getElementById('nbMapOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 50);
+}
+
+// Close on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMapFullscreen(); });
 
 // ── STATUS HELPERS ───────────────────────────────────────────────────
 function showStatus(icon, msg) {

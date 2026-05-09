@@ -4,26 +4,33 @@ $activeMenu = 'profile';
 
 ob_start();
 
+$displayName = ucwords(strtolower($user['name']));
 $initial     = strtoupper(substr($user['name'], 0, 1));
 $memberSince = date('F Y', strtotime($user['created_at']));
+
+$flashSuccess = $success ?? (isset($_GET['success']) ? urldecode($_GET['success']) : null);
+$flashError   = $error   ?? (isset($_GET['error'])   ? urldecode($_GET['error'])   : null);
+
+// Fetch 2FA status
+require_once __DIR__ . '/../../../config/Database.php';
+$__db = (new Database())->connect();
+$__s  = $__db->prepare("SELECT two_fa_enabled FROM users WHERE id = :id");
+$__s->execute(['id' => $_SESSION['user_id']]);
+$twoFaEnabled = (bool) $__s->fetchColumn();
 ?>
 
 <link href="/diabetrack/public/assets/css/caregiver_profile.css?<?= time() ?>" rel="stylesheet">
 
 <div class="cgp-page">
 
-    <!-- ══ Cover ══ -->
-    <div class="cgp-cover">
-        <div class="cgp-cover-line"></div>
-    </div>
+    <div class="cgp-cover"><div class="cgp-cover-line"></div></div>
 
-    <!-- ══ Identity strip ══ -->
     <div class="cgp-identity">
         <div class="cgp-avatar-wrap">
             <div class="cgp-avatar"><?= $initial ?></div>
         </div>
         <div class="cgp-identity-info">
-            <div class="cgp-identity-name"><?= htmlspecialchars($user['name']) ?></div>
+            <div class="cgp-identity-name"><?= htmlspecialchars($displayName) ?></div>
             <div class="cgp-identity-email"><?= htmlspecialchars($user['email']) ?></div>
             <span class="cgp-identity-badge">
                 <i class="bi bi-clipboard2-heart-fill"></i> Caregiver
@@ -35,7 +42,6 @@ $memberSince = date('F Y', strtotime($user['created_at']));
         </div>
     </div>
 
-    <!-- ══ Stats bar ══ -->
     <div class="cgp-stats">
         <div class="cgp-stat-chip">
             <div class="cgp-stat-chip-icon"><i class="bi bi-people-fill"></i></div>
@@ -67,10 +73,8 @@ $memberSince = date('F Y', strtotime($user['created_at']));
         </div>
     </div>
 
-    <!-- ══ Settings layout ══ -->
     <div class="cgp-settings">
 
-        <!-- Sidebar tabs -->
         <nav class="cgp-tabs">
             <button class="cgp-tab active" onclick="showSection('info', this)">
                 <i class="bi bi-person-fill"></i> Personal Info
@@ -83,21 +87,27 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                 <i class="bi bi-people-fill"></i> My Patients
             </button>
             <div class="cgp-tab-divider"></div>
+            <button class="cgp-tab" onclick="showSection('twofa', this)">
+                <i class="bi bi-shield-check"></i> Two-Factor Auth
+                <?php if ($twoFaEnabled): ?>
+                <span style="background:#22c55e;color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:4px;">ON</span>
+                <?php endif; ?>
+            </button>
+            <div class="cgp-tab-divider"></div>
             <button class="cgp-tab" onclick="showSection('account', this)" style="color:#f87171;">
                 <i class="bi bi-box-arrow-right"></i> Sign Out
             </button>
         </nav>
 
-        <!-- Panels -->
         <div class="cgp-panels">
 
-            <?php if (!empty($success)): ?>
-                <div class="cgp-flash success"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($success) ?></div>
-            <?php elseif (!empty($error)): ?>
-                <div class="cgp-flash error"><i class="bi bi-exclamation-circle-fill"></i> <?= htmlspecialchars($error) ?></div>
+            <?php if (!empty($flashSuccess)): ?>
+                <div class="cgp-flash success"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($flashSuccess) ?></div>
+            <?php elseif (!empty($flashError)): ?>
+                <div class="cgp-flash error"><i class="bi bi-exclamation-circle-fill"></i> <?= htmlspecialchars($flashError) ?></div>
             <?php endif; ?>
 
-            <!-- Personal Information -->
+            <!-- Personal Info -->
             <div class="cgp-panel" id="section-info">
                 <div class="cgp-panel-head">
                     <div class="cgp-panel-title">Personal Information</div>
@@ -109,13 +119,11 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                         <div class="cgp-form-2col">
                             <div class="cgp-field">
                                 <label class="cgp-field-label">Full Name</label>
-                                <input class="cgp-input" type="text" name="name"
-                                       value="<?= htmlspecialchars($user['name']) ?>" required>
+                                <input class="cgp-input" type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
                             </div>
                             <div class="cgp-field">
                                 <label class="cgp-field-label">Email Address</label>
-                                <input class="cgp-input" type="email" name="email"
-                                       value="<?= htmlspecialchars($user['email']) ?>" required>
+                                <input class="cgp-input" type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
                             </div>
                         </div>
                         <div class="cgp-field">
@@ -123,15 +131,13 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                             <input class="cgp-input" type="text" value="Caregiver" readonly>
                         </div>
                         <div class="cgp-btn-row">
-                            <button class="cgp-btn cgp-btn-primary" type="submit">
-                                <i class="bi bi-check2"></i> Save Changes
-                            </button>
+                            <button class="cgp-btn cgp-btn-primary" type="submit"><i class="bi bi-check2"></i> Save Changes</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Change Password -->
+            <!-- Password -->
             <div class="cgp-panel" id="section-password" style="display:none;">
                 <div class="cgp-panel-head">
                     <div class="cgp-panel-title">Change Password</div>
@@ -142,27 +148,21 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                         <input type="hidden" name="action" value="password">
                         <div class="cgp-field">
                             <label class="cgp-field-label">Current Password</label>
-                            <input class="cgp-input" type="password" name="current_password"
-                                   placeholder="Enter your current password" required>
+                            <input class="cgp-input" type="password" name="current_password" placeholder="Enter your current password" required>
                         </div>
                         <div class="cgp-form-2col">
                             <div class="cgp-field">
                                 <label class="cgp-field-label">New Password</label>
-                                <input class="cgp-input" type="password" name="new_password"
-                                       id="newPw" placeholder="Min. 8 characters"
-                                       oninput="updateStrength(this.value)" required>
+                                <input class="cgp-input" type="password" name="new_password" id="newPw" placeholder="Min. 8 characters" oninput="updateStrength(this.value)" required>
                                 <div class="cgp-pw-bar"><div class="cgp-pw-fill" id="pwFill"></div></div>
                             </div>
                             <div class="cgp-field">
                                 <label class="cgp-field-label">Confirm New Password</label>
-                                <input class="cgp-input" type="password" name="confirm_password"
-                                       placeholder="Repeat new password" required>
+                                <input class="cgp-input" type="password" name="confirm_password" placeholder="Repeat new password" required>
                             </div>
                         </div>
                         <div class="cgp-btn-row">
-                            <button class="cgp-btn cgp-btn-primary" type="submit">
-                                <i class="bi bi-shield-check"></i> Update Password
-                            </button>
+                            <button class="cgp-btn cgp-btn-primary" type="submit"><i class="bi bi-shield-check"></i> Update Password</button>
                         </div>
                     </form>
                 </div>
@@ -181,13 +181,10 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                                 <div class="cgp-person-row">
                                     <div class="cgp-person-av"><?= strtoupper(substr($p['name'], 0, 1)) ?></div>
                                     <div>
-                                        <div class="cgp-person-name"><?= htmlspecialchars($p['name']) ?></div>
-                                        <div class="cgp-person-meta">
-                                            <?= htmlspecialchars($p['email']) ?> · Linked <?= date('M d, Y', strtotime($p['linked_at'])) ?>
-                                        </div>
+                                        <div class="cgp-person-name"><?= htmlspecialchars(ucwords(strtolower($p['name']))) ?></div>
+                                        <div class="cgp-person-meta"><?= htmlspecialchars($p['email']) ?> · Linked <?= date('M d, Y', strtotime($p['linked_at'])) ?></div>
                                     </div>
-                                    <a href="/diabetrack/public/caregiver/dashboard?patient_id=<?= $p['id'] ?>"
-                                       class="cgp-view-btn">
+                                    <a href="/diabetrack/public/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?= urlencode('/diabetrack/public/caregiver/dashboard') ?>" class="cgp-view-btn">
                                         <i class="bi bi-eye-fill"></i> View
                                     </a>
                                 </div>
@@ -196,7 +193,7 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                     <?php else: ?>
                         <div class="cgp-empty">
                             <i class="bi bi-person-x"></i>
-                            <p>No patients linked to your account yet.</p>
+                            <p>No patients linked yet.</p>
                             <a href="/diabetrack/public/caregiver/patients" class="cgp-btn cgp-btn-ghost" style="display:inline-flex;">
                                 <i class="bi bi-people"></i> Manage Patients
                             </a>
@@ -205,26 +202,60 @@ $memberSince = date('F Y', strtotime($user['created_at']));
                 </div>
             </div>
 
-            <!-- Account / Sign Out -->
+            <!-- Two-Factor Auth -->
+            <div class="cgp-panel" id="section-twofa" style="display:none;">
+                <div class="cgp-panel-head">
+                    <div class="cgp-panel-title">Two-Factor Authentication</div>
+                    <div class="cgp-panel-sub">Add an extra layer of security to your account</div>
+                </div>
+                <div class="cgp-panel-body">
+                    <?php if ($twoFaEnabled): ?>
+                        <div style="display:flex;align-items:center;gap:14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:16px;padding:18px 20px;margin-bottom:20px;">
+                            <span style="font-size:1.5rem;">🛡️</span>
+                            <div>
+                                <div style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:0.9rem;color:#4ade80;">2FA is Active</div>
+                                <div style="font-size:0.75rem;color:rgba(255,200,160,0.4);margin-top:2px;">Your account is protected with two-factor authentication.</div>
+                            </div>
+                        </div>
+                        <a href="/diabetrack/public/caregiver/disable2fa"
+                           class="cgp-btn cgp-btn-danger"
+                           onclick="return confirm('Disable 2FA? Your account will be less secure.')"
+                           style="display:inline-flex;">
+                            <i class="bi bi-shield-x"></i> Disable 2FA
+                        </a>
+                    <?php else: ?>
+                        <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px 20px;margin-bottom:20px;">
+                            <span style="font-size:1.5rem;">🔓</span>
+                            <div>
+                                <div style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:0.9rem;color:#ffe8d6;">2FA is Disabled</div>
+                                <div style="font-size:0.75rem;color:rgba(255,200,160,0.4);margin-top:2px;">Enable 2FA to protect your account with Google Authenticator.</div>
+                            </div>
+                        </div>
+                        <a href="/diabetrack/public/caregiver/setup2fa" class="cgp-btn cgp-btn-primary" style="display:inline-flex;">
+                            <i class="bi bi-shield-check"></i> Enable 2FA
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Sign Out -->
             <div class="cgp-panel cgp-panel-danger" id="section-account" style="display:none;">
                 <div class="cgp-panel-head">
                     <div class="cgp-panel-title">Account Actions</div>
                     <div class="cgp-panel-sub">Manage your session</div>
                 </div>
                 <div class="cgp-panel-body">
-                    <p class="cgp-danger-text">
-                        Signing out will end your current session. Make sure you've saved any changes before leaving.
-                    </p>
+                    <p class="cgp-danger-text">Signing out will end your current session. Make sure you've saved any changes before leaving.</p>
                     <a href="/diabetrack/public/auth/logout" class="cgp-btn cgp-btn-danger">
                         <i class="bi bi-box-arrow-right"></i> Sign Out
                     </a>
                 </div>
             </div>
 
-        </div><!-- end cgp-panels -->
-    </div><!-- end cgp-settings -->
+        </div>
+    </div>
 
-</div><!-- end cgp-page -->
+</div>
 
 <script>
 function showSection(id, btn) {
@@ -246,6 +277,14 @@ function updateStrength(val) {
     const colors = ['transparent','#ef4444','#f97316','#f59e0b','#22c55e'];
     fill.style.width      = widths[score];
     fill.style.background = colors[score];
+}
+// Auto-open 2FA tab if redirected from setup
+if (window.location.search.includes('success') || window.location.search.includes('error')) {
+    const twoFaBtn = document.querySelector('.cgp-tab:nth-child(5)');
+    const successMsg = document.querySelector('.cgp-flash');
+    if (successMsg && successMsg.textContent.includes('2FA')) {
+        document.querySelectorAll('.cgp-tab')[4]?.click();
+    }
 }
 </script>
 
