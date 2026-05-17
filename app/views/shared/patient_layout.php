@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabeTrack — <?= $pageTitle ?? 'Dashboard' ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <link href="/diabetrack/public/assets/css/patient_layout.css?<?= time() ?>" rel="stylesheet">
     <link href="/diabetrack/public/assets/css/patient_chip.css?<?= time() ?>" rel="stylesheet">
 </head>
@@ -41,7 +41,7 @@ if (empty($pendingCaregiverRequests)) {
             <div class="nav-item">
                 <a href="/diabetrack/public/patient/dashboard"
                    class="nav-btn <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-grid-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-layout-grid"></i></span>
                     Dashboard
                 </a>
             </div>
@@ -49,7 +49,7 @@ if (empty($pendingCaregiverRequests)) {
             <div class="nav-item">
                 <a href="/diabetrack/public/patient/bloodsugar"
                    class="nav-btn <?= ($activeMenu ?? '') === 'bloodsugar' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-droplet-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-droplet-half-2"></i></span>
                     Blood Sugar
                 </a>
             </div>
@@ -57,7 +57,7 @@ if (empty($pendingCaregiverRequests)) {
             <div class="nav-item">
                 <a href="/diabetrack/public/patient/medication"
                    class="nav-btn <?= ($activeMenu ?? '') === 'medication' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-capsule"></i></span>
+                    <span class="nav-icon"><i class="ti ti-pill"></i></span>
                     Medication
                 </a>
             </div>
@@ -65,7 +65,7 @@ if (empty($pendingCaregiverRequests)) {
             <div class="nav-item">
                 <a href="/diabetrack/public/patient/meals"
                    class="nav-btn <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-egg-fried"></i></span>
+                    <span class="nav-icon"><i class="ti ti-bowl-spoon"></i></span>
                     Meals &amp; Carbs
                 </a>
             </div>
@@ -73,7 +73,7 @@ if (empty($pendingCaregiverRequests)) {
             <div class="nav-item">
                 <a href="/diabetrack/public/patient/activity"
                    class="nav-btn <?= ($activeMenu ?? '') === 'activity' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-activity"></i></span>
+                    <span class="nav-icon"><i class="ti ti-activity"></i></span>
                     Activity
                 </a>
             </div>
@@ -92,14 +92,14 @@ if (empty($pendingCaregiverRequests)) {
                     <div class="col">
                         <div class="drop-label">Schedule</div>
                         <a class="drop-row" href="/diabetrack/public/patient/appointments">
-                            <div class="drop-icon"><i class="bi bi-calendar-check-fill"></i></div>
+                            <div class="drop-icon"><i class="ti ti-calendar-check"></i></div>
                             <div>
                                 <div class="drop-title">Appointments</div>
                                 <div class="drop-desc">View &amp; book doctor visits</div>
                             </div>
                         </a>
                         <a class="drop-row" href="/diabetrack/public/patient/reports">
-                            <div class="drop-icon"><i class="bi bi-file-earmark-medical-fill"></i></div>
+                            <div class="drop-icon"><i class="ti ti-report-medical"></i></div>
                             <div>
                                 <div class="drop-title">Doctor Reports</div>
                                 <div class="drop-desc">Your medical summaries</div>
@@ -109,14 +109,14 @@ if (empty($pendingCaregiverRequests)) {
                     <div class="col">
                         <div class="drop-label">Resources</div>
                         <a class="drop-row" href="/diabetrack/public/patient/education">
-                            <div class="drop-icon"><i class="bi bi-book-fill"></i></div>
+                            <div class="drop-icon"><i class="ti ti-book"></i></div>
                             <div>
                                 <div class="drop-title">Education Hub</div>
                                 <div class="drop-desc">Tips, guides &amp; articles</div>
                             </div>
                         </a>
                         <a class="drop-row" href="/diabetrack/public/patient/nearby">
-                            <div class="drop-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                            <div class="drop-icon"><i class="ti ti-map-pin"></i></div>
                             <div>
                                 <div class="drop-title">Nearby Services</div>
                                 <div class="drop-desc">Clinics &amp; pharmacies near you</div>
@@ -124,7 +124,7 @@ if (empty($pendingCaregiverRequests)) {
                         </a>
                         <a class="drop-row" href="/diabetrack/public/patient/caregiverRequests">
                             <div class="drop-icon" style="position:relative;">
-                                <i class="bi bi-person-check-fill"></i>
+                                <i class="ti ti-user-check"></i>
                                 <?php if (!empty($pendingCaregiverRequests) && $pendingCaregiverRequests > 0): ?>
                                 <span style="position:absolute;top:-4px;right:-4px;background:#f97447;color:#fff;font-size:0.6rem;font-weight:700;border-radius:999px;width:14px;height:14px;display:flex;align-items:center;justify-content:center;">
                                     <?= $pendingCaregiverRequests ?>
@@ -158,7 +158,7 @@ if (empty($pendingCaregiverRequests)) {
                 <span class="user-role">Patient</span>
             </div>
             <a href="/diabetrack/public/auth/logout" class="logout-btn" title="Logout">
-                <i class="bi bi-box-arrow-right"></i>
+                <i class="ti ti-logout"></i>
             </a>
         </div>
 
@@ -172,7 +172,7 @@ if (empty($pendingCaregiverRequests)) {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 function toggleMore(e) {
     e.stopPropagation();

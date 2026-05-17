@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabeTrack — <?= $pageTitle ?? 'Dashboard' ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <link href="/diabetrack/public/assets/css/caregiver_layout.css?<?= time() ?>" rel="stylesheet">
     <link href="/diabetrack/public/assets/css/caregiver_chip.css?<?= time() ?>" rel="stylesheet">
 </head>
@@ -29,49 +29,49 @@
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/patients"
                 class="nav-btn <?= ($activeMenu ?? '') === 'patients' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-people-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-users"></i></span>
                     My Patients
                 </a>
             </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/dashboard"
                 class="nav-btn <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-grid-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-layout-grid"></i></span>
                     Dashboard
                 </a>
             </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/bloodsugar"
                 class="nav-btn <?= ($activeMenu ?? '') === 'bloodsugar' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-droplet-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-droplet-half-2"></i></span>
                     Blood Sugar
                 </a>
             </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/medication"
                 class="nav-btn <?= ($activeMenu ?? '') === 'medication' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-capsule"></i></span>
+                    <span class="nav-icon"><i class="ti ti-pill"></i></span>
                     Medication
                 </a>
             </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/meals"
                 class="nav-btn <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-egg-fried"></i></span>
+                    <span class="nav-icon"><i class="ti ti-bowl-spoon"></i></span>
                     Meals
                 </a>
             </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/alerts"
                 class="nav-btn <?= ($activeMenu ?? '') === 'alerts' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-bell-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-bell"></i></span>
                     Alerts
                 </a>
             </div>
             <div class="nav-item">
                 <a href="/diabetrack/public/caregiver/reports"
                 class="nav-btn <?= ($activeMenu ?? '') === 'reports' ? 'active' : '' ?>">
-                    <span class="nav-icon"><i class="bi bi-file-earmark-medical-fill"></i></span>
+                    <span class="nav-icon"><i class="ti ti-report-medical"></i></span>
                     Reports
                 </a>
             </div>
@@ -87,7 +87,7 @@
                 <span class="user-role">Caregiver</span>
             </div>
             <a href="/diabetrack/public/auth/logout" class="logout-btn" title="Logout">
-                <i class="bi bi-box-arrow-right"></i>
+                <i class="ti ti-logout"></i>
             </a>
         </div>
 
@@ -100,6 +100,6 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
