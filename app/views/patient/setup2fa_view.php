@@ -5,10 +5,6 @@ ob_start();
 ?>
 
 <style>
-/* ═══════════════════════════════════════
-   PATIENT 2FA SETUP — light warm theme
-   matches patient_layout.css
-═══════════════════════════════════════ */
 
 .setup2fa-page {
     max-width: 860px;

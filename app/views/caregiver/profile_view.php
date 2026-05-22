@@ -33,7 +33,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
             <div class="cgp-identity-name"><?= htmlspecialchars($displayName) ?></div>
             <div class="cgp-identity-email"><?= htmlspecialchars($user['email']) ?></div>
             <span class="cgp-identity-badge">
-                <i class="bi bi-clipboard2-heart-fill"></i> Caregiver
+                <i class="ti ti-clipboard-heart"></i> Caregiver
             </span>
         </div>
         <div class="cgp-identity-since">
@@ -44,28 +44,28 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
 
     <div class="cgp-stats">
         <div class="cgp-stat-chip">
-            <div class="cgp-stat-chip-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="cgp-stat-chip-icon"><i class="ti ti-users"></i></div>
             <div>
                 <div class="cgp-stat-chip-num"><?= $stats['active_patients'] ?? 0 ?></div>
                 <div class="cgp-stat-chip-label">Active Patients</div>
             </div>
         </div>
         <div class="cgp-stat-chip">
-            <div class="cgp-stat-chip-icon"><i class="bi bi-bell-fill"></i></div>
+            <div class="cgp-stat-chip-icon"><i class="ti ti-bell"></i></div>
             <div>
                 <div class="cgp-stat-chip-num"><?= $stats['alerts_sent'] ?? 0 ?></div>
                 <div class="cgp-stat-chip-label">Alerts Issued</div>
             </div>
         </div>
         <div class="cgp-stat-chip">
-            <div class="cgp-stat-chip-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div class="cgp-stat-chip-icon"><i class="ti ti-file-text"></i></div>
             <div>
                 <div class="cgp-stat-chip-num"><?= $stats['reports_created'] ?? 0 ?></div>
                 <div class="cgp-stat-chip-label">Reports Created</div>
             </div>
         </div>
         <div class="cgp-stat-chip">
-            <div class="cgp-stat-chip-icon"><i class="bi bi-person-lines-fill"></i></div>
+            <div class="cgp-stat-chip-icon"><i class="ti ti-id-badge"></i></div>
             <div>
                 <div class="cgp-stat-chip-num"><?= $stats['total_patients'] ?? 0 ?></div>
                 <div class="cgp-stat-chip-label">Total Patients</div>
@@ -77,34 +77,34 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
 
         <nav class="cgp-tabs">
             <button class="cgp-tab active" onclick="showSection('info', this)">
-                <i class="bi bi-person-fill"></i> Personal Info
+                <i class="ti ti-user"></i> Personal Info
             </button>
             <button class="cgp-tab" onclick="showSection('password', this)">
-                <i class="bi bi-shield-lock-fill"></i> Password
+                <i class="ti ti-shield-lock"></i> Password
             </button>
             <div class="cgp-tab-divider"></div>
             <button class="cgp-tab" onclick="showSection('patients', this)">
-                <i class="bi bi-people-fill"></i> My Patients
+                <i class="ti ti-users"></i> My Patients
             </button>
             <div class="cgp-tab-divider"></div>
             <button class="cgp-tab" onclick="showSection('twofa', this)">
-                <i class="bi bi-shield-check"></i> Two-Factor Auth
+                <i class="ti ti-shield-check"></i> Two-Factor Auth
                 <?php if ($twoFaEnabled): ?>
                 <span style="background:#22c55e;color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:4px;">ON</span>
                 <?php endif; ?>
             </button>
             <div class="cgp-tab-divider"></div>
             <button class="cgp-tab" onclick="showSection('account', this)" style="color:#f87171;">
-                <i class="bi bi-box-arrow-right"></i> Sign Out
+                <i class="ti ti-logout"></i> Sign Out
             </button>
         </nav>
 
         <div class="cgp-panels">
 
             <?php if (!empty($flashSuccess)): ?>
-                <div class="cgp-flash success"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($flashSuccess) ?></div>
+                <div class="cgp-flash success"><i class="ti ti-circle-check"></i> <?= htmlspecialchars($flashSuccess) ?></div>
             <?php elseif (!empty($flashError)): ?>
-                <div class="cgp-flash error"><i class="bi bi-exclamation-circle-fill"></i> <?= htmlspecialchars($flashError) ?></div>
+                <div class="cgp-flash error"><i class="ti ti-alert-circle"></i> <?= htmlspecialchars($flashError) ?></div>
             <?php endif; ?>
 
             <!-- Personal Info -->
@@ -131,7 +131,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             <input class="cgp-input" type="text" value="Caregiver" readonly>
                         </div>
                         <div class="cgp-btn-row">
-                            <button class="cgp-btn cgp-btn-primary" type="submit"><i class="bi bi-check2"></i> Save Changes</button>
+                            <button class="cgp-btn cgp-btn-primary" type="submit"><i class="ti ti-check"></i> Save Changes</button>
                         </div>
                     </form>
                 </div>
@@ -162,7 +162,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             </div>
                         </div>
                         <div class="cgp-btn-row">
-                            <button class="cgp-btn cgp-btn-primary" type="submit"><i class="bi bi-shield-check"></i> Update Password</button>
+                            <button class="cgp-btn cgp-btn-primary" type="submit"><i class="ti ti-shield-check"></i> Update Password</button>
                         </div>
                     </form>
                 </div>
@@ -185,17 +185,17 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                                         <div class="cgp-person-meta"><?= htmlspecialchars($p['email']) ?> · Linked <?= date('M d, Y', strtotime($p['linked_at'])) ?></div>
                                     </div>
                                     <a href="/diabetrack/public/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?= urlencode('/diabetrack/public/caregiver/dashboard') ?>" class="cgp-view-btn">
-                                        <i class="bi bi-eye-fill"></i> View
+                                        <i class="ti ti-eye"></i> View
                                     </a>
                                 </div>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
                         <div class="cgp-empty">
-                            <i class="bi bi-person-x"></i>
+                            <i class="ti ti-user-x"></i>
                             <p>No patients linked yet.</p>
                             <a href="/diabetrack/public/caregiver/patients" class="cgp-btn cgp-btn-ghost" style="display:inline-flex;">
-                                <i class="bi bi-people"></i> Manage Patients
+                                <i class="ti ti-users"></i> Manage Patients
                             </a>
                         </div>
                     <?php endif; ?>
@@ -221,7 +221,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                            class="cgp-btn cgp-btn-danger"
                            onclick="return confirm('Disable 2FA? Your account will be less secure.')"
                            style="display:inline-flex;">
-                            <i class="bi bi-shield-x"></i> Disable 2FA
+                            <i class="ti ti-shield-x"></i> Disable 2FA
                         </a>
                     <?php else: ?>
                         <div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px 20px;margin-bottom:20px;">
@@ -232,7 +232,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             </div>
                         </div>
                         <a href="/diabetrack/public/caregiver/setup2fa" class="cgp-btn cgp-btn-primary" style="display:inline-flex;">
-                            <i class="bi bi-shield-check"></i> Enable 2FA
+                            <i class="ti ti-shield-check"></i> Enable 2FA
                         </a>
                     <?php endif; ?>
                 </div>
@@ -247,7 +247,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                 <div class="cgp-panel-body">
                     <p class="cgp-danger-text">Signing out will end your current session. Make sure you've saved any changes before leaving.</p>
                     <a href="/diabetrack/public/auth/logout" class="cgp-btn cgp-btn-danger">
-                        <i class="bi bi-box-arrow-right"></i> Sign Out
+                        <i class="ti ti-logout"></i> Sign Out
                     </a>
                 </div>
             </div>
