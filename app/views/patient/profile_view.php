@@ -33,7 +33,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
             <div class="pp-identity-name"><?= htmlspecialchars($displayName) ?></div>
             <div class="pp-identity-email"><?= htmlspecialchars($user['email']) ?></div>
             <span class="pp-identity-badge">
-                <i class="bi bi-heart-pulse-fill"></i> Patient
+                <i class="ti ti-heart-rate-monitor"></i> Patient
             </span>
         </div>
         <div class="pp-identity-since">
@@ -44,28 +44,28 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
 
     <div class="pp-stats">
         <div class="pp-stat-chip">
-            <div class="pp-stat-chip-icon"><i class="bi bi-droplet-fill"></i></div>
+            <div class="pp-stat-chip-icon"><i class="ti ti-droplet-half-2"></i></div>
             <div>
                 <div class="pp-stat-chip-num"><?= $stats['blood_sugar_logs'] ?? 0 ?></div>
                 <div class="pp-stat-chip-label">BS Readings</div>
             </div>
         </div>
         <div class="pp-stat-chip">
-            <div class="pp-stat-chip-icon"><i class="bi bi-capsule"></i></div>
+            <div class="pp-stat-chip-icon"><i class="ti ti-pill"></i></div>
             <div>
                 <div class="pp-stat-chip-num"><?= $stats['medications'] ?? 0 ?></div>
                 <div class="pp-stat-chip-label">Meds Tracked</div>
             </div>
         </div>
         <div class="pp-stat-chip">
-            <div class="pp-stat-chip-icon"><i class="bi bi-egg-fried"></i></div>
+            <div class="pp-stat-chip-icon"><i class="ti ti-bowl-spoon"></i></div>
             <div>
                 <div class="pp-stat-chip-num"><?= $stats['meal_logs'] ?? 0 ?></div>
                 <div class="pp-stat-chip-label">Meal Entries</div>
             </div>
         </div>
         <div class="pp-stat-chip">
-            <div class="pp-stat-chip-icon"><i class="bi bi-person-heart"></i></div>
+            <div class="pp-stat-chip-icon"><i class="ti ti-heart-handshake"></i></div>
             <div>
                 <div class="pp-stat-chip-num"><?= $stats['caregivers'] ?? 0 ?></div>
                 <div class="pp-stat-chip-label">Caregivers</div>
@@ -77,34 +77,34 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
 
         <nav class="pp-tabs">
             <button class="pp-tab active" onclick="showSection('info', this)">
-                <i class="bi bi-person-fill"></i> Personal Info
+                <i class="ti ti-user"></i> Personal Info
             </button>
             <button class="pp-tab" onclick="showSection('password', this)">
-                <i class="bi bi-shield-lock-fill"></i> Password
+                <i class="ti ti-shield-lock"></i> Password
             </button>
             <div class="pp-tab-divider"></div>
             <button class="pp-tab" onclick="showSection('caregivers', this)">
-                <i class="bi bi-person-heart"></i> Caregivers
+                <i class="ti ti-heart-handshake"></i> Caregivers
             </button>
             <div class="pp-tab-divider"></div>
             <button class="pp-tab" onclick="showSection('twofa', this)">
-                <i class="bi bi-shield-check"></i> Two-Factor Auth
+                <i class="ti ti-shield-check"></i> Two-Factor Auth
                 <?php if ($twoFaEnabled): ?>
                 <span style="background:#22c55e;color:#fff;font-size:0.55rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:4px;">ON</span>
                 <?php endif; ?>
             </button>
             <div class="pp-tab-divider"></div>
             <button class="pp-tab" onclick="showSection('account', this)" style="color:#c0392b;">
-                <i class="bi bi-box-arrow-right"></i> Sign Out
+                <i class="ti ti-logout"></i> Sign Out
             </button>
         </nav>
 
         <div class="pp-panels">
 
             <?php if (!empty($flashSuccess)): ?>
-                <div class="pp-flash success"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($flashSuccess) ?></div>
+                <div class="pp-flash success"><i class="ti ti-circle-check"></i> <?= htmlspecialchars($flashSuccess) ?></div>
             <?php elseif (!empty($flashError)): ?>
-                <div class="pp-flash error"><i class="bi bi-exclamation-circle-fill"></i> <?= htmlspecialchars($flashError) ?></div>
+                <div class="pp-flash error"><i class="ti ti-alert-circle"></i> <?= htmlspecialchars($flashError) ?></div>
             <?php endif; ?>
 
             <!-- Personal Info -->
@@ -131,7 +131,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             <input class="pp-input" type="text" value="Patient" readonly>
                         </div>
                         <div class="pp-btn-row">
-                            <button class="pp-btn pp-btn-primary" type="submit"><i class="bi bi-check2"></i> Save Changes</button>
+                            <button class="pp-btn pp-btn-primary" type="submit"><i class="ti ti-check"></i> Save Changes</button>
                         </div>
                     </form>
                 </div>
@@ -162,7 +162,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             </div>
                         </div>
                         <div class="pp-btn-row">
-                            <button class="pp-btn pp-btn-primary" type="submit"><i class="bi bi-shield-check"></i> Update Password</button>
+                            <button class="pp-btn pp-btn-primary" type="submit"><i class="ti ti-shield-check"></i> Update Password</button>
                         </div>
                     </form>
                 </div>
@@ -194,10 +194,10 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                         </div>
                     <?php else: ?>
                         <div class="pp-empty">
-                            <i class="bi bi-person-x"></i>
+                            <i class="ti ti-user-x"></i>
                             <p>No caregivers linked yet.</p>
                             <a href="/diabetrack/public/patient/caregiverRequests" class="pp-btn pp-btn-ghost">
-                                <i class="bi bi-person-plus"></i> Manage Requests
+                                <i class="ti ti-user-plus"></i> Manage Requests
                             </a>
                         </div>
                     <?php endif; ?>
@@ -223,7 +223,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                            class="pp-btn pp-btn-danger"
                            onclick="return confirm('Disable 2FA? Your account will be less secure.')"
                            style="display:inline-flex;">
-                            <i class="bi bi-shield-x"></i> Disable 2FA
+                            <i class="ti ti-shield-x"></i> Disable 2FA
                         </a>
                     <?php else: ?>
                         <div style="display:flex;align-items:center;gap:14px;background:rgba(249,116,71,0.06);border:1px solid rgba(249,116,71,0.14);border-radius:16px;padding:18px 20px;margin-bottom:20px;">
@@ -234,7 +234,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             </div>
                         </div>
                         <a href="/diabetrack/public/patient/setup2fa" class="pp-btn pp-btn-primary" style="display:inline-flex;">
-                            <i class="bi bi-shield-check"></i> Enable 2FA
+                            <i class="ti ti-shield-check"></i> Enable 2FA
                         </a>
                     <?php endif; ?>
                 </div>
@@ -249,7 +249,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                 <div class="pp-panel-body">
                     <p class="pp-danger-text">Signing out will end your current session. Make sure you've saved any changes before leaving.</p>
                     <a href="/diabetrack/public/auth/logout" class="pp-btn pp-btn-danger">
-                        <i class="bi bi-box-arrow-right"></i> Sign Out
+                        <i class="ti ti-logout"></i> Sign Out
                     </a>
                 </div>
             </div>
