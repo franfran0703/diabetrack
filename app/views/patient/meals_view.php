@@ -825,4 +825,311 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                         <button type="button" class="meal-type-btn" onclick="selectMealType('Snack',this,'preset-meal-type')"><i class="ti ti-apple"></i> Snack</button>
                     </div>
                     <input type="hidden" name="meal_type" id="preset-meal-type" value="Breakfast">
-              ... (16 KB left)
+                </div>
+                <div class="meal-form-divider">Nutrition</div>
+                <div class="meal-form-group">
+                    <label class="meal-form-label">Carbohydrates (g) <span class="meal-required">*</span></label>
+                    <input type="number" step="0.01" name="carbs" class="meal-form-input" placeholder="e.g. 45" min="0" required>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div><label class="meal-form-label">Calories <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="calories" class="meal-form-input" placeholder="e.g. 350" min="0"></div>
+                    <div><label class="meal-form-label">Protein (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="protein" class="meal-form-input" placeholder="e.g. 25" min="0"></div>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div><label class="meal-form-label">Fat (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="fat" class="meal-form-input" placeholder="e.g. 8" min="0"></div>
+                    <div><label class="meal-form-label">Fiber (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="fiber" class="meal-form-input" placeholder="e.g. 3" min="0"></div>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div><label class="meal-form-label">Sugar (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="sugar" class="meal-form-input" placeholder="e.g. 12" min="0"></div>
+                    <div><label class="meal-form-label">Sodium (mg) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="sodium" class="meal-form-input" placeholder="e.g. 420" min="0"></div>
+                </div>
+            </div>
+            <div class="meal-modal-footer">
+                <button type="button" class="meal-modal-cancel" onclick="closeModal('savePresetModal')">Cancel</button>
+                <button type="submit" class="meal-save-btn"><i class="ti ti-bookmark"></i> Save to My Meals</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══ TOASTS ════════════════════════════════════════════ -->
+<!-- Save success toast -->
+<div class="meal-toast meal-toast-success" id="saveToast" aria-live="polite">
+    <i class="ti ti-circle-check"></i>
+    <span>Meal logged successfully</span>
+    <button class="meal-toast-close" onclick="hideToast('saveToast')" aria-label="Dismiss"><i class="ti ti-x"></i></button>
+</div>
+
+<!-- Delete toast with undo -->
+<div class="meal-toast" id="deleteToast" aria-live="polite">
+    <i class="ti ti-trash"></i>
+    <span id="toastMsg">Meal deleted</span>
+    <button class="meal-toast-undo" id="toastUndo">Undo</button>
+    <button class="meal-toast-close" id="toastClose" aria-label="Dismiss"><i class="ti ti-x"></i></button>
+</div>
+
+<!-- ══ FAB ════════════════════════════════════════════════ -->
+<button class="patient-fab" onclick="openAddMealModal()" aria-label="Log a meal">
+    <span class="patient-fab-icon"><i class="ti ti-plus"></i></span>
+    <span class="patient-fab-label">Log Meal</span>
+</button>
+
+<!-- ══ CHART JS ══════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function() {
+    const ctx = document.getElementById('carbChart').getContext('2d');
+    const limitPlugin = {
+        id: 'limitLine',
+        beforeDraw(chart) {
+            const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+            if (!y) return;
+            const y130 = y.getPixelForValue(130);
+            ctx.save();
+            ctx.setLineDash([6, 4]);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(239,68,68,0.45)';
+            ctx.beginPath(); ctx.moveTo(left, y130); ctx.lineTo(right, y130); ctx.stroke();
+            ctx.fillStyle = 'rgba(239,68,68,0.6)';
+            ctx.font = '700 10px DM Sans';
+            ctx.fillText('130g limit', right - 68, y130 - 5);
+            ctx.restore();
+        }
+    };
+    new Chart(ctx, {
+        type: 'bar',
+        plugins: [limitPlugin],
+        data: {
+            labels: <?= json_encode($chartLabels) ?>,
+            datasets: [{
+                label: 'Carbs (g)',
+                data: <?= json_encode($chartData) ?>,
+                backgroundColor: <?= json_encode($chartColors) ?>,
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a0800',
+                    titleColor: '#fbab6e',
+                    bodyColor: '#fff8f5',
+                    borderColor: 'rgba(249,116,71,0.2)',
+                    borderWidth: 1, padding: 12, cornerRadius: 12,
+                    callbacks: {
+                        label: c => ` ${c.parsed.y}g carbs${c.parsed.y > 130 ? ' — over daily limit!' : ''}`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(249,116,71,0.07)' }, ticks: { font: { size:11, family:'DM Sans' }, color:'#b8927e' }, border: { color:'transparent' } },
+                x: { grid: { display: false }, ticks: { font: { size:11, family:'DM Sans' }, color:'#b8927e' }, border: { color:'transparent' } }
+            }
+        }
+    });
+})();
+</script>
+
+<!-- ══ INTERACTIVITY ══════════════════════════════════════ -->
+<script>
+/* ── Toast helpers ─────────────────────────────────────── */
+function showToast(id, duration) {
+    const t = document.getElementById(id);
+    if (!t) return;
+    t.classList.add('show');
+    if (duration > 0) setTimeout(() => t.classList.remove('show'), duration);
+}
+function hideToast(id) {
+    const t = document.getElementById(id);
+    if (t) t.classList.remove('show');
+}
+
+/* Flash → toast on load (mirrors bloodsugar sessionStorage pattern) */
+document.getElementById('addMealForm').addEventListener('submit', () => {
+    sessionStorage.setItem('meal_saved', '1');
+});
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('meal_saved') === '1') {
+        sessionStorage.removeItem('meal_saved');
+        showToast('saveToast', 3500);
+    }
+    <?php if ($flashDeleted): ?>
+    document.getElementById('toastMsg').textContent = 'Meal deleted successfully';
+    document.getElementById('toastUndo').style.display = 'none';
+    showToast('deleteToast', 3500);
+    <?php endif; ?>
+});
+
+/* ── Modal helpers ─────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
+function overlayCloseModal(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+function openAddMealModal()   { openModal('addMealModal'); }
+function openSavePresetModal(){ openModal('savePresetModal'); }
+
+/* ── Meal type selector ─────────────────────────────────── */
+function selectMealType(type, btn, inputId) {
+    btn.closest('.meal-type-grid').querySelectorAll('.meal-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById(inputId).value = type;
+}
+
+/* ── Quick Add tabs ─────────────────────────────────────── */
+function switchQaTab(tab, btn) {
+    document.querySelectorAll('.qa-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('qa-suggested').style.display = tab === 'suggested' ? '' : 'none';
+    document.getElementById('qa-saved').style.display     = tab === 'saved'     ? '' : 'none';
+}
+
+/* ── Quick Add — pre-fill modal then open ─────────────── */
+function quickAdd(preset) {
+    document.getElementById('add-meal-name').value     = preset.meal_name || '';
+    document.getElementById('add-meal-carbs').value    = preset.carbs     || '';
+    document.getElementById('add-meal-calories').value = preset.calories  || '';
+    document.getElementById('add-meal-sugar').value    = preset.sugar     || '';
+    document.getElementById('add-meal-protein').value  = preset.protein   || '';
+    document.getElementById('add-meal-fat').value      = preset.fat       || '';
+    document.getElementById('add-meal-fiber').value    = preset.fiber     || '';
+    document.getElementById('add-meal-sodium').value   = preset.sodium    || '';
+    const t = (preset.meal_type || 'Breakfast').toLowerCase();
+    document.querySelector('#addMealModal .meal-type-grid').querySelectorAll('.meal-type-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent.trim().toLowerCase().includes(t));
+    });
+    document.getElementById('add-meal-type').value = preset.meal_type || 'Breakfast';
+    openAddMealModal();
+}
+
+/* ── Quick Add Panel (mobile) ───────────────────────────── */
+function closeQaPanel() {
+    if (window.innerWidth <= 1024) {
+        document.getElementById('qaPanel').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+/* ── History drawer ─────────────────────────────────────── */
+let drawerFilterActive = 'all';
+
+function openHistoryDrawer() {
+    document.getElementById('historyDrawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+function closeHistoryDrawer() {
+    document.getElementById('historyDrawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+}
+function filterDrawerByDate(date) {
+    openHistoryDrawer();
+    setTimeout(() => {
+        const group = document.querySelector(`.meal-drawer-day-group[data-date="${date}"]`);
+        if (group) group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 320);
+}
+function filterDrawer() {
+    applyDrawerFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), drawerFilterActive);
+}
+function setDrawerFilter(filter, btn) {
+    drawerFilterActive = filter;
+    document.querySelectorAll('.meal-drawer-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyDrawerFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), filter);
+}
+function applyDrawerFilters(q, filter) {
+    let visible = 0;
+    document.querySelectorAll('.meal-timeline-item').forEach(item => {
+        const ok = (filter === 'all' || item.dataset.type === filter)
+                && (!q || item.dataset.search.includes(q));
+        item.style.display = ok ? '' : 'none';
+        if (ok) visible++;
+    });
+    document.querySelectorAll('.meal-drawer-day-group').forEach(group => {
+        group.style.display = [...group.querySelectorAll('.meal-timeline-item')].some(i => i.style.display !== 'none') ? '' : 'none';
+    });
+    const noRes = document.getElementById('drawerNoResults');
+    if (noRes) noRes.style.display = visible === 0 ? 'flex' : 'none';
+}
+
+/* ── Delete with undo toast ─────────────────────────────── */
+let deleteTimer   = null;
+let pendingDelete = null;
+
+function confirmDeleteMeal(btn) {
+    const id   = btn.dataset.id;
+    const name = btn.dataset.name;
+    const row  = document.getElementById('meal-row-' + id);
+    if (row) row.classList.add('removing');
+    showDeleteToast(id, name, [row]);
+}
+function confirmDeleteLog(btn) {
+    const id     = btn.dataset.id;
+    const name   = btn.dataset.name;
+    const tlItem = btn.closest('.meal-timeline-item');
+    const todRow = document.getElementById('meal-row-' + id);
+    if (tlItem) tlItem.classList.add('meal-item-deleting');
+    if (todRow) todRow.classList.add('removing');
+    showDeleteToast(id, name, [tlItem, todRow]);
+}
+function showDeleteToast(id, name, rows) {
+    document.getElementById('toastUndo').style.display = '';
+    document.getElementById('toastMsg').textContent = `"${name}" removed`;
+    showToast('deleteToast', 0);
+    pendingDelete = { id, rows };
+    clearTimeout(deleteTimer);
+    deleteTimer = setTimeout(() => {
+        window.location.href = '/diabetrack/public/patient/meals?delete=' + id + '&deleted=1';
+    }, 5000);
+}
+
+document.getElementById('toastUndo').addEventListener('click', () => {
+    clearTimeout(deleteTimer);
+    if (pendingDelete) {
+        pendingDelete.rows.forEach(r => { if (r) { r.classList.remove('removing'); r.classList.remove('meal-item-deleting'); } });
+        pendingDelete = null;
+    }
+    hideToast('deleteToast');
+});
+document.getElementById('toastClose').addEventListener('click', () => {
+    if (pendingDelete) {
+        window.location.href = '/diabetrack/public/patient/meals?delete=' + pendingDelete.id + '&deleted=1';
+        pendingDelete = null;
+    }
+    hideToast('deleteToast');
+    clearTimeout(deleteTimer);
+});
+
+/* ── Delete preset ─────────────────────────────────────── */
+function deletePreset(id, link) {
+    const item = link.closest('.qa-list-item');
+    fetch('/diabetrack/public/patient/meals?delete_preset=' + id)
+        .then(r => {
+            if (r.ok) {
+                if (item) { item.classList.add('removing'); setTimeout(() => item.remove(), 300); }
+            }
+        })
+        .catch(() => {});
+}
+
+/* ── Global keyboard handler ───────────────────────────── */
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeModal('addMealModal');
+        closeModal('savePresetModal');
+        closeModal('nutritionModal');
+        closeHistoryDrawer();
+        closeQaPanel();
+    }
+});
+</script>
+
+<?php
+$content = ob_get_clean();
+require_once __DIR__ . '/../shared/patient_layout.php';
+?>
