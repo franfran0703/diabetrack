@@ -134,6 +134,37 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             <button class="cgp-btn cgp-btn-primary" type="submit"><i class="ti ti-check"></i> Save Changes</button>
                         </div>
                     </form>
+
+                    <div class="cgp-panel-head" style="margin-top:2rem;">
+                        <div class="cgp-panel-title">Caregiver Details</div>
+                        <div class="cgp-panel-sub">Your contact and relationship info</div>
+                    </div>
+                    <form method="POST" action="/diabetrack/public/caregiver/updateProfile">
+                        <input type="hidden" name="action" value="caregiver_profile">
+                        <div class="cgp-form-2col">
+                            <div class="cgp-field">
+                                <label class="cgp-field-label">Relationship to Patient</label>
+                                <input class="cgp-input" type="text" name="relationship_to_patient"
+                                       placeholder="e.g. Son, Nurse, Spouse"
+                                       value="<?= htmlspecialchars($profile['relationship_to_patient'] ?? '') ?>">
+                            </div>
+                            <div class="cgp-field">
+                                <label class="cgp-field-label">Contact Number</label>
+                                <input class="cgp-input" type="text" name="contact_number"
+                                       value="<?= htmlspecialchars($profile['contact_number'] ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="cgp-field">
+                            <label class="cgp-field-label">Address</label>
+                            <input class="cgp-input" type="text" name="address"
+                                   value="<?= htmlspecialchars($profile['address'] ?? '') ?>">
+                        </div>
+                        <div class="cgp-btn-row">
+                            <button class="cgp-btn cgp-btn-primary" type="submit">
+                                <i class="ti ti-check"></i> Save Details
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 

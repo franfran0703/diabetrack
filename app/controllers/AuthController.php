@@ -120,6 +120,18 @@ class AuthController extends Controller {
 
     // Helper
     private function redirectToDashboard($role) {
+        // Check if user has completed onboarding
+        require_once __DIR__ . '/../../config/Database.php';
+        $db   = (new Database())->connect();
+        $stmt = $db->prepare("SELECT onboarding_complete FROM users WHERE id = :id");
+        $stmt->execute(['id' => $_SESSION['user_id']]);
+        $done = (bool) $stmt->fetchColumn();
+
+        if (!$done && $role !== 'admin') {
+            header('Location: /diabetrack/public/onboarding/index');
+            exit;
+        }
+
         if ($role === 'patient') {
             header('Location: /diabetrack/public/patient/dashboard');
         } elseif ($role === 'caregiver') {
