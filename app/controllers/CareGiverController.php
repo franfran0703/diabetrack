@@ -50,13 +50,15 @@ class CaregiverController extends Controller {
                 $error = 'You are already linked to this patient.';
             } else {
                 // Create the link
+                $rel = trim($_POST['relationship_to_patient'] ?? '');
                 $link = $this->db->prepare("
-                    INSERT INTO caregiver_links (caregiver_id, patient_id)
-                    VALUES (:cid, :pid)
+                    INSERT INTO caregiver_links (caregiver_id, patient_id, relationship_to_patient)
+                    VALUES (:cid, :pid, :rel)
                 ");
                 $link->execute([
                     'cid' => $_SESSION['user_id'],
-                    'pid' => $patient['id']
+                    'pid' => $patient['id'],
+                    'rel' => $rel ?: null,
                 ]);
                 $success = 'Successfully linked to ' . $patient['name'] . '!';
             }
@@ -559,47 +561,63 @@ public function switchPatient() {
         }
     }
     $redirect = $_GET['redirect'] ?? '/diabetrack/public/caregiver/dashboard';
+    // Whitelist: only allow relative paths within this app
+    if (!str_starts_with($redirect, '/diabetrack/')) {
+        $redirect = '/diabetrack/public/caregiver/dashboard';
+    }
     header('Location: ' . $redirect);
     exit;
 }
 
 public function profile() {
-    $stmt = $this->db->prepare("SELECT * FROM users WHERE id = :id");
-    $stmt->execute(['id' => $_SESSION['user_id']]);
-    $user = $stmt->fetch();
+    $cid       = $_SESSION['user_id'];
+    $userModel = $this->model('UserModel');
+    $user      = $userModel->findById($cid);
+    $profile   = $userModel->findCaregiverProfile($cid);
 
-    // Stats
+    $twoFa = $this->db->prepare("SELECT two_fa_enabled FROM users WHERE id = :id");
+    $twoFa->execute(['id' => $cid]);
+    $twoFaEnabled = (bool) $twoFa->fetchColumn();
+
     $ap = $this->db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE caregiver_id = :id AND status = 'accepted'");
-    $ap->execute(['id' => $_SESSION['user_id']]);
+    $ap->execute(['id' => $cid]);
 
     $tp = $this->db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE caregiver_id = :id");
-    $tp->execute(['id' => $_SESSION['user_id']]);
+    $tp->execute(['id' => $cid]);
 
-    $al = $this->db->prepare("SELECT COUNT(*) FROM alerts WHERE user_id = :id");
-    $al->execute(['id' => $_SESSION['user_id']]);
+    // alerts.patient_id links to patients this caregiver monitors
+    $al = $this->db->prepare("
+        SELECT COUNT(*) FROM alerts
+        WHERE patient_id IN (
+            SELECT patient_id FROM caregiver_links
+            WHERE caregiver_id = :id AND status = 'accepted'
+        )
+    ");
+    $al->execute(['id' => $cid]);
 
     $stats = [
-        'active_patients'  => $ap->fetchColumn(),
-        'total_patients'   => $tp->fetchColumn(),
-        'alerts_sent'      => $al->fetchColumn(),
-        'reports_created'  => 0,
+        'active_patients' => $ap->fetchColumn(),
+        'total_patients'  => $tp->fetchColumn(),
+        'alerts_sent'     => $al->fetchColumn(),
+        'reports_created' => 0,
     ];
 
-    // Linked patients for the patients tab
     $ps = $this->db->prepare("
         SELECT u.*, cl.linked_at FROM users u
         JOIN caregiver_links cl ON cl.patient_id = u.id
         WHERE cl.caregiver_id = :id AND cl.status = 'accepted'
         ORDER BY cl.linked_at DESC
     ");
-    $ps->execute(['id' => $_SESSION['user_id']]);
+    $ps->execute(['id' => $cid]);
     $patients = $ps->fetchAll();
 
     $this->view('caregiver/profile_view', [
-        'name'     => $_SESSION['user_name'],
-        'user'     => $user,
-        'stats'    => $stats,
-        'patients' => $patients,
+        'name'         => $_SESSION['user_name'],
+        'user'         => $user,
+        'profile'      => $profile,
+        'stats'        => $stats,
+        'patients'     => $patients,
+        'twoFaEnabled' => $twoFaEnabled,
     ]);
 }
 
@@ -647,6 +665,17 @@ public function updateProfile() {
         $stmt = $this->db->prepare("UPDATE users SET password = :pw WHERE id = :id");
         $stmt->execute(['pw' => $hash, 'id' => $_SESSION['user_id']]);
         header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Password updated successfully.'));
+        exit;
+    }
+
+    if ($action === 'caregiver_profile') {
+        $userModel = $this->model('UserModel');
+        $userModel->updateCaregiverProfile($_SESSION['user_id'], [
+            'relationship_to_patient' => $_POST['relationship_to_patient'] ?? null,
+            'contact_number'          => $_POST['contact_number']          ?? null,
+            'address'                 => $_POST['address']                 ?? null,
+        ]);
+        header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Profile updated.'));
         exit;
     }
 

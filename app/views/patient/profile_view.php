@@ -134,6 +134,49 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             <button class="pp-btn pp-btn-primary" type="submit"><i class="ti ti-check"></i> Save Changes</button>
                         </div>
                     </form>
+
+                    <div class="pp-panel-head" style="margin-top:2rem;">
+                        <div class="pp-panel-title">Health Details</div>
+                        <div class="pp-panel-sub">Your diabetes and emergency contact info</div>
+                    </div>
+                    <form method="POST" action="/diabetrack/public/patient/updateProfile">
+                        <input type="hidden" name="action" value="patient_profile">
+                        <div class="pp-form-2col">
+                            <div class="pp-field">
+                                <label class="pp-field-label">Date of Birth</label>
+                                <input class="pp-input" type="date" name="date_of_birth"
+                                       value="<?= htmlspecialchars($profile['date_of_birth'] ?? '') ?>">
+                            </div>
+                            <div class="pp-field">
+                                <label class="pp-field-label">Diabetes Type</label>
+                                <select class="pp-input" name="diabetes_type">
+                                    <option value="">— Select —</option>
+                                    <?php foreach (['Type 1','Type 2','Gestational','Pre-diabetes'] as $t): ?>
+                                    <option value="<?= $t ?>" <?= ($profile['diabetes_type'] ?? '') === $t ? 'selected' : '' ?>>
+                                        <?= $t ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pp-form-2col">
+                            <div class="pp-field">
+                                <label class="pp-field-label">Emergency Contact Name</label>
+                                <input class="pp-input" type="text" name="emergency_contact_name"
+                                       value="<?= htmlspecialchars($profile['emergency_contact_name'] ?? '') ?>">
+                            </div>
+                            <div class="pp-field">
+                                <label class="pp-field-label">Emergency Contact Number</label>
+                                <input class="pp-input" type="text" name="emergency_contact_number"
+                                       value="<?= htmlspecialchars($profile['emergency_contact_number'] ?? '') ?>">
+                            </div>
+                        </div>
+                        <div class="pp-btn-row">
+                            <button class="pp-btn pp-btn-primary" type="submit">
+                                <i class="ti ti-check"></i> Save Health Details
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 

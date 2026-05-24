@@ -99,6 +99,19 @@ ob_start();
                 required
             >
 
+            <label class="cgp-form-label" style="margin-top:1rem;">Your Relationship to this Patient</label>
+            <select name="relationship_to_patient" class="cgp-form-input" required>
+                <option value="">— Select relationship —</option>
+                <option value="Son">Son</option>
+                <option value="Daughter">Daughter</option>
+                <option value="Spouse">Spouse</option>
+                <option value="Parent">Parent</option>
+                <option value="Sibling">Sibling</option>
+                <option value="Nurse">Nurse</option>
+                <option value="Doctor">Doctor</option>
+                <option value="Other">Other</option>
+            </select>
+
             <div class="cgp-form-info">
                 💡 The patient must already have a registered DiabeTrack account with the
                 <strong style="color:rgba(255,200,160,0.7);">Patient</strong> role.
