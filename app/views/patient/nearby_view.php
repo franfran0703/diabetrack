@@ -4,145 +4,112 @@ $activeMenu = 'nearby';
 ob_start();
 ?>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="/diabetrack/public/assets/css/nearby.css?v=<?= time() ?>" rel="stylesheet">
 
-<!-- HEADER -->
-<div class="nb-header">
-    <div>
-        <div class="nb-eyebrow">📍 Discover</div>
-        <h1 class="nb-title">Nearby <span>Services</span></h1>
-        <p class="nb-sub">Find clinics, hospitals, and pharmacies near you.</p>
+
+<!-- ══ PAGE HEADER ═══════════════════════════════════════ -->
+<div class="nb-page-header">
+    <div class="nb-page-header-left">
+        <div class="nb-page-eyebrow">
+            <i class="ti ti-map-pin"></i> Discover
+        </div>
+        <h1 class="nb-page-title">Nearby <span>Services</span></h1>
+        <p class="nb-page-sub">Find clinics, hospitals, pharmacies and labs near you.</p>
     </div>
-    <div class="nb-header-right">
+    <div class="nb-page-header-right">
+        <div class="nb-radius-badge">
+            <i class="ti ti-circle-dotted"></i> 5 km radius
+        </div>
         <button class="nb-locate-btn" id="locateBtn" onclick="getLocation()">
-            <span id="locateBtnIcon">📍</span>
+            <span class="nb-locate-btn-icon" id="locateBtnIcon">
+                <i class="ti ti-current-location"></i>
+            </span>
             <span id="locateBtnText">Use My Location</span>
         </button>
     </div>
 </div>
 
-<!-- SEARCH BAR -->
+
+<!-- ══ SEARCH + FILTER ROW ═══════════════════════════════ -->
 <div class="nb-search-row">
     <div class="nb-search-wrap">
-        <span class="nb-search-icon">🔍</span>
-        <input type="text" class="nb-search" id="placeSearch" placeholder="Search by city or address..." />
-    </div>
-    <div class="nb-filter-tabs" id="filterTabs">
-        <button class="nb-filter active" data-type="clinic">🏥 Clinics</button>
-        <button class="nb-filter" data-type="hospital">🏨 Hospitals</button>
-        <button class="nb-filter" data-type="pharmacy">💊 Pharmacies</button>
-        <button class="nb-filter" data-type="lab">🔬 Labs</button>
+        <i class="ti ti-search nb-search-icon"></i>
+        <input type="text" class="nb-search" id="placeSearch"
+               placeholder="Search by city or address… then press Enter" autocomplete="off"/>
+        <button class="nb-search-submit" onclick="geocodeAndSearch(document.getElementById('placeSearch').value.trim())" title="Search">
+            <i class="ti ti-arrow-right"></i>
+        </button>
     </div>
 </div>
 
-<!-- STATUS / LOADING -->
+<div class="nb-filter-row">
+    <div class="nb-filter-tabs" id="filterTabs" role="tablist">
+        <button class="nb-filter active" data-type="clinic" role="tab">
+            <i class="ti ti-building-hospital"></i> Clinics
+        </button>
+        <button class="nb-filter" data-type="hospital" role="tab">
+            <i class="ti ti-building-plus"></i> Hospitals
+        </button>
+        <button class="nb-filter" data-type="pharmacy" role="tab">
+            <i class="ti ti-pill"></i> Pharmacies
+        </button>
+        <button class="nb-filter" data-type="lab" role="tab">
+            <i class="ti ti-microscope"></i> Labs
+        </button>
+    </div>
+    <div class="nb-result-counter" id="nbResultCounter" style="display:none;">
+        <i class="ti ti-map-pin"></i>
+        <span id="nbResultCount">0</span> found
+    </div>
+</div>
+
+
+<!-- ══ IDLE / STATUS STATE ═══════════════════════════════ -->
 <div class="nb-status" id="nbStatus">
-    <div class="nb-status-icon">📍</div>
-    <div class="nb-status-text">Click "Use My Location" to find nearby health services, or type a location above.</div>
+
+    <!-- Idle: service type preview cards -->
+    <div class="nb-idle-grid" id="nbIdleGrid">
+        <?php foreach ([
+            ['ti-building-hospital', '#c04a20', '#FDE8DC', 'Clinics',     'Primary care & diabetes specialists'],
+            ['ti-building-plus',     '#b91c1c', '#fde8e8', 'Hospitals',   'Emergency care & full-service facilities'],
+            ['ti-pill',              '#0e7490', '#cffafe', 'Pharmacies',  'Fill prescriptions & pick up supplies'],
+            ['ti-microscope',        '#6d28d9', '#ede9fe', 'Labs',        'Blood glucose & HbA1c testing'],
+        ] as [$icon, $color, $bg, $title, $desc]): ?>
+        <div class="nb-idle-card" style="--ic:<?= $color ?>;--ib:<?= $bg ?>;">
+            <div class="nb-idle-icon"><i class="ti <?= $icon ?>"></i></div>
+            <div class="nb-idle-title"><?= $title ?></div>
+            <div class="nb-idle-desc"><?= $desc ?></div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Status message row (loading / error / empty) -->
+    <div class="nb-status-msg" id="nbStatusMsg" style="display:none;">
+        <div class="nb-status-icon-wrap" id="nbStatusIconWrap">
+            <i class="ti ti-map-pin" id="nbStatusIcon"></i>
+        </div>
+        <div class="nb-status-text" id="nbStatusText">
+            Tap "Use My Location" to find nearby health services, or type a location above.
+        </div>
+    </div>
+
 </div>
 
-<!-- RESULTS GRID -->
+
+<!-- ══ RESULTS GRID ══════════════════════════════════════ -->
 <div class="nb-results-grid" id="nbResultsGrid" style="display:none;"></div>
 
-<!-- MAP -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<style>
-/* ── Map expand button ── */
-.nb-map-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-.nb-map-expand-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1.5px solid rgba(249,116,71,0.25);
-    background: rgba(249,116,71,0.07);
-    color: #F97447;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-}
-.nb-map-expand-btn:hover {
-    background: rgba(249,116,71,0.14);
-    border-color: rgba(249,116,71,0.45);
-}
-
-/* ── Fullscreen overlay ── */
-#nbMapOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(0,0,0,0.82);
-    backdrop-filter: blur(6px);
-    animation: mapFadeIn 0.2s ease;
-}
-#nbMapOverlay.active { display: flex; flex-direction: column; }
-
-@keyframes mapFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-.nb-overlay-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    background: rgba(20,8,2,0.9);
-    border-bottom: 1px solid rgba(249,116,71,0.15);
-    flex-shrink: 0;
-}
-.nb-overlay-title {
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 1rem;
-    color: #ffe8d6;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.nb-overlay-close {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(249,116,71,0.3);
-    background: rgba(249,116,71,0.1);
-    color: #F97447;
-    font-size: 1.1rem;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-}
-.nb-overlay-close:hover { background: rgba(249,116,71,0.25); }
-
-#nbMapFull {
-    flex: 1;
-    width: 100%;
-}
-
-/* Inline map container */
-#nbLeafletMap {
-    width: 100%;
-    height: 420px;
-    border-radius: 16px;
-    cursor: grab;
-}
-#nbLeafletMap:active { cursor: grabbing; }
-</style>
-
+<!-- ══ MAP SECTION ═══════════════════════════════════════ -->
 <div class="nb-map-section" id="nbMapSection" style="display:none;">
     <div class="nb-map-header">
-        <div class="rep-section-label nb-map-label" style="margin-bottom:0;">Map View</div>
+        <div class="nb-section-label">
+            <i class="ti ti-map-2"></i> Map View
+        </div>
         <button class="nb-map-expand-btn" onclick="openMapFullscreen()">
-            ⛶ Expand Map
+            <i class="ti ti-maximize"></i> Expand Map
         </button>
     </div>
     <div class="nb-map-wrap">
@@ -150,54 +117,70 @@ ob_start();
     </div>
 </div>
 
-<!-- Fullscreen map overlay -->
+
+<!-- ══ FULLSCREEN MAP OVERLAY ════════════════════════════ -->
 <div id="nbMapOverlay">
     <div class="nb-overlay-bar">
-        <div class="nb-overlay-title">🗺 Map View</div>
-        <button class="nb-overlay-close" onclick="closeMapFullscreen()" title="Close">✕</button>
+        <div class="nb-overlay-title">
+            <i class="ti ti-map-2"></i> Map View
+        </div>
+        <button class="nb-overlay-close" onclick="closeMapFullscreen()" aria-label="Close map">
+            <i class="ti ti-x"></i>
+        </button>
     </div>
     <div id="nbMapFull"></div>
 </div>
 
-<!-- TIPS PANEL -->
-<div class="nb-tips-panel">
-    <div class="nb-tips-title">🩺 Visit Preparation Checklist</div>
-    <div class="nb-tips-grid">
-        <div class="nb-tip-item">
-            <div class="nb-tip-icon">🩸</div>
-            <div class="nb-tip-text">Bring your last 7-day blood sugar log (printable from Doctor Reports)</div>
+
+<!-- ══ VISIT PREP CHECKLIST ══════════════════════════════ -->
+<div class="nb-checklist-panel">
+    <div class="nb-checklist-header">
+        <div class="nb-section-label">
+            <i class="ti ti-clipboard-check"></i> Visit Preparation
         </div>
-        <div class="nb-tip-item">
-            <div class="nb-tip-icon">💊</div>
-            <div class="nb-tip-text">List all medications with dosages — your Medication page has this info</div>
+    </div>
+    <div class="nb-checklist-grid">
+        <?php foreach ([
+            ['ti-droplet-half-2', '#c04a20', '#FDE8DC', 'Bring your last 7-day blood sugar log', 'Printable from Doctor Reports'],
+            ['ti-pill',           '#0e7490', '#cffafe', 'List all medications with dosages',       'Your Medication page has this'],
+            ['ti-notes',          '#6d28d9', '#ede9fe', 'Note symptoms, unusual readings & questions', 'Write them down beforehand'],
+            ['ti-id-badge',       '#d97706', '#fef3c7', 'Bring valid ID & health insurance card',  'Required at most facilities'],
+            ['ti-salad',          '#0f7a45', '#d4f7e8', 'Fast 8–10 hrs if a glucose test is needed', 'Water is fine to drink'],
+            ['ti-calendar-plus',  '#c04a20', '#FDE8DC', 'Log your visit in Appointments after booking', 'Get a reminder set up'],
+        ] as [$icon, $color, $bg, $main, $sub]): ?>
+        <div class="nb-checklist-item">
+            <div class="nb-checklist-icon" style="background:<?= $bg ?>;color:<?= $color ?>;">
+                <i class="ti <?= $icon ?>"></i>
+            </div>
+            <div class="nb-checklist-text">
+                <div class="nb-checklist-main"><?= $main ?></div>
+                <div class="nb-checklist-sub"><?= $sub ?></div>
+            </div>
+            <div class="nb-checklist-check"><i class="ti ti-circle-check"></i></div>
         </div>
-        <div class="nb-tip-item">
-            <div class="nb-tip-icon">📋</div>
-            <div class="nb-tip-text">Note any symptoms, unusual readings, or questions for the doctor</div>
-        </div>
-        <div class="nb-tip-item">
-            <div class="nb-tip-icon">🆔</div>
-            <div class="nb-tip-text">Bring a valid ID and your health insurance card</div>
-        </div>
-        <div class="nb-tip-item">
-            <div class="nb-tip-icon">🥗</div>
-            <div class="nb-tip-text">Fast for 8–10 hours if a fasting blood glucose test is needed</div>
-        </div>
-        <div class="nb-tip-item">
-            <div class="nb-tip-icon">📅</div>
-            <div class="nb-tip-text">Log your visit in Appointments after booking to get a reminder</div>
-        </div>
+        <?php endforeach; ?>
     </div>
 </div>
 
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-let userLat = null;
-let userLng = null;
+/* ── State ──────────────────────────────────────────────── */
+let userLat    = null;
+let userLng    = null;
 let activeType = 'clinic';
 
-// ── FILTER TABS ──────────────────────────────────────────────────────
+/* ── Service type config (Tabler icons in JS) ──────────── */
+const typeMap = {
+    clinic:   { osm: 'clinic',      icon: 'ti-building-hospital', color: '#c04a20', bg: '#FDE8DC', label: 'Clinic'    },
+    hospital: { osm: 'hospital',    icon: 'ti-building-plus',     color: '#b91c1c', bg: '#fde8e8', label: 'Hospital'  },
+    pharmacy: { osm: 'pharmacy',    icon: 'ti-pill',              color: '#0e7490', bg: '#cffafe', label: 'Pharmacy'  },
+    lab:      { osm: 'laboratory',  icon: 'ti-microscope',        color: '#6d28d9', bg: '#ede9fe', label: 'Laboratory'},
+};
+
+/* ── Filter tabs ─────────────────────────────────────────── */
 document.querySelectorAll('.nb-filter').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
         document.querySelectorAll('.nb-filter').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         activeType = this.dataset.type;
@@ -205,55 +188,55 @@ document.querySelectorAll('.nb-filter').forEach(btn => {
     });
 });
 
-// ── GEOLOCATION ──────────────────────────────────────────────────────
+/* ── Geolocation ─────────────────────────────────────────── */
 function getLocation() {
     const btn  = document.getElementById('locateBtn');
     const icon = document.getElementById('locateBtnIcon');
     const text = document.getElementById('locateBtnText');
 
-    icon.textContent = '⏳';
-    text.textContent = 'Locating...';
+    icon.innerHTML = '<i class="ti ti-loader-2 nb-spin"></i>';
+    text.textContent = 'Locating…';
     btn.disabled = true;
 
     if (!navigator.geolocation) {
-        showStatus('❌', 'Geolocation is not supported by your browser.');
-        resetBtn();
-        return;
+        showStatusMsg('ti-x', 'Geolocation is not supported by your browser.');
+        resetBtn(); return;
     }
 
     navigator.geolocation.getCurrentPosition(
         pos => {
             userLat = pos.coords.latitude;
             userLng = pos.coords.longitude;
-            icon.textContent = '✅';
+            icon.innerHTML = '<i class="ti ti-circle-check"></i>';
             text.textContent = 'Location Found';
             btn.disabled = false;
             searchNearby(userLat, userLng);
         },
-        err => {
-            showStatus('❌', 'Could not get your location. Please allow location access or type a city name above.');
+        () => {
+            showStatusMsg('ti-map-pin-off', 'Could not get your location. Allow location access or type a city above.');
             resetBtn();
         }
     );
 }
 
 function resetBtn() {
-    document.getElementById('locateBtnIcon').textContent = '📍';
+    document.getElementById('locateBtnIcon').innerHTML = '<i class="ti ti-current-location"></i>';
     document.getElementById('locateBtnText').textContent = 'Use My Location';
     document.getElementById('locateBtn').disabled = false;
 }
 
-// ── MANUAL SEARCH ────────────────────────────────────────────────────
-document.getElementById('placeSearch').addEventListener('keydown', function(e) {
+/* ── Manual search ───────────────────────────────────────── */
+document.getElementById('placeSearch').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
-        const query = this.value.trim();
-        if (query) geocodeAndSearch(query);
+        const q = this.value.trim();
+        if (q) geocodeAndSearch(q);
     }
 });
 
 function geocodeAndSearch(query) {
-    showStatus('⏳', 'Searching for "' + query + '"...');
-    // Use a public geocoding service
+    if (!query) return;
+    hideIdleGrid();
+    showStatusMsg('ti-loader-2 nb-spin', `Searching for "${query}"…`);
     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
         .then(r => r.json())
         .then(data => {
@@ -262,143 +245,113 @@ function geocodeAndSearch(query) {
                 userLng = parseFloat(data[0].lon);
                 searchNearby(userLat, userLng);
             } else {
-                showStatus('❌', 'Location not found. Try a different search term.');
+                showStatusMsg('ti-map-search', 'Location not found. Try a different search term.');
             }
         })
-        .catch(() => showStatus('❌', 'Search failed. Please try again.'));
+        .catch(() => showStatusMsg('ti-wifi-off', 'Search failed. Please check your connection.'));
 }
 
-// ── NEARBY SEARCH (Overpass/OSM) ─────────────────────────────────────
-const typeMap = {
-    clinic:   { osm: 'clinic', emoji: '🏥', color: '#F97447', label: 'Clinic' },
-    hospital: { osm: 'hospital', emoji: '🏨', color: '#e74c3c', label: 'Hospital' },
-    pharmacy: { osm: 'pharmacy', emoji: '💊', color: '#2ec4b6', label: 'Pharmacy' },
-    lab:      { osm: 'laboratory', emoji: '🔬', color: '#9b59b6', label: 'Laboratory' }
-};
-
+/* ── Nearby search (Overpass API / OSM) ──────────────────── */
 function searchNearby(lat, lng) {
-    const { osm, emoji, color, label } = typeMap[activeType];
-    showStatus('⏳', `Finding nearby ${label.toLowerCase()}s...`);
+    const { osm, label } = typeMap[activeType];
+    hideIdleGrid();
+    showStatusMsg('ti-loader-2 nb-spin', `Finding nearby ${label.toLowerCase()}s…`);
     document.getElementById('nbResultsGrid').style.display = 'none';
+    document.getElementById('nbResultCounter').style.display = 'none';
 
-    const radius = 5000; // 5km
     const query = `
         [out:json][timeout:15];
         (
-            node["amenity"="${osm}"](around:${radius},${lat},${lng});
-            way["amenity"="${osm}"](around:${radius},${lat},${lng});
+            node["amenity"="${osm}"](around:5000,${lat},${lng});
+            way["amenity"="${osm}"](around:5000,${lat},${lng});
         );
         out body 20;
     `;
 
-    fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        body: query
-    })
-    .then(r => r.json())
-    .then(data => {
-        const elements = data.elements || [];
-        if (elements.length === 0) {
-            showStatus('😔', `No ${label.toLowerCase()}s found within 5km. Try a different location.`);
-            return;
-        }
-
-        hideStatus();
-        renderResults(elements, lat, lng, emoji, color, label);
-        updateMap(lat, lng, elements, emoji, color);
-    })
-    .catch(() => {
-        showStatus('❌', 'Could not load nearby services. Please check your connection.');
-    });
+    fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query })
+        .then(r => r.json())
+        .then(data => {
+            const items = data.elements || [];
+            if (items.length === 0) {
+                showStatusMsg('ti-map-pin-off', `No ${label.toLowerCase()}s found within 5 km. Try a different location.`);
+                return;
+            }
+            hideStatusMsg();
+            renderResults(items, lat, lng);
+            updateMap(lat, lng, items);
+        })
+        .catch(() => showStatusMsg('ti-wifi-off', 'Could not load nearby services. Please check your connection.'));
 }
 
-// ── RENDER RESULTS ───────────────────────────────────────────────────
-function renderResults(items, userLat, userLng, emoji, color, label) {
+/* ── Render result cards ─────────────────────────────────── */
+function renderResults(items, uLat, uLng) {
+    const { icon, color, bg, label } = typeMap[activeType];
     const grid = document.getElementById('nbResultsGrid');
     grid.innerHTML = '';
     grid.style.display = 'grid';
 
-    items.forEach(item => {
-        const name = item.tags?.name || `Unnamed ${label}`;
+    const counter = document.getElementById('nbResultCounter');
+    document.getElementById('nbResultCount').textContent = items.length;
+    counter.style.display = 'inline-flex';
+
+    items.forEach((item, idx) => {
+        const name    = item.tags?.name || `Unnamed ${label}`;
         const address = buildAddress(item.tags);
-        const phone = item.tags?.phone || item.tags?.['contact:phone'] || null;
+        const phone   = item.tags?.phone || item.tags?.['contact:phone'] || null;
         const website = item.tags?.website || item.tags?.['contact:website'] || null;
-        const opening = item.tags?.opening_hours || null;
-
-        // Distance (approx)
-        const iLat = item.lat || item.center?.lat;
-        const iLng = item.lon || item.center?.lon;
-        let distStr = '';
-        if (iLat && iLng) {
-            const d = haversine(userLat, userLng, iLat, iLng);
-            distStr = d < 1 ? Math.round(d * 1000) + 'm away' : d.toFixed(1) + 'km away';
-        }
-
+        const hours   = item.tags?.opening_hours || null;
+        const iLat    = item.lat   || item.center?.lat;
+        const iLng    = item.lon   || item.center?.lon;
         const mapsUrl = iLat && iLng
             ? `https://www.google.com/maps/search/?api=1&query=${iLat},${iLng}`
             : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
 
+        let distStr = '';
+        if (iLat && iLng) {
+            const d = haversine(uLat, uLng, iLat, iLng);
+            distStr = d < 1 ? Math.round(d * 1000) + ' m' : d.toFixed(1) + ' km';
+        }
+
         const card = document.createElement('div');
         card.className = 'nb-card';
+        card.style.animationDelay = (idx * 0.05) + 's';
         card.innerHTML = `
             <div class="nb-card-top">
-                <div class="nb-card-icon" style="background:${color}1a;color:${color};">${emoji}</div>
-                <div class="nb-card-badge" style="background:${color}1a;color:${color};">${label}</div>
+                <div class="nb-card-icon" style="background:${bg};color:${color};">
+                    <i class="ti ${icon}"></i>
+                </div>
+                <span class="nb-card-badge" style="background:${bg};color:${color};">${label}</span>
             </div>
             <h3 class="nb-card-name">${escHtml(name)}</h3>
-            ${address ? `<div class="nb-card-addr">📍 ${escHtml(address)}</div>` : ''}
-            ${distStr ? `<div class="nb-card-dist">🚶 ${distStr}</div>` : ''}
-            ${opening ? `<div class="nb-card-hours">🕐 ${escHtml(opening)}</div>` : ''}
+            ${address ? `<div class="nb-card-addr"><i class="ti ti-map-pin"></i>${escHtml(address)}</div>` : ''}
+            ${distStr ? `<div class="nb-card-dist"><i class="ti ti-walk"></i>${distStr} away</div>` : ''}
+            ${hours   ? `<div class="nb-card-hours"><i class="ti ti-clock"></i>${escHtml(hours)}</div>` : ''}
             <div class="nb-card-actions">
-                <a href="${mapsUrl}" target="_blank" rel="noopener" class="nb-card-btn nb-btn-map">🗺 Directions</a>
-                ${phone ? `<a href="tel:${escHtml(phone)}" class="nb-card-btn nb-btn-call">📞 Call</a>` : ''}
-                ${website ? `<a href="${escHtml(website)}" target="_blank" rel="noopener" class="nb-card-btn nb-btn-web">🌐 Website</a>` : ''}
+                <a href="${mapsUrl}" target="_blank" rel="noopener" class="nb-card-btn nb-btn-map">
+                    <i class="ti ti-navigation"></i> Directions
+                </a>
+                ${phone   ? `<a href="tel:${escHtml(phone)}" class="nb-card-btn nb-btn-call"><i class="ti ti-phone"></i> Call</a>` : ''}
+                ${website ? `<a href="${escHtml(website)}" target="_blank" rel="noopener" class="nb-card-btn nb-btn-web"><i class="ti ti-world"></i> Website</a>` : ''}
             </div>
         `;
         grid.appendChild(card);
     });
 }
 
-function buildAddress(tags) {
-    if (!tags) return '';
-    const parts = [
-        tags['addr:housenumber'],
-        tags['addr:street'],
-        tags['addr:city'],
-        tags['addr:state']
-    ].filter(Boolean);
-    return parts.join(', ');
-}
+/* ── Map (Leaflet) ───────────────────────────────────────── */
+let leafletMap     = null, leafletMapFull = null;
+let markersLayer   = null, markersLayerFull = null;
+let lastItems = [], lastMapLat = 0, lastMapLng = 0;
 
-function haversine(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
+function updateMap(lat, lng, items) {
+    lastItems = items; lastMapLat = lat; lastMapLng = lng;
 
-function escHtml(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── MAP (Leaflet + OpenStreetMap — no API key) ───────────────────────
-let leafletMap     = null;
-let leafletMapFull = null;
-let markersLayer     = null;
-let markersLayerFull = null;
-let lastItems = [], lastEmoji = '', lastColor = '';
-
-function updateMap(lat, lng, items, emoji, color) {
-    lastItems = items; lastEmoji = emoji; lastColor = color;
-
-    const section = document.getElementById('nbMapSection');
-    section.style.display = 'block';
+    document.getElementById('nbMapSection').style.display = 'block';
 
     if (!leafletMap) {
         leafletMap = L.map('nbLeafletMap', { scrollWheelZoom: true }).setView([lat, lng], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(leafletMap);
     } else {
         leafletMap.setView([lat, lng], 14);
@@ -406,18 +359,19 @@ function updateMap(lat, lng, items, emoji, color) {
     }
 
     markersLayer = L.layerGroup().addTo(leafletMap);
-    addMarkers(markersLayer, lat, lng, items, emoji, color);
+    addMarkers(markersLayer, lat, lng, items);
     setTimeout(() => leafletMap.invalidateSize(), 100);
 }
 
-function addMarkers(layer, lat, lng, items, emoji, color) {
-    // User pin
-    L.circleMarker([lat, lng], {
-        radius: 10, color: '#F97447', fillColor: '#F97447',
-        fillOpacity: 0.9, weight: 3
-    }).bindPopup('<b>📍 You are here</b>').addTo(layer);
+function addMarkers(layer, lat, lng, items) {
+    const { color, icon: tiIcon } = typeMap[activeType];
 
-    // Place markers
+    /* User pin */
+    L.circleMarker([lat, lng], {
+        radius: 9, color: '#F97447', fillColor: '#F97447',
+        fillOpacity: 0.9, weight: 3
+    }).bindPopup('<strong>📍 You are here</strong>').addTo(layer);
+
     items.forEach(item => {
         const iLat = item.lat || item.center?.lat;
         const iLng = item.lon || item.center?.lon;
@@ -428,24 +382,27 @@ function addMarkers(layer, lat, lng, items, emoji, color) {
         const phone   = item.tags?.phone || item.tags?.['contact:phone'] || null;
         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${iLat},${iLng}`;
 
-        const icon = L.divIcon({
+        const markerIcon = L.divIcon({
             className: '',
-            html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:2px solid #fff;">${emoji}</div>`,
-            iconSize: [32, 32], iconAnchor: [16, 16]
+            html: `<div style="background:${color};width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,0.22);border:2px solid #fff;">
+                       <i class="ti ${tiIcon}" style="font-size:16px;color:#fff;"></i>
+                   </div>`,
+            iconSize: [34, 34], iconAnchor: [17, 17]
         });
 
-        L.marker([iLat, iLng], { icon })
+        L.marker([iLat, iLng], { icon: markerIcon })
             .bindPopup(`
-                <b style="font-size:0.9rem;">${name}</b><br>
-                ${address ? `<span style="color:#888;font-size:0.8rem;">📍 ${address}</span><br>` : ''}
-                ${phone   ? `<span style="font-size:0.8rem;">📞 ${phone}</span><br>` : ''}
-                <a href="${mapsUrl}" target="_blank" style="font-size:0.8rem;color:#F97447;">🗺 Open in Google Maps</a>
+                <strong style="font-size:13px;">${escHtml(name)}</strong><br>
+                ${address ? `<span style="color:#888;font-size:11px;">${escHtml(address)}</span><br>` : ''}
+                ${phone   ? `<span style="font-size:11px;"><i class="ti ti-phone"></i> ${escHtml(phone)}</span><br>` : ''}
+                <a href="${mapsUrl}" target="_blank" style="font-size:11px;color:#F97447;font-weight:700;">
+                    <i class="ti ti-navigation"></i> Directions
+                </a>
             `)
             .addTo(layer);
     });
 }
 
-// ── Fullscreen expand / close ─────────────────────────────────────────
 function openMapFullscreen() {
     const overlay = document.getElementById('nbMapOverlay');
     overlay.classList.add('active');
@@ -454,7 +411,7 @@ function openMapFullscreen() {
     if (!leafletMapFull) {
         leafletMapFull = L.map('nbMapFull', { scrollWheelZoom: true });
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(leafletMapFull);
     }
 
@@ -463,31 +420,46 @@ function openMapFullscreen() {
         if (leafletMap) leafletMapFull.setView(leafletMap.getCenter(), leafletMap.getZoom());
         if (markersLayerFull) markersLayerFull.clearLayers();
         markersLayerFull = L.layerGroup().addTo(leafletMapFull);
-        if (leafletMap) {
-            const c = leafletMap.getCenter();
-            addMarkers(markersLayerFull, c.lat, c.lng, lastItems, lastEmoji, lastColor);
-        }
-    }, 50);
+        addMarkers(markersLayerFull, lastMapLat, lastMapLng, lastItems);
+    }, 60);
 }
 
 function closeMapFullscreen() {
     document.getElementById('nbMapOverlay').classList.remove('active');
     document.body.style.overflow = '';
-    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 50);
+    setTimeout(() => leafletMap && leafletMap.invalidateSize(), 60);
 }
 
-// Close on Escape key
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMapFullscreen(); });
 
-// ── STATUS HELPERS ───────────────────────────────────────────────────
-function showStatus(icon, msg) {
-    const el = document.getElementById('nbStatus');
-    el.style.display = 'flex';
-    el.querySelector('.nb-status-icon').textContent = icon;
-    el.querySelector('.nb-status-text').textContent = msg;
+/* ── Helpers ─────────────────────────────────────────────── */
+function buildAddress(tags) {
+    if (!tags) return '';
+    return [tags['addr:housenumber'], tags['addr:street'], tags['addr:city'], tags['addr:state']]
+        .filter(Boolean).join(', ');
 }
-function hideStatus() {
+function haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Status display ──────────────────────────────────────── */
+function hideIdleGrid() {
+    document.getElementById('nbIdleGrid').style.display = 'none';
+}
+function showStatusMsg(iconClass, msg) {
+    document.getElementById('nbStatus').style.display = 'flex';
+    document.getElementById('nbStatusMsg').style.display = 'flex';
+    document.getElementById('nbStatusIcon').className = 'ti ' + iconClass;
+    document.getElementById('nbStatusText').textContent = msg;
+}
+function hideStatusMsg() {
     document.getElementById('nbStatus').style.display = 'none';
+    document.getElementById('nbStatusMsg').style.display = 'none';
 }
 </script>
 
