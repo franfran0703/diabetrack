@@ -60,7 +60,7 @@ class CaregiverController extends Controller {
                     'pid' => $patient['id'],
                     'rel' => $rel ?: null,
                 ]);
-                $success = 'Successfully linked to ' . $patient['name'] . '!';
+                $success = 'Request sent to ' . $patient['name'] . '. Waiting for them to accept.';
             }
         }
     }
@@ -79,9 +79,12 @@ class CaregiverController extends Controller {
         exit;
     }
 
-    // Get all linked patients
+    // Get all patients with their link status
     $stmt = $this->db->prepare("
-        SELECT u.*, cl.linked_at FROM users u
+        SELECT u.id, u.name, u.email,
+               cl.status, cl.linked_at, cl.requested_at,
+               cl.relationship_to_patient
+        FROM users u
         JOIN caregiver_links cl ON cl.patient_id = u.id
         WHERE cl.caregiver_id = :cid
         ORDER BY cl.linked_at DESC
@@ -340,59 +343,113 @@ public function medication() {
         'todayStats'  => $todayStats,
         'loggedToday' => $loggedToday,
     ]);
-    }
-    public function meals() {
+}
+
+public function meals() {
     $patient     = $this->getLinkedPatient();
     $todayLogs   = [];
     $allLogs     = [];
+    $last7Days   = [];
     $todayTotals = [
-        'total_carbs'    => 0,
-        'total_calories' => 0,
-        'total_sugar'    => 0,
-        'total_protein'  => 0,
-        'total_fat'      => 0,
-        'total_fiber'    => 0,
-        'total_sodium'   => 0,
-        'total_meals'    => 0,
+        'total_carbs'    => 0, 'total_calories' => 0,
+        'total_sugar'    => 0, 'total_protein'  => 0,
+        'total_fat'      => 0, 'total_fiber'    => 0,
+        'total_sodium'   => 0, 'total_meals'    => 0,
     ];
+    $defaultLimits = [
+        'carbs' => 130, 'calories' => 1800, 'sugar' => 50,
+        'protein' => 60, 'fat' => 65, 'fiber' => 25, 'sodium' => 2300,
+    ];
+    $limits = $defaultLimits;
 
     if ($patient) {
         $pid = $patient['id'];
+        $cid = $_SESSION['user_id'];
+
+        // Ensure nutrition_limits table exists
+        $this->db->exec("
+            CREATE TABLE IF NOT EXISTS `nutrition_limits` (
+                `id`           int(11)      NOT NULL AUTO_INCREMENT,
+                `caregiver_id` int(11)      NOT NULL,
+                `patient_id`   int(11)      NOT NULL,
+                `carbs`        decimal(7,2) NOT NULL DEFAULT 130.00,
+                `calories`     decimal(7,2) NOT NULL DEFAULT 1800.00,
+                `sugar`        decimal(6,2) NOT NULL DEFAULT 50.00,
+                `protein`      decimal(6,2) NOT NULL DEFAULT 60.00,
+                `fat`          decimal(6,2) NOT NULL DEFAULT 65.00,
+                `fiber`        decimal(6,2) NOT NULL DEFAULT 25.00,
+                `sodium`       decimal(7,2) NOT NULL DEFAULT 2300.00,
+                `updated_at`   timestamp    NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `uq_cg_patient` (`caregiver_id`,`patient_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+
+        // Fetch custom limits for this caregiver-patient pair
+        $lStmt = $this->db->prepare("
+            SELECT * FROM nutrition_limits
+            WHERE caregiver_id = :cid AND patient_id = :pid
+        ");
+        $lStmt->execute(['cid' => $cid, 'pid' => $pid]);
+        $savedLimits = $lStmt->fetch();
+        if ($savedLimits) {
+            $limits = array_merge($defaultLimits, array_intersect_key($savedLimits, $defaultLimits));
+        }
 
         // Today's meals
         $stmt = $this->db->prepare("
             SELECT * FROM meal_logs
-            WHERE patient_id = :pid
-              AND DATE(logged_at) = CURDATE()
+            WHERE patient_id = :pid AND DATE(logged_at) = CURDATE()
             ORDER BY logged_at ASC
         ");
         $stmt->execute(['pid' => $pid]);
         $todayLogs = $stmt->fetchAll();
 
-        // All logs
+        // All logs (last 60)
         $stmt = $this->db->prepare("
             SELECT * FROM meal_logs
             WHERE patient_id = :pid
-            ORDER BY logged_at DESC
-            LIMIT 30
+            ORDER BY logged_at DESC LIMIT 60
         ");
         $stmt->execute(['pid' => $pid]);
         $allLogs = $stmt->fetchAll();
 
-        // Today totals
+        // Last 7 days daily totals for the summary
         $stmt = $this->db->prepare("
-            SELECT
-                COALESCE(SUM(carbs), 0)    as total_carbs,
-                COALESCE(SUM(calories), 0) as total_calories,
-                COALESCE(SUM(sugar), 0)    as total_sugar,
-                COALESCE(SUM(protein), 0)  as total_protein,
-                COALESCE(SUM(fat), 0)      as total_fat,
-                COALESCE(SUM(fiber), 0)    as total_fiber,
-                COALESCE(SUM(sodium), 0)   as total_sodium,
-                COUNT(*) as total_meals
+            SELECT DATE(logged_at) as day,
+                   COALESCE(SUM(calories), 0) as cals,
+                   COALESCE(SUM(carbs), 0)    as carbs,
+                   COUNT(*) as meals
             FROM meal_logs
             WHERE patient_id = :pid
-              AND DATE(logged_at) = CURDATE()
+              AND logged_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+            GROUP BY DATE(logged_at)
+            ORDER BY day ASC
+        ");
+        $stmt->execute(['pid' => $pid]);
+        $rawLast7 = $stmt->fetchAll();
+
+        // Build full 7-day array (fill gaps with zeros)
+        for ($i = 6; $i >= 0; $i--) {
+            $d = date('Y-m-d', strtotime("-{$i} days"));
+            $last7Days[$d] = ['day' => $d, 'cals' => 0, 'carbs' => 0, 'meals' => 0];
+        }
+        foreach ($rawLast7 as $r) {
+            if (isset($last7Days[$r['day']])) $last7Days[$r['day']] = $r;
+        }
+
+        // Today totals
+        $stmt = $this->db->prepare("
+            SELECT COALESCE(SUM(carbs),    0) as total_carbs,
+                   COALESCE(SUM(calories), 0) as total_calories,
+                   COALESCE(SUM(sugar),    0) as total_sugar,
+                   COALESCE(SUM(protein),  0) as total_protein,
+                   COALESCE(SUM(fat),      0) as total_fat,
+                   COALESCE(SUM(fiber),    0) as total_fiber,
+                   COALESCE(SUM(sodium),   0) as total_sodium,
+                   COUNT(*) as total_meals
+            FROM meal_logs
+            WHERE patient_id = :pid AND DATE(logged_at) = CURDATE()
         ");
         $stmt->execute(['pid' => $pid]);
         $todayTotals = $stmt->fetch();
@@ -404,8 +461,69 @@ public function medication() {
         'todayLogs'   => $todayLogs,
         'allLogs'     => $allLogs,
         'todayTotals' => $todayTotals,
+        'limits'      => $limits,
+        'last7Days'   => $last7Days,
     ]);
 }
+
+public function saveNutritionLimits() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        header('Location: /diabetrack/public/caregiver/meals');
+        exit;
+    }
+    $patient = $this->getLinkedPatient();
+    if (!$patient) {
+        header('Location: /diabetrack/public/caregiver/meals');
+        exit;
+    }
+
+    $cid    = $_SESSION['user_id'];
+    $pid    = $patient['id'];
+    $fields = ['carbs', 'calories', 'sugar', 'protein', 'fat', 'fiber', 'sodium'];
+    $data   = ['cid' => $cid, 'pid' => $pid];
+    foreach ($fields as $f) {
+        $data[$f] = max(0, (float)($_POST[$f] ?? 0));
+    }
+
+    // Ensure table exists
+    $this->db->exec("
+        CREATE TABLE IF NOT EXISTS `nutrition_limits` (
+            `id`           int(11)      NOT NULL AUTO_INCREMENT,
+            `caregiver_id` int(11)      NOT NULL,
+            `patient_id`   int(11)      NOT NULL,
+            `carbs`        decimal(7,2) NOT NULL DEFAULT 130.00,
+            `calories`     decimal(7,2) NOT NULL DEFAULT 1800.00,
+            `sugar`        decimal(6,2) NOT NULL DEFAULT 50.00,
+            `protein`      decimal(6,2) NOT NULL DEFAULT 60.00,
+            `fat`          decimal(6,2) NOT NULL DEFAULT 65.00,
+            `fiber`        decimal(6,2) NOT NULL DEFAULT 25.00,
+            `sodium`       decimal(7,2) NOT NULL DEFAULT 2300.00,
+            `updated_at`   timestamp    NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `uq_cg_patient` (`caregiver_id`,`patient_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+
+    $stmt = $this->db->prepare("
+        INSERT INTO nutrition_limits
+            (caregiver_id, patient_id, carbs, calories, sugar, protein, fat, fiber, sodium)
+        VALUES
+            (:cid, :pid, :carbs, :calories, :sugar, :protein, :fat, :fiber, :sodium)
+        ON DUPLICATE KEY UPDATE
+            carbs    = VALUES(carbs),
+            calories = VALUES(calories),
+            sugar    = VALUES(sugar),
+            protein  = VALUES(protein),
+            fat      = VALUES(fat),
+            fiber    = VALUES(fiber),
+            sodium   = VALUES(sodium)
+    ");
+    $stmt->execute($data);
+
+    header('Location: /diabetrack/public/caregiver/meals?saved=1');
+    exit;
+}
+
 public function alerts() {
     $patient      = $this->getLinkedPatient();
     $allAlerts    = [];
