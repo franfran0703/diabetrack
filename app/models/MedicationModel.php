@@ -92,10 +92,10 @@ class MedicationModel extends Model {
                 'message' => $message,
             ]);
 
-            // Alert for linked caregivers
+            // Alert for accepted caregivers only
             $cg = $this->db->prepare("
                 SELECT caregiver_id FROM caregiver_links
-                WHERE patient_id = :pid
+                WHERE patient_id = :pid AND status = 'accepted'
             ");
             $cg->execute(['pid' => $patient_id]);
             foreach ($cg->fetchAll() as $caregiver) {
