@@ -1,410 +1,408 @@
-@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap');
-@import url('https://fonts.bunny.net/css?family=cabinet-grotesk:400,500,700,800,900');
+@import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=DM+Sans:wght@400;500;600&display=swap');
 
+/* ══════════════════════════════════════════════════════════
+   BASE — exact dark amber system tokens
+   ══════════════════════════════════════════════════════════ */
 body {
     font-family: 'DM Sans', sans-serif;
-    position: relative;
-    min-height: 100vh;
     background-color: #1C0F0A;
     background-image:
-        repeating-linear-gradient(
-            0deg,
-            rgba(249,116,71,0.07) 0px,
-            rgba(249,116,71,0.07) 1px,
-            transparent 1px,
-            transparent 24px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            rgba(249,116,71,0.07) 0px,
-            rgba(249,116,71,0.07) 1px,
-            transparent 1px,
-            transparent 24px
-        );
+        repeating-linear-gradient(0deg,  rgba(249,116,71,0.045) 0px, rgba(249,116,71,0.045) 1px, transparent 1px, transparent 28px),
+        repeating-linear-gradient(90deg, rgba(249,116,71,0.045) 0px, rgba(249,116,71,0.045) 1px, transparent 1px, transparent 28px);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* ── PAGE HEADER ──────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pendingPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    50%      { box-shadow: 0 0 0 10px rgba(245,158,11,0.1); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PAGE HEADER — exact match to other caregiver pages
+   ══════════════════════════════════════════════════════════ */
 .cgp-header {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: space-between;
-    margin-bottom: 32px;
-    gap: 20px;
+    gap: 24px;
+    margin-bottom: 22px;
+    animation: fadeUp 0.45s ease both;
 }
 .cgp-eyebrow {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: rgba(255,180,130,0.5);
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(249,116,71,0.55);
     margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
-.cgp-eyebrow::before {
-    content: '';
-    width: 24px; height: 2px;
-    background: rgba(255,180,130,0.4);
-    border-radius: 2px;
-    display: inline-block;
-}
+.cgp-eyebrow i { font-size: 14px; }
 .cgp-title {
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 2.2rem;
-    letter-spacing: -1.5px;
-    color: #ffe8d6;
-    margin: 0;
-    line-height: 1;
+    font-weight: 900; font-size: 2.6rem;
+    line-height: 1; letter-spacing: -2px;
+    color: #ffe8d6; margin: 0 0 6px;
 }
 .cgp-title span {
-    background: linear-gradient(120deg, #fbab6e, #fdd5be);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    background: linear-gradient(120deg, #c04a20 0%, #f97447 50%, #fbab6e 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.cgp-sub {
-    font-family: 'Instrument Serif', serif;
-    font-style: italic;
-    font-size: 0.9rem;
-    color: rgba(255,200,160,0.5);
-    margin-top: 4px;
-}
+.cgp-sub { font-size: 13px; color: rgba(255,200,160,0.35); font-weight: 500; margin: 0; }
 
-/* ── ALERTS ───────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   ALERT BANNERS
+   ══════════════════════════════════════════════════════════ */
 .cgp-alert {
-    border-radius: 16px;
-    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 18px; border-radius: 14px;
+    margin-bottom: 18px;
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 0.88rem;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    font-weight: 700; font-size: 13px;
+    animation: fadeUp 0.35s ease both;
 }
+.cgp-alert i { font-size: 18px; flex-shrink: 0; }
 .cgp-alert.success {
-    background: rgba(34,197,94,0.10);
+    background: rgba(34,197,94,0.09);
     border: 1.5px solid rgba(34,197,94,0.22);
     color: #86efac;
 }
 .cgp-alert.error {
-    background: rgba(220,38,38,0.10);
-    border: 1.5px solid rgba(220,38,38,0.22);
+    background: rgba(239,68,68,0.09);
+    border: 1.5px solid rgba(239,68,68,0.22);
     color: #fca5a5;
 }
 
+/* ══════════════════════════════════════════════════════════
+   LAYOUT — 1fr 340px mirrors the other pages' grid
+   ══════════════════════════════════════════════════════════ */
 .cgp-layout {
     display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 20px;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
     align-items: start;
+    animation: fadeUp 0.45s ease both 0.08s;
 }
 
-/* ── PATIENT DIRECTORY ────────────────────────────────── */
-.cgp-directory {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
+/* ══════════════════════════════════════════════════════════
+   PATIENT DIRECTORY (left)
+   ══════════════════════════════════════════════════════════ */
+.cgp-directory { display: flex; flex-direction: column; gap: 12px; }
 
 /* Empty state */
 .cgp-empty {
-    background: rgba(255,255,255,0.04);
-    border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 24px;
-    padding: 60px;
+    background: rgba(255,255,255,0.03);
+    border: 1.5px dashed rgba(249,116,71,0.16);
+    border-radius: 24px; padding: 72px 32px;
     text-align: center;
-    backdrop-filter: blur(12px);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
 }
-.cgp-empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.cgp-empty-icon {
+    width: 60px; height: 60px; border-radius: 18px;
+    background: rgba(249,116,71,0.09);
+    display: flex; align-items: center; justify-content: center;
+}
+.cgp-empty-icon i { font-size: 28px; color: rgba(249,116,71,0.45); }
 .cgp-empty-title {
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 1rem;
-    color: #ffe8d6;
-    margin-bottom: 8px;
+    font-weight: 800; font-size: 1rem; color: #ffe8d6;
 }
-.cgp-empty-sub {
-    font-size: 0.82rem;
-    color: rgba(255,200,160,0.4);
-    line-height: 1.5;
-}
+.cgp-empty-sub { font-size: 13px; color: rgba(255,200,160,0.35); max-width: 280px; line-height: 1.55; }
 
+/* ── Patient card ─── */
 .cgp-patient-card {
-    background: linear-gradient(145deg, #FDE8DC, #fdd5be, #fcc8ab);
-    border: 1.5px solid rgba(249,116,71,0.2);
-    border-radius: 24px;
-    padding: 24px 28px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.07);
+    border-radius: 22px;
+    padding: 22px 24px;
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(249,116,71,0.12);
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-    overflow: hidden;
+    gap: 18px;
+    position: relative; overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), border-color 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.45s ease both;
 }
 .cgp-patient-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 14px 40px rgba(0,0,0,0.35), 0 2px 8px rgba(249,116,71,0.18);
+    border-color: rgba(249,116,71,0.22);
+    box-shadow: 0 10px 36px rgba(0,0,0,0.3);
 }
-.cgp-patient-card::before {
-    content: '👤';
-    position: absolute;
-    right: -10px; top: -10px;
-    font-size: 80px;
-    opacity: 0.06;
-    transform: rotate(10deg);
+/* Top-right ambient glow */
+.cgp-patient-card::after {
+    content: ''; position: absolute;
+    top: -50px; right: -50px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(249,116,71,0.07) 0%, transparent 70%);
     pointer-events: none;
+}
+/* Accepted cards get a subtle orange left rail */
+.cgp-patient-card.accepted {
+    border-left: 3px solid rgba(249,116,71,0.35);
+    padding-left: 21px;
+}
+/* Pending cards get amber */
+.cgp-patient-card.pending {
+    border-left: 3px solid rgba(245,158,11,0.4);
+    padding-left: 21px;
+    border-color: rgba(245,158,11,0.18);
+    background: rgba(245,158,11,0.04);
+    animation: fadeUp 0.45s ease both, pendingPulse 3s ease-in-out infinite;
 }
 
 /* Avatar */
 .cgp-avatar {
-    width: 64px; height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #F97447, #fbab6e);
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #c04a20, #f97447);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 1.5rem;
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(249,116,71,0.40);
-    flex-shrink: 0;
-    position: relative; z-index: 1;
+    font-weight: 900; font-size: 1.3rem; color: #fff;
+    flex-shrink: 0; position: relative; z-index: 1;
+    box-shadow: 0 4px 14px rgba(180,60,10,0.45);
+}
+.cgp-avatar.pending-avatar {
+    background: linear-gradient(135deg, #92400e, #d97706);
+    box-shadow: 0 4px 14px rgba(120,80,10,0.4);
 }
 
 /* Info */
-.cgp-patient-info { position: relative; z-index: 1; }
+.cgp-patient-info { position: relative; z-index: 1; min-width: 0; }
 .cgp-patient-name {
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 1.2rem;
-    color: #1a0800;
-    letter-spacing: -0.5px;
+    font-weight: 900; font-size: 1.05rem;
+    color: #ffe8d6; letter-spacing: -0.4px;
     margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cgp-patient-email {
-    font-size: 0.78rem;
-    color: #b8927e;
-    font-weight: 500;
-    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: rgba(251,171,110,0.4);
+    font-weight: 500; margin-bottom: 10px;
 }
-.cgp-patient-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+.cgp-patient-email i { font-size: 13px; }
+
+.cgp-patient-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
 .cgp-meta-pill {
-    font-size: 0.68rem;
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 100px;
-    background: rgba(249,116,71,0.12);
-    color: #c04a20;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 800;
+    padding: 3px 10px; border-radius: 100px;
+    background: rgba(249,116,71,0.1);
+    color: rgba(251,171,110,0.65);
     border: 1px solid rgba(249,116,71,0.18);
+}
+.cgp-meta-pill i { font-size: 11px; }
+.cgp-meta-pill.pending-pill {
+    background: rgba(245,158,11,0.1);
+    color: rgba(251,191,36,0.7);
+    border-color: rgba(245,158,11,0.22);
+}
+
+/* Status badge — floated top-right of card */
+.cgp-status-badge {
+    position: absolute; top: 14px; right: 16px;
+    font-size: 9px; font-weight: 900; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 100px;
+    z-index: 2;
+}
+.cgp-status-badge.accepted {
+    background: rgba(34,197,94,0.12); color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.22);
+}
+.cgp-status-badge.pending {
+    background: rgba(245,158,11,0.12); color: #fcd34d;
+    border: 1px solid rgba(245,158,11,0.25);
 }
 
 /* Actions */
 .cgp-patient-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-end;
-    position: relative; z-index: 1;
-    flex-shrink: 0;
+    display: flex; flex-direction: column;
+    gap: 8px; align-items: flex-end;
+    position: relative; z-index: 1; flex-shrink: 0;
 }
 .cgp-btn-view {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: #F97447;
-    color: #fff;
-    border-radius: 100px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px;
+    background: linear-gradient(135deg, #c04a20, #f97447);
+    color: #fff; border-radius: 12px;
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 800;
+    font-size: 12px; font-weight: 800;
     text-decoration: none;
-    box-shadow: 0 4px 14px rgba(249,116,71,0.38);
-    transition: all 0.15s;
-    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(180,60,10,0.4);
+    transition: all 0.15s; white-space: nowrap;
 }
 .cgp-btn-view:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(249,116,71,0.48);
-    background: #f86030;
+    box-shadow: 0 7px 22px rgba(180,60,10,0.55);
     color: #fff;
 }
+.cgp-btn-view i { font-size: 14px; }
 .cgp-btn-unlink {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 16px;
-    background: rgba(220,38,38,0.10);
-    color: #d40505;
-    border: 1.5px solid rgba(220,38,38,0.2);
-    border-radius: 100px;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px;
+    background: rgba(239,68,68,0.08);
+    color: rgba(252,165,165,0.7);
+    border: 1.5px solid rgba(239,68,68,0.18);
+    border-radius: 12px;
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-decoration: none;
-    transition: all 0.15s;
-    white-space: nowrap;
+    font-size: 11px; font-weight: 800;
+    text-decoration: none; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
 }
 .cgp-btn-unlink:hover {
-    background: rgba(220,38,38,0.22);
-    color: #fca5a5;
+    background: rgba(239,68,68,0.16);
+    color: #fca5a5; border-color: rgba(239,68,68,0.3);
 }
+.cgp-btn-unlink i { font-size: 13px; }
+.cgp-btn-pending {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px;
+    background: rgba(245,158,11,0.08);
+    color: rgba(251,191,36,0.6);
+    border: 1.5px solid rgba(245,158,11,0.2);
+    border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+    white-space: nowrap; cursor: default;
+}
+.cgp-btn-pending i { font-size: 13px; }
 
-/* ── LINK FORM PANEL ──────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   FORM PANEL (right) — mirrors cgml-summary-card structure
+   ══════════════════════════════════════════════════════════ */
 .cgp-form-panel {
-    background: rgba(255,255,255,0.05);
-    border: 1.5px solid rgba(249,116,71,0.18);
-    border-radius: 24px;
-    padding: 28px;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    position: sticky;
-    top: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.07);
+    border-radius: 24px; padding: 26px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    position: sticky; top: 20px;
+    transition: border-color 0.2s;
 }
+.cgp-form-panel:hover { border-color: rgba(249,116,71,0.18); }
 
-.cgp-form-icon {
-    width: 56px; height: 56px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #F97447, #fbab6e);
+.cgp-form-panel-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 22px; padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.cgp-form-panel-icon {
+    width: 44px; height: 44px; border-radius: 14px;
+    background: linear-gradient(135deg, #c04a20, #f97447);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
-    margin: 0 auto 20px;
-    box-shadow: 0 6px 20px rgba(249,116,71,0.4);
+    box-shadow: 0 5px 18px rgba(180,60,10,0.42); flex-shrink: 0;
 }
-.cgp-form-title {
+.cgp-form-panel-icon i { font-size: 22px; color: #fff; }
+.cgp-form-panel-title {
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 1.1rem;
-    color: #ffe8d6;
-    text-align: center;
-    margin-bottom: 6px;
-    letter-spacing: -0.3px;
+    font-weight: 900; font-size: 1rem; color: #ffe8d6;
 }
-.cgp-form-sub {
-    font-size: 0.78rem;
-    color: rgba(255,200,160,0.45);
-    text-align: center;
-    margin-bottom: 24px;
-    line-height: 1.5;
+.cgp-form-panel-sub {
+    font-size: 11px; color: rgba(255,200,160,0.35);
+    font-weight: 500; margin-top: 2px;
 }
 
 .cgp-form-label {
     display: block;
-    font-size: 0.68rem;
-    font-weight: 800;
-    color: rgba(255,180,130,0.55);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    font-size: 9px; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,180,130,0.4);
     margin-bottom: 8px;
 }
 .cgp-form-input {
-    width: 100%;
-    background: rgba(255,255,255,0.07);
-    border: 1.5px solid rgba(249,116,71,0.2);
-    border-radius: 14px;
-    padding: 13px 16px;
-    font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.88rem;
-    color: #ffe8d6;
-    outline: none;
+    width: 100%; box-sizing: border-box;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(249,116,71,0.15);
+    border-radius: 12px; padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; color: #ffe8d6; outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 .cgp-form-input:focus {
-    border-color: rgba(249,116,71,0.5);
-    box-shadow: 0 0 0 3px rgba(249,116,71,0.10);
+    border-color: #f97447;
+    box-shadow: 0 0 0 3px rgba(249,116,71,0.12);
 }
-.cgp-form-input::placeholder { color: rgba(255,180,130,0.25); }
+.cgp-form-input::placeholder { color: rgba(255,180,130,0.22); }
 
 .cgp-form-info {
-    background: rgba(249,116,71,0.08);
-    border: 1px solid rgba(249,116,71,0.15);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 20px;
-    font-size: 0.74rem;
-    color: rgba(255,200,160,0.5);
-    line-height: 1.6;
+    display: flex; align-items: flex-start; gap: 8px;
+    background: rgba(249,116,71,0.07);
+    border: 1px solid rgba(249,116,71,0.14);
+    border-radius: 11px; padding: 11px 13px;
+    margin-bottom: 18px;
+    font-size: 12px; color: rgba(255,200,160,0.45);
+    line-height: 1.55;
 }
+.cgp-form-info i { font-size: 15px; color: rgba(249,116,71,0.5); flex-shrink: 0; margin-top: 1px; }
 
 .cgp-form-btn {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #F97447, #fbab6e);
-    color: #fff;
-    border: none;
-    border-radius: 100px;
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #c04a20, #f97447);
+    color: #fff; border: none; border-radius: 12px;
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 6px 22px rgba(249,116,71,0.42);
+    font-size: 13px; font-weight: 800; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(180,60,10,0.4);
     transition: transform 0.15s, box-shadow 0.15s;
-    letter-spacing: -0.2px;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
 }
+.cgp-form-btn i { font-size: 16px; }
 .cgp-form-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(249,116,71,0.52);
+    box-shadow: 0 10px 28px rgba(180,60,10,0.55);
 }
 
 /* Divider */
 .cgp-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: rgba(255,180,130,0.25);
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; font-size: 9px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(255,180,130,0.22);
 }
-.cgp-divider::before,
-.cgp-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
+.cgp-divider::before, .cgp-divider::after {
+    content: ''; flex: 1; height: 1px;
     background: rgba(255,255,255,0.06);
 }
 
-/* Count pill in form panel */
-.cgp-count-pill {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 14px;
-    margin-top: 4px;
+/* Summary row at bottom of form panel */
+.cgp-panel-summary {
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 13px 16px;
 }
-.cgp-count-num {
+.cgp-panel-summary-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 2px; flex: 1;
+}
+.cgp-panel-summary-num {
     font-family: 'Cabinet Grotesk', sans-serif;
-    font-weight: 900;
-    font-size: 2rem;
-    color: #fbab6e;
-    line-height: 1;
-    letter-spacing: -1px;
+    font-weight: 900; font-size: 1.6rem;
+    color: #fbab6e; line-height: 1; letter-spacing: -1px;
 }
-.cgp-count-text {
-    font-size: 0.75rem;
-    color: rgba(255,200,160,0.4);
-    font-weight: 600;
+.cgp-panel-summary-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: rgba(255,200,160,0.3);
+    text-align: center;
+}
+.cgp-panel-summary-divider {
+    width: 1px; height: 36px;
+    background: rgba(255,255,255,0.06);
 }
 
-/* ── ANIMATIONS ───────────────────────────────────────── */
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .cgp-layout { grid-template-columns: 1fr; }
+    .cgp-form-panel { position: static; }
 }
-.cgp-header       { animation: fadeUp 0.5s ease both 0.05s; }
-.cgp-layout       { animation: fadeUp 0.5s ease both 0.12s; }
-.cgp-patient-card { animation: fadeUp 0.5s ease both 0.15s; }
+@media (max-width: 600px) {
+    .cgp-title { font-size: 2rem; }
+    .cgp-patient-card { grid-template-columns: auto 1fr; }
+    .cgp-patient-actions { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; }
+}
