@@ -234,15 +234,45 @@ class PatientController extends Controller {
         $todayLogs   = $mealModel->getTodayLogs($pid);
         $todayTotals = $mealModel->getTodayTotals($pid);
 
+        // Fetch nutrition limits set by this patient's caregiver (if any)
+        $defaultLimits = [
+            'carbs' => 130, 'calories' => 1800, 'sugar' => 25,
+            'protein' => 50, 'fat' => 65, 'fiber' => 25, 'sodium' => 2300,
+        ];
+        $nutritionLimits = $defaultLimits;
+        try {
+            // Check if table exists first
+            $tableCheck = $db->query("SHOW TABLES LIKE 'nutrition_limits'")->fetch();
+            if ($tableCheck) {
+                $limStmt = $db->prepare("
+                    SELECT nl.* FROM nutrition_limits nl
+                    JOIN caregiver_links cl ON cl.caregiver_id = nl.caregiver_id
+                    WHERE cl.patient_id = :pid AND cl.status = 'accepted'
+                    ORDER BY nl.updated_at DESC LIMIT 1
+                ");
+                $limStmt->execute(['pid' => $pid]);
+                $saved = $limStmt->fetch();
+                if ($saved) {
+                    $nutritionLimits = array_merge(
+                        $defaultLimits,
+                        array_intersect_key($saved, $defaultLimits)
+                    );
+                }
+            }
+        } catch (Exception $e) {
+            // Table doesn't exist yet — use defaults silently
+        }
+
         $this->view('patient/meals_view', [
-            'name'           => $_SESSION['user_name'],
-            'logs'           => $logs,
-            'todayLogs'      => $todayLogs,
-            'todayTotals'    => $todayTotals,
-            'userPresets'    => $userPresets,
-            'defaultPresets' => $defaultPresets,
-            'error'          => $error,
-            'success'        => $success,
+            'name'            => $_SESSION['user_name'],
+            'logs'            => $logs,
+            'todayLogs'       => $todayLogs,
+            'todayTotals'     => $todayTotals,
+            'userPresets'     => $userPresets,
+            'defaultPresets'  => $defaultPresets,
+            'nutritionLimits' => $nutritionLimits,
+            'error'           => $error,
+            'success'         => $success,
         ]);
     }
 

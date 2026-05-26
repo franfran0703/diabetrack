@@ -15,14 +15,15 @@ $totalFiber  = (float)($todayTotals['total_fiber']   ?? 0);
 $logCount    = count($logs ?? []);
 
 /* ── Carb zone ───────────────────────────────────────── */
-$carbPct  = $totalCarbs > 0 ? min(round($totalCarbs / 130 * 100), 100) : 0;
+$lims     = $nutritionLimits ?? ['carbs'=>130,'calories'=>1800,'sugar'=>25,'protein'=>50,'fat'=>65,'fiber'=>25,'sodium'=>2300];
+$carbPct  = $lims['carbs'] > 0 ? min(round($totalCarbs / $lims['carbs'] * 100), 100) : 0;
 $carbZone = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
 
 /* ── Clinical flags ──────────────────────────────────── */
 $avgProtPerMeal = $totalMeals > 0 ? $totalProt / $totalMeals : 0;
 $lowProtein     = $avgProtPerMeal > 0 && $avgProtPerMeal < 15;
-$fiberPct       = min(round($totalFiber / 25 * 100), 100);
-$fiberGood      = $totalFiber >= 25;
+$fiberPct       = $lims['fiber'] > 0 ? min(round($totalFiber / $lims['fiber'] * 100), 100) : 0;
+$fiberGood      = $totalFiber >= $lims['fiber'];
 
 /* ── Time-of-day clinical tip ────────────────────────── */
 $hour    = (int) date('G');
@@ -59,12 +60,12 @@ $totalMacros   = $totalProt + $totalFat + ($totalCarbs > 0 ? $totalCarbs * 0.4 :
 $carbRingPct   = $totalCals > 0 ? round(($totalCarbs * 4 / $totalCals) * 100)  : 0;
 $protRingPct   = $totalCals > 0 ? round(($totalProt  * 4 / $totalCals) * 100)  : 0;
 $fatRingPct    = $totalCals > 0 ? round(($totalFat   * 9 / $totalCals) * 100)  : 0;
-// ADA targets for type-2 diabetics:
-$carbTarget    = 130;  // g/day max
-$protTarget    = 50;   // g/day minimum
-$fatTarget     = 65;   // g/day
-$fiberTarget   = 25;   // g/day
-$sugarTarget   = 25;   // g/day max (added sugar)
+// ADA-aligned defaults (overridden by caregiver limits above):
+$carbTarget    = (float)$lims['carbs'];
+$protTarget    = (float)$lims['protein'];
+$fatTarget     = (float)$lims['fat'];
+$fiberTarget   = (float)$lims['fiber'];
+$sugarTarget   = (float)$lims['sugar'];
 
 // Circumference for SVG ring (r=54): 2π×54 ≈ 339.3
 $circ = 339.3;
@@ -81,12 +82,12 @@ $fatOffset  = $carbArc + $protArc;
 $insight = null;
 if ($totalMeals > 0) {
     if ($carbPct >= 100)
-        $insight = ['icon'=>'ti-alert-triangle','badge'=>'bad',  'badgeText'=>'Action needed','text'=>'You\'ve hit your <strong>130g carb limit</strong> for today. Avoid starchy foods and sugary drinks for the rest of the day.'];
+        $insight = ['icon'=>'ti-alert-triangle','badge'=>'bad',  'badgeText'=>'Action needed','text'=>'You\'ve hit your <strong>'.round($lims['carbs']).'g carb limit</strong> for today. Avoid starchy foods and sugary drinks for the rest of the day.'];
     elseif ($carbPct >= 75)
         $insight = ['icon'=>'ti-alert-circle',  'badge'=>'warn', 'badgeText'=>'Near limit',  'text'=>'You\'re at <strong>'.$carbPct.'%</strong> of your daily carb limit. Choose low-carb options for remaining meals.'];
-    elseif ($totalFiber > 0 && $totalFiber >= 25)
+    elseif ($totalFiber > 0 && $totalFiber >= $lims['fiber'])
         $insight = ['icon'=>'ti-leaf',           'badge'=>'good', 'badgeText'=>'Great job',   'text'=>'Excellent fiber intake today (<strong>'.round($totalFiber,1).'g</strong>). Fiber significantly slows glucose absorption after meals.'];
-    elseif ($totalFiber > 0 && $totalFiber < 10)
+    elseif ($totalFiber > 0 && $totalFiber < $lims['fiber'] * 0.4)
         $insight = ['icon'=>'ti-leaf',           'badge'=>'warn', 'badgeText'=>'Low fiber',   'text'=>'Only <strong>'.round($totalFiber,1).'g</strong> fiber so far. Add vegetables or legumes — fiber is critical for post-meal glucose control.'];
     elseif ($lowProtein)
         $insight = ['icon'=>'ti-meat',           'badge'=>'warn', 'badgeText'=>'Low protein', 'text'=>'Low protein per meal (<strong>'.round($avgProtPerMeal,1).'g avg</strong>). Protein slows digestion and reduces blood sugar spikes.'];
@@ -106,12 +107,14 @@ for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-{$i} days"));
     $dc   = $carbsByDate[$date] ?? ['carbs' => 0, 'count' => 0];
     $c    = (float)$dc['carbs'];
+    $carbLimit = (float)$lims['carbs'];
     $weekDays[] = ['date'=>$date,'carbs'=>$c,'count'=>$dc['count'],
-        'state'=> $dc['count']===0 ? 'none' : ($c>130 ? 'over' : ($c>100 ? 'warn' : 'good'))];
+        'state'=> $dc['count']===0 ? 'none' : ($c>$carbLimit ? 'over' : ($c>$carbLimit*0.77 ? 'warn' : 'good'))];
 }
 $chartLabels = array_map(fn($d) => date('M d', strtotime($d['date'])), $weekDays);
 $chartData   = array_map(fn($d) => round($d['carbs'], 1), $weekDays);
 $chartColors = array_map(fn($d) => $d['state'] === 'over' ? '#ef4444' : ($d['state'] === 'warn' ? '#f59e0b' : '#F97447'), $weekDays);
+$chartCarbLimit = (float)$lims['carbs'];
 
 /* ── Group all logs by date for drawer ───────────────── */
 $logsByDate = [];
@@ -177,11 +180,11 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             <div class="meal-scard-track">
                 <div class="meal-scard-fill <?= $carbZone ?>" style="width:<?= $carbPct ?>%;"></div>
             </div>
-            <div class="meal-scard-progress-label"><?= $carbPct ?>% of 130g diabetic daily limit</div>
+            <div class="meal-scard-progress-label"><?= $carbPct ?>% of <?= round($lims['carbs']) ?>g daily carb limit</div>
         </div>
         <div class="meal-scard-meta">
             <?php if ($totalFiber > 0): ?>
-            <span class="meal-pill pill-good"><i class="ti ti-leaf"></i> <?= round($totalFiber,1) ?>g fiber (<?= $fiberPct ?>% of 25g goal)</span>
+            <span class="meal-pill pill-good"><i class="ti ti-leaf"></i> <?= round($totalFiber,1) ?>g fiber (<?= $fiberPct ?>% of <?= round($lims['fiber']) ?>g goal)</span>
             <?php elseif ($totalMeals > 0): ?>
             <span class="meal-pill pill-warn"><i class="ti ti-leaf"></i> No fiber logged — add vegetables</span>
             <?php else: ?>
@@ -663,7 +666,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                         <div class="meal-macro-row-track">
                             <div class="meal-macro-row-fill <?= $row['class'] ?>" style="width:<?= $pct ?>%;"></div>
                         </div>
-                        <div class="meal-macro-row-goal"><?= $pct ?>% of <?= $row['target'] ?><?= $row['unit'] ?> daily target</div>
+                        <div class="meal-macro-row-goal"><?= $pct ?>% of <?= $row['target'] ?><?= $row['unit'] ?> daily limit</div>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -884,15 +887,16 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
         beforeDraw(chart) {
             const { ctx, chartArea: { left, right }, scales: { y } } = chart;
             if (!y) return;
-            const y130 = y.getPixelForValue(130);
+            const carbLimit = <?= (float)$chartCarbLimit ?>;
+            const yPx = y.getPixelForValue(carbLimit);
             ctx.save();
             ctx.setLineDash([6, 4]);
             ctx.lineWidth = 1.5;
             ctx.strokeStyle = 'rgba(239,68,68,0.45)';
-            ctx.beginPath(); ctx.moveTo(left, y130); ctx.lineTo(right, y130); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(left, yPx); ctx.lineTo(right, yPx); ctx.stroke();
             ctx.fillStyle = 'rgba(239,68,68,0.6)';
             ctx.font = '700 10px DM Sans';
-            ctx.fillText('130g limit', right - 68, y130 - 5);
+            ctx.fillText(carbLimit + 'g limit', right - 68, yPx - 5);
             ctx.restore();
         }
     };
@@ -921,7 +925,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                     borderColor: 'rgba(249,116,71,0.2)',
                     borderWidth: 1, padding: 12, cornerRadius: 12,
                     callbacks: {
-                        label: c => ` ${c.parsed.y}g carbs${c.parsed.y > 130 ? ' — over daily limit!' : ''}`
+                        label: c => ` ${c.parsed.y}g carbs${c.parsed.y > <?= (float)$chartCarbLimit ?> ? ' — over daily limit!' : ''}`
                     }
                 }
             },
