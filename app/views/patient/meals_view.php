@@ -14,18 +14,30 @@ $totalSugar  = (float)($todayTotals['total_sugar']   ?? 0);
 $totalFiber  = (float)($todayTotals['total_fiber']   ?? 0);
 $logCount    = count($logs ?? []);
 
+/* ── Nutrition limits ────────────────────────────────── */
+$lims       = $nutritionLimits ?? ['carbs'=>130,'calories'=>1800,'sugar'=>25,'protein'=>50,'fat'=>65,'fiber'=>25,'sodium'=>2300];
+$carbTarget = (float)$lims['carbs'];
+$calTarget  = (float)$lims['calories'];
+$protTarget = (float)$lims['protein'];
+$fatTarget  = (float)$lims['fat'];
+$fiberTarget= (float)$lims['fiber'];
+$sugarTarget= (float)$lims['sugar'];
+$sodiumTarget=(float)($lims['sodium'] ?? 2300);
+
 /* ── Carb zone ───────────────────────────────────────── */
-$lims     = $nutritionLimits ?? ['carbs'=>130,'calories'=>1800,'sugar'=>25,'protein'=>50,'fat'=>65,'fiber'=>25,'sodium'=>2300];
-$carbPct  = $lims['carbs'] > 0 ? min(round($totalCarbs / $lims['carbs'] * 100), 100) : 0;
+$carbPct  = $carbTarget > 0 ? min(round($totalCarbs / $carbTarget * 100), 100) : 0;
 $carbZone = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
+$calPct   = $calTarget  > 0 ? min(round($totalCals  / $calTarget  * 100), 100) : 0;
+$protPct  = $protTarget > 0 ? min(round($totalProt  / $protTarget * 100), 100) : 0;
+$fiberPct = $fiberTarget> 0 ? min(round($totalFiber / $fiberTarget* 100), 100) : 0;
+$sugarPct = $sugarTarget> 0 ? min(round($totalSugar / $sugarTarget* 100), 100) : 0;
 
 /* ── Clinical flags ──────────────────────────────────── */
 $avgProtPerMeal = $totalMeals > 0 ? $totalProt / $totalMeals : 0;
 $lowProtein     = $avgProtPerMeal > 0 && $avgProtPerMeal < 15;
-$fiberPct       = $lims['fiber'] > 0 ? min(round($totalFiber / $lims['fiber'] * 100), 100) : 0;
-$fiberGood      = $totalFiber >= $lims['fiber'];
+$fiberGood      = $totalFiber >= $fiberTarget;
 
-/* ── Time-of-day clinical tip ────────────────────────── */
+/* ── Time-of-day tip ─────────────────────────────────── */
 $hour    = (int) date('G');
 $timeTip = null;
 $hasType = [];
@@ -39,63 +51,45 @@ elseif ($hour >= 17 && $hour < 20 && empty($hasType['Dinner']))
 elseif ($hour >= 15 && $hour < 17)
     $timeTip = ['icon'=>'ti-apple',   'text'=>'Afternoon snack window. A small protein-rich snack now prevents blood sugar dips before dinner.'];
 
-/* ── Meal slot tracker (today's 4 slots) ──────────────── */
-$mealSlots = [
-    ['type'=>'Breakfast','icon'=>'ti-sunrise','hour_start'=>6, 'hour_end'=>10],
-    ['type'=>'Lunch',    'icon'=>'ti-sun',    'hour_start'=>11,'hour_end'=>14],
-    ['type'=>'Dinner',   'icon'=>'ti-moon',   'hour_start'=>17,'hour_end'=>20],
-    ['type'=>'Snack',    'icon'=>'ti-apple',  'hour_start'=>14,'hour_end'=>17],
-];
+/* ── Meal slot tracker ───────────────────────────────── */
 $loggedByType = [];
 foreach ($todayLogs ?? [] as $l) {
     $t = $l['meal_type'];
     if (!isset($loggedByType[$t])) $loggedByType[$t] = ['count'=>0,'carbs'=>0,'name'=>''];
     $loggedByType[$t]['count']++;
     $loggedByType[$t]['carbs'] += (float)$l['carbs'];
-    $loggedByType[$t]['name']   = $l['meal_name']; // last logged name
+    $loggedByType[$t]['name']   = $l['meal_name'];
 }
 
-/* ── Nutrition ring (macro % breakdown) ───────────────── */
-$totalMacros   = $totalProt + $totalFat + ($totalCarbs > 0 ? $totalCarbs * 0.4 : 0); // weighted
-$carbRingPct   = $totalCals > 0 ? round(($totalCarbs * 4 / $totalCals) * 100)  : 0;
-$protRingPct   = $totalCals > 0 ? round(($totalProt  * 4 / $totalCals) * 100)  : 0;
-$fatRingPct    = $totalCals > 0 ? round(($totalFat   * 9 / $totalCals) * 100)  : 0;
-// ADA-aligned defaults (overridden by caregiver limits above):
-$carbTarget    = (float)$lims['carbs'];
-$protTarget    = (float)$lims['protein'];
-$fatTarget     = (float)$lims['fat'];
-$fiberTarget   = (float)$lims['fiber'];
-$sugarTarget   = (float)$lims['sugar'];
-
-// Circumference for SVG ring (r=54): 2π×54 ≈ 339.3
+/* ── Macro ring ──────────────────────────────────────── */
+$carbRingPct = $totalCals > 0 ? round(($totalCarbs * 4 / $totalCals) * 100) : 0;
+$protRingPct = $totalCals > 0 ? round(($totalProt  * 4 / $totalCals) * 100) : 0;
+$fatRingPct  = $totalCals > 0 ? round(($totalFat   * 9 / $totalCals) * 100) : 0;
 $circ = 339.3;
-$carbArc   = min($carbRingPct,  100) / 100 * $circ;
-$protArc   = min($protRingPct,  100) / 100 * $circ;
-$fatArc    = min($fatRingPct,   100) / 100 * $circ;
-
-// Carb offset from top, protein follows, fat follows
-$carbOffset = 0;
+$carbArc   = min($carbRingPct, 100) / 100 * $circ;
+$protArc   = min($protRingPct, 100) / 100 * $circ;
+$fatArc    = min($fatRingPct,  100) / 100 * $circ;
 $protOffset = $carbArc;
 $fatOffset  = $carbArc + $protArc;
 
-// Clinical insight
+/* ── Clinical insight ────────────────────────────────── */
 $insight = null;
 if ($totalMeals > 0) {
     if ($carbPct >= 100)
-        $insight = ['icon'=>'ti-alert-triangle','badge'=>'bad',  'badgeText'=>'Action needed','text'=>'You\'ve hit your <strong>'.round($lims['carbs']).'g carb limit</strong> for today. Avoid starchy foods and sugary drinks for the rest of the day.'];
+        $insight = ['icon'=>'ti-alert-triangle','badge'=>'bad',  'badgeText'=>'Action needed','text'=>'You\'ve hit your <strong>'.round($carbTarget).'g carb limit</strong> for today. Avoid starchy foods and sugary drinks.'];
     elseif ($carbPct >= 75)
         $insight = ['icon'=>'ti-alert-circle',  'badge'=>'warn', 'badgeText'=>'Near limit',  'text'=>'You\'re at <strong>'.$carbPct.'%</strong> of your daily carb limit. Choose low-carb options for remaining meals.'];
-    elseif ($totalFiber > 0 && $totalFiber >= $lims['fiber'])
-        $insight = ['icon'=>'ti-leaf',           'badge'=>'good', 'badgeText'=>'Great job',   'text'=>'Excellent fiber intake today (<strong>'.round($totalFiber,1).'g</strong>). Fiber significantly slows glucose absorption after meals.'];
-    elseif ($totalFiber > 0 && $totalFiber < $lims['fiber'] * 0.4)
-        $insight = ['icon'=>'ti-leaf',           'badge'=>'warn', 'badgeText'=>'Low fiber',   'text'=>'Only <strong>'.round($totalFiber,1).'g</strong> fiber so far. Add vegetables or legumes — fiber is critical for post-meal glucose control.'];
+    elseif ($totalFiber > 0 && $totalFiber >= $fiberTarget)
+        $insight = ['icon'=>'ti-leaf',           'badge'=>'good', 'badgeText'=>'Great job',   'text'=>'Excellent fiber intake today (<strong>'.round($totalFiber,1).'g</strong>). Fiber significantly slows glucose absorption.'];
+    elseif ($totalFiber > 0 && $totalFiber < $fiberTarget * 0.4)
+        $insight = ['icon'=>'ti-leaf',           'badge'=>'warn', 'badgeText'=>'Low fiber',   'text'=>'Only <strong>'.round($totalFiber,1).'g</strong> fiber so far. Add vegetables or legumes for better glucose control.'];
     elseif ($lowProtein)
         $insight = ['icon'=>'ti-meat',           'badge'=>'warn', 'badgeText'=>'Low protein', 'text'=>'Low protein per meal (<strong>'.round($avgProtPerMeal,1).'g avg</strong>). Protein slows digestion and reduces blood sugar spikes.'];
     else
-        $insight = ['icon'=>'ti-circle-check',   'badge'=>'good', 'badgeText'=>'On track',   'text'=>'Good nutritional balance today. Keep including protein and fiber with each meal to maintain stable blood glucose.'];
+        $insight = ['icon'=>'ti-circle-check',   'badge'=>'good', 'badgeText'=>'On track',   'text'=>'Good nutritional balance today. Keep including protein and fiber with each meal.'];
 }
 
-/* ── 7-day chart data (rebuild week buckets for bar chart) ── */
+/* ── 7-day chart data ────────────────────────────────── */
 $carbsByDate = [];
 foreach ($logs ?? [] as $l) {
     $d = date('Y-m-d', strtotime($l['logged_at']));
@@ -107,16 +101,14 @@ for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-{$i} days"));
     $dc   = $carbsByDate[$date] ?? ['carbs' => 0, 'count' => 0];
     $c    = (float)$dc['carbs'];
-    $carbLimit = (float)$lims['carbs'];
     $weekDays[] = ['date'=>$date,'carbs'=>$c,'count'=>$dc['count'],
-        'state'=> $dc['count']===0 ? 'none' : ($c>$carbLimit ? 'over' : ($c>$carbLimit*0.77 ? 'warn' : 'good'))];
+        'state'=> $dc['count']===0 ? 'none' : ($c>$carbTarget ? 'over' : ($c>$carbTarget*0.77 ? 'warn' : 'good'))];
 }
 $chartLabels = array_map(fn($d) => date('M d', strtotime($d['date'])), $weekDays);
 $chartData   = array_map(fn($d) => round($d['carbs'], 1), $weekDays);
 $chartColors = array_map(fn($d) => $d['state'] === 'over' ? '#ef4444' : ($d['state'] === 'warn' ? '#f59e0b' : '#F97447'), $weekDays);
-$chartCarbLimit = (float)$lims['carbs'];
 
-/* ── Group all logs by date for drawer ───────────────── */
+/* ── Group logs by date for drawer ──────────────────── */
 $logsByDate = [];
 foreach ($logs ?? [] as $l) {
     $d = date('Y-m-d', strtotime($l['logged_at']));
@@ -124,14 +116,15 @@ foreach ($logs ?? [] as $l) {
 }
 krsort($logsByDate);
 
-/* ── Drawer stats ────────────────────────────────────── */
 $drawerBreakfast = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Breakfast'));
 $drawerLunch     = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Lunch'));
 $drawerDinner    = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Dinner'));
 $drawerSnack     = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Snack'));
 
-/* ── Flash detection ─────────────────────────────────── */
 $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
+
+/* ── Caregiver limits banner ─────────────────────────── */
+$hasCustomLimits = isset($nutritionLimits) && !empty($nutritionLimits);
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
@@ -141,10 +134,10 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 <div class="meal-page-header">
     <div class="meal-page-header-left">
         <div class="meal-page-eyebrow">
-            <i class="ti ti-salad"></i> Meals &amp; Carbs Tracker
+            <i class="ti ti-bowl-spoon"></i> Meals &amp; Carbs Tracker
         </div>
         <h1 class="meal-page-title">Daily <span>Nutrition</span></h1>
-        <p class="meal-page-sub">Log your meals and track carbohydrate intake, <?= htmlspecialchars($firstName) ?>.</p>
+        <p class="meal-page-sub">Track your meals and stay within your nutritional goals, <?= htmlspecialchars($firstName) ?>.</p>
     </div>
     <div class="meal-page-header-right">
         <div class="meal-today-badge <?= $carbPct >= 100 ? 'warn' : ($totalMeals > 0 ? 'logged' : 'not-logged') ?>">
@@ -162,90 +155,143 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
     </div>
 </div>
 
-<!-- ══ STAT CARDS ════════════════════════════════════════ -->
-<div class="meal-stats-row">
-
-    <!-- Carbs — primary -->
-    <div class="meal-scard meal-scard-primary">
-        <div class="meal-scard-top">
-            <div class="meal-scard-icon"><i class="ti ti-grain"></i></div>
-            <div class="meal-scard-badge">
-                <i class="ti ti-<?= $carbZone === 'over' ? 'alert-triangle' : ($carbZone === 'warn' ? 'alert-circle' : 'circle-check') ?>"></i>
-                <?= $carbZone === 'over' ? 'Exceeded' : ($carbZone === 'warn' ? 'Near Limit' : 'On Track') ?>
+<!-- ══ CAREGIVER DAILY LIMITS PANEL ══════════════════════ -->
+<div class="meal-limits-panel">
+    <div class="meal-limits-header">
+        <div class="meal-limits-header-left">
+            <div class="meal-limits-icon"><i class="ti ti-shield-check"></i></div>
+            <div>
+                <div class="meal-limits-title">Daily Limits Set by Your Caregiver</div>
+                <div class="meal-limits-sub">Your personalized nutritional targets for today</div>
             </div>
         </div>
-        <div class="meal-scard-val"><?= round($totalCarbs, 1) ?><small>g</small></div>
-        <div class="meal-scard-label">Total Carbs Today</div>
-        <div class="meal-scard-progress">
-            <div class="meal-scard-track">
-                <div class="meal-scard-fill <?= $carbZone ?>" style="width:<?= $carbPct ?>%;"></div>
+        <button class="meal-limits-toggle" onclick="toggleLimitsPanel()" id="limitsToggleBtn" aria-label="Toggle limits panel">
+            <i class="ti ti-chevron-up" id="limitsChevron"></i>
+        </button>
+    </div>
+    <div class="meal-limits-body" id="limitsBody">
+        <div class="meal-limits-grid">
+            <!-- Carbs -->
+            <div class="meal-limit-item <?= $carbZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-grain"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Carbohydrates</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalCarbs,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($carbTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $carbZone ?>" style="width:<?= $carbPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $carbPct ?>% used</div>
+                </div>
             </div>
-            <div class="meal-scard-progress-label"><?= $carbPct ?>% of <?= round($lims['carbs']) ?>g daily carb limit</div>
+            <!-- Calories -->
+            <?php $calZone = $calPct >= 100 ? 'over' : ($calPct >= 80 ? 'warn' : 'good'); ?>
+            <div class="meal-limit-item <?= $calZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-flame"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Calories</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalCals) ?></span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($calTarget) ?> kcal</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $calZone ?>" style="width:<?= $calPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $calPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Sugar -->
+            <?php $sugarZone = $sugarPct >= 100 ? 'over' : ($sugarPct >= 80 ? 'warn' : 'good'); ?>
+            <div class="meal-limit-item <?= $sugarZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-candy"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Sugar</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalSugar,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($sugarTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $sugarZone ?>" style="width:<?= $sugarPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $sugarPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Protein -->
+            <?php $protZone = $protPct >= 100 ? 'good' : ($protPct >= 60 ? 'good' : 'warn'); ?>
+            <div class="meal-limit-item <?= $protZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-meat"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Protein</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalProt,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($protTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $protZone ?>" style="width:<?= $protPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $protPct ?>% of goal</div>
+                </div>
+            </div>
+            <!-- Fat -->
+            <?php $fatPct = $fatTarget > 0 ? min(round($totalFat / $fatTarget * 100), 100) : 0;
+                  $fatZone = $fatPct >= 100 ? 'over' : ($fatPct >= 80 ? 'warn' : 'good'); ?>
+            <div class="meal-limit-item <?= $fatZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-droplet"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Fat</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalFat,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($fatTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $fatZone ?>" style="width:<?= $fatPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $fatPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Fiber -->
+            <?php $fiberZone2 = $fiberPct >= 100 ? 'good' : ($fiberPct >= 50 ? 'good' : 'warn'); ?>
+            <div class="meal-limit-item <?= $fiberZone2 ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-leaf"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Fiber</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalFiber,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($fiberTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $fiberZone2 ?>" style="width:<?= $fiberPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $fiberPct ?>% of goal</div>
+                </div>
+            </div>
         </div>
-        <div class="meal-scard-meta">
-            <?php if ($totalFiber > 0): ?>
-            <span class="meal-pill pill-good"><i class="ti ti-leaf"></i> <?= round($totalFiber,1) ?>g fiber (<?= $fiberPct ?>% of <?= round($lims['fiber']) ?>g goal)</span>
-            <?php elseif ($totalMeals > 0): ?>
-            <span class="meal-pill pill-warn"><i class="ti ti-leaf"></i> No fiber logged — add vegetables</span>
-            <?php else: ?>
-            <span class="meal-pill pill-neutral"><i class="ti ti-minus"></i> No meals yet</span>
-            <?php endif; ?>
+        <?php if ($insight): ?>
+        <div class="meal-insight-row">
+            <div class="meal-insight-icon"><i class="ti <?= $insight['icon'] ?>"></i></div>
+            <div class="meal-insight-text"><?= $insight['text'] ?></div>
+            <span class="meal-insight-badge <?= $insight['badge'] ?>"><?= $insight['badgeText'] ?></span>
         </div>
+        <?php endif; ?>
     </div>
-
-    <!-- Calories — secondary -->
-    <div class="meal-scard meal-scard-secondary">
-        <div class="meal-scard-top">
-            <div class="meal-scard-icon"><i class="ti ti-flame"></i></div>
-        </div>
-        <div class="meal-scard-val"><?= round($totalCals) ?><small>kcal</small></div>
-        <div class="meal-scard-label">Calories Consumed</div>
-        <div class="meal-scard-meta">
-            <?php if ($totalCals > 0):
-                $calStatus = $totalCals < 1200 ? 'Low' : ($totalCals > 2200 ? 'High' : 'Normal'); ?>
-            <span class="meal-pill <?= $totalCals > 2200 ? 'pill-warn' : 'pill-good' ?>">
-                <i class="ti ti-chart-bar"></i> <?= $calStatus ?> intake
-            </span>
-            <?php if ($totalMeals > 0): ?>
-            <span class="meal-pill pill-neutral"><i class="ti ti-divide"></i> <?= round($totalCals / $totalMeals) ?> kcal avg/meal</span>
-            <?php endif; ?>
-            <?php else: ?>
-            <span class="meal-pill pill-neutral"><i class="ti ti-minus"></i> No data yet</span>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Protein + Fat — tertiary -->
-    <div class="meal-scard meal-scard-tertiary">
-        <div class="meal-scard-top">
-            <div class="meal-scard-icon"><i class="ti ti-meat"></i></div>
-        </div>
-        <div class="meal-scard-val"><?= round($totalProt, 1) ?><small>g</small></div>
-        <div class="meal-scard-label">Protein Today</div>
-        <div class="meal-scard-meta">
-            <?php if ($totalProt > 0): ?>
-            <span class="meal-pill <?= $lowProtein ? 'pill-warn' : 'pill-good' ?>">
-                <i class="ti ti-<?= $lowProtein ? 'alert-circle' : 'circle-check' ?>"></i>
-                <?= $lowProtein ? 'Low — aim for 15g+/meal' : 'Good protein balance' ?>
-            </span>
-            <span class="meal-pill pill-neutral"><i class="ti ti-droplet"></i> <?= round($totalFat,1) ?>g fat</span>
-            <?php else: ?>
-            <span class="meal-pill pill-neutral"><i class="ti ti-minus"></i> No data yet</span>
-            <?php endif; ?>
-        </div>
-    </div>
-
 </div>
 
-<!-- ══ MEAL SLOT TRACKER ════════════════════════════════ -->
+<!-- ══ MEAL SLOT TRACKER ══════════════════════════════════ -->
 <div class="meal-slot-strip">
     <?php
     $slotOrder = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
     $slotIcons = ['Breakfast'=>'ti-sunrise','Lunch'=>'ti-sun','Dinner'=>'ti-moon','Snack'=>'ti-apple'];
     foreach ($slotOrder as $sType):
         $logged   = isset($loggedByType[$sType]);
-        $isPast   = false;
-        $upcoming = false;
+        $isPast   = false; $upcoming = false;
         if ($sType === 'Breakfast') { $isPast = $hour >= 10; $upcoming = $hour < 6; }
         elseif ($sType === 'Lunch')   { $isPast = $hour >= 14; $upcoming = $hour < 11; }
         elseif ($sType === 'Dinner')  { $isPast = $hour >= 20; $upcoming = $hour < 17; }
@@ -272,13 +318,11 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
     <?php endforeach; ?>
 </div>
 
-<!-- ══ MAIN GRID ════════════════════════════════════════ -->
+<!-- ══ MAIN GRID ══════════════════════════════════════════ -->
 <div class="meal-main-grid">
 
     <!-- Today's Meals Card -->
     <div class="meal-today-card">
-
-        <!-- Orange gradient hero -->
         <div class="meal-today-hero">
             <div class="meal-today-hero-top">
                 <div>
@@ -327,7 +371,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
         <div class="meal-today-body">
             <?php if (empty($todayLogs)): ?>
             <div class="meal-empty">
-                <i class="ti ti-salad" style="font-size:3rem;color:rgba(249,116,71,0.3);"></i>
+                <i class="ti ti-bowl-spoon" style="font-size:3rem;color:rgba(249,116,71,0.3);"></i>
                 <p>No meals logged today yet.</p>
                 <p style="font-size:11px;color:#c4a090;">Tap the button below to log your first meal.</p>
                 <button class="meal-empty-cta" onclick="openAddMealModal()">
@@ -364,13 +408,35 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             </div>
             <?php endif; ?>
         </div>
+
+        <!-- Nutrition Breakdown Trigger (inside card, below meal list) -->
+        <button class="meal-nutrition-trigger" onclick="openModal('nutritionModal')" <?= $totalMeals === 0 ? 'disabled style="opacity:0.55;cursor:default;"' : '' ?>>
+            <div class="meal-nutrition-trigger-icon"><i class="ti ti-chart-pie"></i></div>
+            <div style="flex:1;">
+                <div class="meal-nutrition-trigger-title">Full Nutrition Breakdown</div>
+                <div class="meal-nutrition-trigger-sub">
+                    <?= $totalMeals > 0 ? 'Macros, targets &amp; dietary insights' : 'Log a meal to unlock' ?>
+                </div>
+            </div>
+            <?php if ($totalMeals > 0): ?>
+            <div class="meal-nutrition-trigger-pills">
+                <span class="meal-nutrition-trigger-pill"><i class="ti ti-grain"></i><?= round($totalCarbs, 1) ?>g</span>
+                <span class="meal-nutrition-trigger-pill"><i class="ti ti-flame"></i><?= round($totalCals) ?></span>
+            </div>
+            <?php endif; ?>
+            <div class="meal-nutrition-trigger-arrow"><i class="ti ti-chevron-right"></i></div>
+        </button>
     </div><!-- /.meal-today-card -->
 
-    <!-- Quick Add Panel — sticky sidebar -->
+    <!-- Quick Add Panel -->
     <div class="meal-qa-panel" id="qaPanel">
         <div class="meal-qa-panel-header">
-            <div class="meal-section-label" style="margin-bottom:0;">
-                <i class="ti ti-bolt"></i> Quick Add
+            <div class="meal-qa-header-left">
+                <div class="meal-qa-icon"><i class="ti ti-bowl-spoon"></i></div>
+                <div>
+                    <div class="meal-qa-title">Quick Add</div>
+                    <div class="meal-qa-sub">Tap to pre-fill &amp; log</div>
+                </div>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
                 <button class="qa-save-btn" onclick="openSavePresetModal()">
@@ -391,7 +457,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
         <div class="qa-list" id="qa-suggested">
             <?php foreach ($defaultPresets as $preset): ?>
             <div class="qa-list-item" onclick="quickAdd(<?= htmlspecialchars(json_encode($preset)) ?>)">
-                <div class="qa-list-emoji"><?= $preset['emoji'] ?></div>
+                <div class="qa-list-icon"><i class="ti ti-bowl-spoon"></i></div>
                 <div style="flex:1;min-width:0;">
                     <div class="qa-list-name"><?= htmlspecialchars($preset['meal_name']) ?></div>
                     <div class="qa-list-meta"><?= $preset['carbs'] ?>g carbs · <?= $preset['calories'] ?> kcal · <?= $preset['meal_type'] ?></div>
@@ -401,7 +467,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             <?php endforeach; ?>
         </div>
 
-        <!-- Saved presets -->
+        <!-- Saved presets (My Meals) -->
         <div class="qa-list" id="qa-saved" style="display:none;">
             <?php if (empty($userPresets)): ?>
             <div class="qa-empty">
@@ -418,7 +484,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                      'sugar'=>$preset['sugar'],'protein'=>$preset['protein'],
                      'fat'=>$preset['fat'],'fiber'=>$preset['fiber'],'sodium'=>$preset['sodium'],
                  ])) ?>)">
-                <div class="qa-list-icon"><i class="ti ti-bookmark-filled"></i></div>
+                <div class="qa-list-icon"><i class="ti ti-bowl-spoon"></i></div>
                 <div style="flex:1;min-width:0;">
                     <div class="qa-list-name"><?= htmlspecialchars($preset['meal_name']) ?></div>
                     <div class="qa-list-meta"><?= $preset['carbs'] ?>g carbs<?= $preset['calories'] ? ' · '.$preset['calories'].' kcal' : '' ?> · <?= $preset['meal_type'] ?></div>
@@ -437,26 +503,6 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 
 </div><!-- /.meal-main-grid -->
 
-<!-- ══ NUTRITION TRIGGER BAR ═════════════════════════════ -->
-<button class="meal-nutrition-trigger" onclick="openModal('nutritionModal')" <?= $totalMeals === 0 ? 'disabled style="opacity:0.55;cursor:default;"' : '' ?>>
-    <div class="meal-nutrition-trigger-icon"><i class="ti ti-chart-pie"></i></div>
-    <div>
-        <div class="meal-nutrition-trigger-title">Today's Nutrition Breakdown</div>
-        <div class="meal-nutrition-trigger-sub">
-            <?= $totalMeals > 0 ? 'Macros, targets &amp; dietary insights — tap to view' : 'Log a meal to unlock your nutrition breakdown' ?>
-        </div>
-    </div>
-    <?php if ($totalMeals > 0): ?>
-    <div class="meal-nutrition-trigger-pills">
-        <span class="meal-nutrition-trigger-pill"><i class="ti ti-grain"></i><?= round($totalCarbs, 1) ?>g carbs</span>
-        <span class="meal-nutrition-trigger-pill"><i class="ti ti-meat"></i><?= round($totalProt, 1) ?>g protein</span>
-        <?php if ($totalCals > 0): ?><span class="meal-nutrition-trigger-pill"><i class="ti ti-flame"></i><?= round($totalCals) ?> kcal</span><?php endif; ?>
-    </div>
-    <?php endif; ?>
-    <div class="meal-nutrition-trigger-arrow"><i class="ti ti-chevron-right"></i></div>
-</button>
-
-
 <!-- ══ 7-DAY CARB CHART ══════════════════════════════════ -->
 <div class="meal-chart-card">
     <div class="meal-chart-header">
@@ -465,7 +511,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
         </div>
         <div class="meal-chart-legend">
             <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#F97447;"></span> Under limit</div>
-            <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#f59e0b;"></span> Near 130g</div>
+            <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#f59e0b;"></span> Near limit</div>
             <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#ef4444;"></span> Over limit</div>
         </div>
     </div>
@@ -479,7 +525,6 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 
 <!-- ══ HISTORY DRAWER ════════════════════════════════════ -->
 <div class="meal-drawer" id="historyDrawer" role="dialog" aria-label="All Meal Logs" aria-modal="true">
-
     <div class="meal-drawer-header">
         <div class="meal-drawer-header-left">
             <div class="meal-drawer-icon"><i class="ti ti-history"></i></div>
@@ -518,16 +563,15 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
     <div class="meal-drawer-body" id="drawerBody">
         <?php if (empty($logs)): ?>
         <div class="meal-drawer-empty">
-            <i class="ti ti-salad"></i>
+            <i class="ti ti-bowl-spoon"></i>
             <p>No meal logs yet.</p>
         </div>
         <?php else: ?>
-
         <?php foreach ($logsByDate as $date => $dayLogs):
             $dayCarbs    = array_sum(array_column($dayLogs, 'carbs'));
             $dayMeals    = count($dayLogs);
-            $dayOver     = $dayCarbs > 130;
-            $dayWarn     = !$dayOver && $dayCarbs > 100;
+            $dayOver     = $dayCarbs > $carbTarget;
+            $dayWarn     = !$dayOver && $dayCarbs > $carbTarget * 0.77;
             $isDateToday = $date === date('Y-m-d');
             $isYesterday = $date === date('Y-m-d', strtotime('-1 day'));
             $dateLabel   = $isDateToday ? 'Today' : ($isYesterday ? 'Yesterday' : date('l, M j', strtotime($date)));
@@ -596,12 +640,6 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                             <?php if ($log['calories']): ?>
                             <span style="color:#b8927e;font-size:11px;display:flex;align-items:center;gap:3px;"><i class="ti ti-flame" style="font-size:12px;"></i><?= $log['calories'] ?> kcal</span>
                             <?php endif; ?>
-                            <?php if (!empty($log['notes'])): ?>
-                            <span style="color:#b8927e;font-style:italic;font-size:11px;display:flex;align-items:center;gap:3px;overflow:hidden;max-width:160px;white-space:nowrap;text-overflow:ellipsis;">
-                                <i class="ti ti-notes" style="font-size:12px;flex-shrink:0;"></i>
-                                <?= htmlspecialchars($log['notes']) ?>
-                            </span>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -609,7 +647,6 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             </div>
         </div>
         <?php endforeach; ?>
-
         <?php endif; ?>
     </div>
 
@@ -624,10 +661,9 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             <span><i class="ti ti-apple"   style="color:#a83818;"></i> <?= $drawerSnack ?> Snack</span>
         </div>
     </div>
-
 </div><!-- /.meal-drawer -->
 
-<!-- ══ NUTRITION BREAKDOWN MODAL ════════════════════════ -->
+<!-- ══ NUTRITION BREAKDOWN MODAL ═════════════════════════ -->
 <div class="meal-modal-overlay" id="nutritionModal" onclick="overlayCloseModal(event,'nutritionModal')" aria-modal="true" role="dialog">
     <div class="meal-modal" style="max-width:600px;">
         <div class="meal-modal-header">
@@ -641,11 +677,8 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             <button class="meal-modal-close" onclick="closeModal('nutritionModal')" aria-label="Close"><i class="ti ti-x"></i></button>
         </div>
         <div class="meal-modal-body" style="padding-bottom:24px;">
-
             <?php if ($totalMeals > 0): ?>
             <div class="meal-nutrition-content">
-
-                <!-- Left: stacked macro bars -->
                 <div class="meal-macro-stack">
                     <?php
                     $macroRows = [
@@ -670,8 +703,6 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                     </div>
                     <?php endforeach; ?>
                 </div>
-
-                <!-- Right: donut ring -->
                 <div class="meal-macro-ring-wrap">
                     <div class="meal-ring-svg-wrap">
                         <svg class="meal-ring-svg" width="140" height="140" viewBox="0 0 140 140">
@@ -701,7 +732,6 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                     </div>
                 </div>
             </div>
-
             <?php if ($insight): ?>
             <div class="meal-insight-row" style="margin-top:18px;">
                 <div class="meal-insight-icon"><i class="ti <?= $insight['icon'] ?>"></i></div>
@@ -709,24 +739,22 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                 <span class="meal-insight-badge <?= $insight['badge'] ?>"><?= $insight['badgeText'] ?></span>
             </div>
             <?php endif; ?>
-
             <?php else: ?>
             <div class="meal-empty" style="padding:48px 0;">
                 <i class="ti ti-chart-pie" style="font-size:2.5rem;color:rgba(249,116,71,0.3);"></i>
                 <p>Log your first meal to see your nutrition breakdown.</p>
             </div>
             <?php endif; ?>
-
         </div>
     </div>
 </div>
 
-<!-- ══ ADD MEAL MODAL ══════════════════════════════════════ -->
+<!-- ══ ADD MEAL MODAL ════════════════════════════════════ -->
 <div class="meal-modal-overlay" id="addMealModal" onclick="overlayCloseModal(event,'addMealModal')" aria-modal="true" role="dialog">
     <div class="meal-modal">
         <div class="meal-modal-header">
             <div class="meal-modal-header-left">
-                <div class="meal-modal-icon"><i class="ti ti-salad"></i></div>
+                <div class="meal-modal-icon"><i class="ti ti-bowl-spoon"></i></div>
                 <div>
                     <div class="meal-modal-title">Log a Meal</div>
                     <div class="meal-modal-sub">Record your meal and nutritional details</div>
@@ -856,14 +884,11 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 </div>
 
 <!-- ══ TOASTS ════════════════════════════════════════════ -->
-<!-- Save success toast -->
 <div class="meal-toast meal-toast-success" id="saveToast" aria-live="polite">
     <i class="ti ti-circle-check"></i>
     <span>Meal logged successfully</span>
     <button class="meal-toast-close" onclick="hideToast('saveToast')" aria-label="Dismiss"><i class="ti ti-x"></i></button>
 </div>
-
-<!-- Delete toast with undo -->
 <div class="meal-toast" id="deleteToast" aria-live="polite">
     <i class="ti ti-trash"></i>
     <span id="toastMsg">Meal deleted</span>
@@ -887,7 +912,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
         beforeDraw(chart) {
             const { ctx, chartArea: { left, right }, scales: { y } } = chart;
             if (!y) return;
-            const carbLimit = <?= (float)$chartCarbLimit ?>;
+            const carbLimit = <?= (float)$carbTarget ?>;
             const yPx = y.getPixelForValue(carbLimit);
             ctx.save();
             ctx.setLineDash([6, 4]);
@@ -925,7 +950,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
                     borderColor: 'rgba(249,116,71,0.2)',
                     borderWidth: 1, padding: 12, cornerRadius: 12,
                     callbacks: {
-                        label: c => ` ${c.parsed.y}g carbs${c.parsed.y > <?= (float)$chartCarbLimit ?> ? ' — over daily limit!' : ''}`
+                        label: c => ` ${c.parsed.y}g carbs${c.parsed.y > <?= (float)$carbTarget ?> ? ' — over daily limit!' : ''}`
                     }
                 }
             },
@@ -940,26 +965,36 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 
 <!-- ══ INTERACTIVITY ══════════════════════════════════════ -->
 <script>
+/* ── Limits panel toggle ────────────────────────────────── */
+let limitsOpen = true;
+function toggleLimitsPanel() {
+    limitsOpen = !limitsOpen;
+    const body    = document.getElementById('limitsBody');
+    const chevron = document.getElementById('limitsChevron');
+    body.style.maxHeight    = limitsOpen ? body.scrollHeight + 'px' : '0';
+    body.style.opacity      = limitsOpen ? '1' : '0';
+    body.style.paddingTop   = limitsOpen ? '' : '0';
+    body.style.paddingBottom= limitsOpen ? '' : '0';
+    chevron.className       = limitsOpen ? 'ti ti-chevron-up' : 'ti ti-chevron-down';
+}
+// Set initial height after layout
+document.addEventListener('DOMContentLoaded', () => {
+    const body = document.getElementById('limitsBody');
+    body.style.maxHeight = body.scrollHeight + 'px';
+});
+
 /* ── Toast helpers ─────────────────────────────────────── */
 function showToast(id, duration) {
-    const t = document.getElementById(id);
-    if (!t) return;
+    const t = document.getElementById(id); if (!t) return;
     t.classList.add('show');
     if (duration > 0) setTimeout(() => t.classList.remove('show'), duration);
 }
-function hideToast(id) {
-    const t = document.getElementById(id);
-    if (t) t.classList.remove('show');
-}
+function hideToast(id) { const t = document.getElementById(id); if (t) t.classList.remove('show'); }
 
-/* Flash → toast on load (mirrors bloodsugar sessionStorage pattern) */
-document.getElementById('addMealForm').addEventListener('submit', () => {
-    sessionStorage.setItem('meal_saved', '1');
-});
+document.getElementById('addMealForm').addEventListener('submit', () => sessionStorage.setItem('meal_saved','1'));
 document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('meal_saved') === '1') {
-        sessionStorage.removeItem('meal_saved');
-        showToast('saveToast', 3500);
+        sessionStorage.removeItem('meal_saved'); showToast('saveToast', 3500);
     }
     <?php if ($flashDeleted): ?>
     document.getElementById('toastMsg').textContent = 'Meal deleted successfully';
@@ -972,9 +1007,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
 function overlayCloseModal(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
-
-function openAddMealModal()   { openModal('addMealModal'); }
-function openSavePresetModal(){ openModal('savePresetModal'); }
+function openAddMealModal()    { openModal('addMealModal'); }
+function openSavePresetModal() { openModal('savePresetModal'); }
 
 /* ── Meal type selector ─────────────────────────────────── */
 function selectMealType(type, btn, inputId) {
@@ -991,7 +1025,7 @@ function switchQaTab(tab, btn) {
     document.getElementById('qa-saved').style.display     = tab === 'saved'     ? '' : 'none';
 }
 
-/* ── Quick Add — pre-fill modal then open ─────────────── */
+/* ── Quick Add — pre-fill modal ─────────────────────────── */
 function quickAdd(preset) {
     document.getElementById('add-meal-name').value     = preset.meal_name || '';
     document.getElementById('add-meal-carbs').value    = preset.carbs     || '';
@@ -1019,7 +1053,6 @@ function closeQaPanel() {
 
 /* ── History drawer ─────────────────────────────────────── */
 let drawerFilterActive = 'all';
-
 function openHistoryDrawer() {
     document.getElementById('historyDrawer').classList.add('open');
     document.getElementById('drawerOverlay').classList.add('show');
@@ -1030,16 +1063,7 @@ function closeHistoryDrawer() {
     document.getElementById('drawerOverlay').classList.remove('show');
     document.body.style.overflow = '';
 }
-function filterDrawerByDate(date) {
-    openHistoryDrawer();
-    setTimeout(() => {
-        const group = document.querySelector(`.meal-drawer-day-group[data-date="${date}"]`);
-        if (group) group.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 320);
-}
-function filterDrawer() {
-    applyDrawerFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), drawerFilterActive);
-}
+function filterDrawer() { applyDrawerFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), drawerFilterActive); }
 function setDrawerFilter(filter, btn) {
     drawerFilterActive = filter;
     document.querySelectorAll('.meal-drawer-filter').forEach(b => b.classList.remove('active'));
@@ -1049,8 +1073,7 @@ function setDrawerFilter(filter, btn) {
 function applyDrawerFilters(q, filter) {
     let visible = 0;
     document.querySelectorAll('.meal-timeline-item').forEach(item => {
-        const ok = (filter === 'all' || item.dataset.type === filter)
-                && (!q || item.dataset.search.includes(q));
+        const ok = (filter === 'all' || item.dataset.type === filter) && (!q || item.dataset.search.includes(q));
         item.style.display = ok ? '' : 'none';
         if (ok) visible++;
     });
@@ -1062,19 +1085,15 @@ function applyDrawerFilters(q, filter) {
 }
 
 /* ── Delete with undo toast ─────────────────────────────── */
-let deleteTimer   = null;
-let pendingDelete = null;
-
+let deleteTimer = null, pendingDelete = null;
 function confirmDeleteMeal(btn) {
-    const id   = btn.dataset.id;
-    const name = btn.dataset.name;
-    const row  = document.getElementById('meal-row-' + id);
+    const id = btn.dataset.id, name = btn.dataset.name;
+    const row = document.getElementById('meal-row-' + id);
     if (row) row.classList.add('removing');
     showDeleteToast(id, name, [row]);
 }
 function confirmDeleteLog(btn) {
-    const id     = btn.dataset.id;
-    const name   = btn.dataset.name;
+    const id = btn.dataset.id, name = btn.dataset.name;
     const tlItem = btn.closest('.meal-timeline-item');
     const todRow = document.getElementById('meal-row-' + id);
     if (tlItem) tlItem.classList.add('meal-item-deleting');
@@ -1087,11 +1106,8 @@ function showDeleteToast(id, name, rows) {
     showToast('deleteToast', 0);
     pendingDelete = { id, rows };
     clearTimeout(deleteTimer);
-    deleteTimer = setTimeout(() => {
-        window.location.href = '/diabetrack/public/patient/meals?delete=' + id + '&deleted=1';
-    }, 5000);
+    deleteTimer = setTimeout(() => { window.location.href = '/diabetrack/public/patient/meals?delete=' + id + '&deleted=1'; }, 5000);
 }
-
 document.getElementById('toastUndo').addEventListener('click', () => {
     clearTimeout(deleteTimer);
     if (pendingDelete) {
@@ -1101,34 +1117,23 @@ document.getElementById('toastUndo').addEventListener('click', () => {
     hideToast('deleteToast');
 });
 document.getElementById('toastClose').addEventListener('click', () => {
-    if (pendingDelete) {
-        window.location.href = '/diabetrack/public/patient/meals?delete=' + pendingDelete.id + '&deleted=1';
-        pendingDelete = null;
-    }
-    hideToast('deleteToast');
-    clearTimeout(deleteTimer);
+    if (pendingDelete) { window.location.href = '/diabetrack/public/patient/meals?delete=' + pendingDelete.id + '&deleted=1'; pendingDelete = null; }
+    hideToast('deleteToast'); clearTimeout(deleteTimer);
 });
 
 /* ── Delete preset ─────────────────────────────────────── */
 function deletePreset(id, link) {
     const item = link.closest('.qa-list-item');
     fetch('/diabetrack/public/patient/meals?delete_preset=' + id)
-        .then(r => {
-            if (r.ok) {
-                if (item) { item.classList.add('removing'); setTimeout(() => item.remove(), 300); }
-            }
-        })
+        .then(r => { if (r.ok && item) { item.classList.add('removing'); setTimeout(() => item.remove(), 300); } })
         .catch(() => {});
 }
 
-/* ── Global keyboard handler ───────────────────────────── */
+/* ── Keyboard ────────────────────────────────────────────── */
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-        closeModal('addMealModal');
-        closeModal('savePresetModal');
-        closeModal('nutritionModal');
-        closeHistoryDrawer();
-        closeQaPanel();
+        closeModal('addMealModal'); closeModal('savePresetModal'); closeModal('nutritionModal');
+        closeHistoryDrawer(); closeQaPanel();
     }
 });
 </script>
