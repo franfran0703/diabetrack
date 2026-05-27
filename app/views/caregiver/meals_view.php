@@ -1,476 +1,646 @@
 <?php
-$pageTitle  = 'Meal Monitor';
+$pageTitle  = 'Meals & Carbs';
 $activeMenu = 'meals';
 ob_start();
 
-// ── Limits (from controller, or defaults) ─────────────────
-$lim = $limits ?? [
-    'carbs'=>130,'calories'=>1800,'sugar'=>50,
-    'protein'=>60,'fat'=>65,'fiber'=>25,'sodium'=>2300
-];
+/* ── Base variables ──────────────────────────────────── */
+$firstName   = ucfirst(strtolower(explode(' ', trim($name))[0]));
+$totalMeals  = (int)($todayTotals['total_meals']    ?? 0);
+$totalCarbs  = (float)($todayTotals['total_carbs']  ?? 0);
+$totalCals   = (float)($todayTotals['total_calories']?? 0);
+$totalProt   = (float)($todayTotals['total_protein'] ?? 0);
+$totalFat    = (float)($todayTotals['total_fat']     ?? 0);
+$totalSugar  = (float)($todayTotals['total_sugar']   ?? 0);
+$totalFiber  = (float)($todayTotals['total_fiber']   ?? 0);
+$logCount    = count($logs ?? []);
 
-// ── Today's totals shorthand ───────────────────────────────
-$tCarbs   = (float)($todayTotals['total_carbs']    ?? 0);
-$tCals    = (float)($todayTotals['total_calories'] ?? 0);
-$tSugar   = (float)($todayTotals['total_sugar']    ?? 0);
-$tProtein = (float)($todayTotals['total_protein']  ?? 0);
-$tFat     = (float)($todayTotals['total_fat']      ?? 0);
-$tFiber   = (float)($todayTotals['total_fiber']    ?? 0);
-$tSodium  = (float)($todayTotals['total_sodium']   ?? 0);
-$tMeals   = (int)  ($todayTotals['total_meals']    ?? 0);
+/* ── Nutrition limits ────────────────────────────────── */
+$lims       = $nutritionLimits ?? ['carbs'=>130,'calories'=>1800,'sugar'=>25,'protein'=>50,'fat'=>65,'fiber'=>25,'sodium'=>2300];
+$carbTarget = (float)$lims['carbs'];
+$calTarget  = (float)$lims['calories'];
+$protTarget = (float)$lims['protein'];
+$fatTarget  = (float)$lims['fat'];
+$fiberTarget= (float)$lims['fiber'];
+$sugarTarget= (float)$lims['sugar'];
+$sodiumTarget=(float)($lims['sodium'] ?? 2300);
 
-// ── Status helpers ─────────────────────────────────────────
-function macroStatus(float $val, float $max): string {
-    if ($max <= 0) return 'dark';
-    $p = $val / $max * 100;
-    return $p >= 100 ? 'danger' : ($p >= 80 ? 'warn' : 'normal');
-}
-function macroPct(float $val, float $max): int {
-    return $max > 0 ? min(100, (int)round($val / $max * 100)) : 0;
-}
-function macroColor(float $val, float $max): string {
-    if ($max <= 0) return 'rgba(249,116,71,0.5)';
-    $p = $val / $max * 100;
-    return $p >= 100 ? '#ef4444' : ($p >= 80 ? '#f59e0b' : '#22c55e');
-}
-function barGradient(float $val, float $max, string $base): string {
-    if ($max <= 0) return "rgba(249,116,71,0.4)";
-    $p = $val / $max * 100;
-    if ($p >= 100) return 'linear-gradient(90deg,#dc2626,#ef4444)';
-    if ($p >= 80)  return 'linear-gradient(90deg,#d97706,#f59e0b)';
-    return "linear-gradient(90deg,{$base})";
-}
+/* ── Carb zone ───────────────────────────────────────── */
+$carbPct  = $carbTarget > 0 ? min(round($totalCarbs / $carbTarget * 100), 100) : 0;
+$carbZone = $carbPct >= 100 ? 'over' : ($carbPct >= 75 ? 'warn' : 'good');
+$calPct   = $calTarget  > 0 ? min(round($totalCals  / $calTarget  * 100), 100) : 0;
+$protPct  = $protTarget > 0 ? min(round($totalProt  / $protTarget * 100), 100) : 0;
+$fiberPct = $fiberTarget> 0 ? min(round($totalFiber / $fiberTarget* 100), 100) : 0;
+$sugarPct = $sugarTarget> 0 ? min(round($totalSugar / $sugarTarget* 100), 100) : 0;
 
-// ── How many limits are over? ──────────────────────────────
-$overCount = 0;
-foreach ([
-    $tCarbs   => $lim['carbs'],   $tCals    => $lim['calories'],
-    $tSugar   => $lim['sugar'],   $tFat     => $lim['fat'],
-] as $v => $m) {
-    if ($m > 0 && $v >= $m) $overCount++;
-}
+/* ── Clinical flags ──────────────────────────────────── */
+$avgProtPerMeal = $totalMeals > 0 ? $totalProt / $totalMeals : 0;
+$lowProtein     = $avgProtPerMeal > 0 && $avgProtPerMeal < 15;
+$fiberGood      = $totalFiber >= $fiberTarget;
 
-// ── Group today's meals by type ────────────────────────────
-$mealTypeOrder = ['Breakfast','Lunch','Dinner','Snack'];
-$mealsByType   = array_fill_keys($mealTypeOrder, []);
-foreach ($todayLogs as $ml) {
-    $t = $ml['meal_type'] ?? 'Snack';
-    if (!isset($mealsByType[$t])) $mealsByType[$t] = [];
-    $mealsByType[$t][] = $ml;
+/* ── Time-of-day tip ─────────────────────────────────── */
+$hour    = (int) date('G');
+$timeTip = null;
+$hasType = [];
+foreach ($todayLogs ?? [] as $l) { $hasType[$l['meal_type']] = true; }
+if ($hour >= 6  && $hour < 10  && empty($hasType['Breakfast']))
+    $timeTip = ['icon'=>'ti-sunrise', 'text'=>'Good morning! A high-protein breakfast stabilizes your blood sugar for the rest of the day. Aim for 20g+ protein.'];
+elseif ($hour >= 11 && $hour < 14 && empty($hasType['Lunch']))
+    $timeTip = ['icon'=>'ti-sun',     'text'=>'Lunch time — include fiber and protein to slow glucose absorption and avoid a post-meal spike.'];
+elseif ($hour >= 17 && $hour < 20 && empty($hasType['Dinner']))
+    $timeTip = ['icon'=>'ti-moon',    'text'=>'Avoid heavy carbs at dinner. Your body metabolizes carbohydrates less efficiently in the evening.'];
+elseif ($hour >= 15 && $hour < 17)
+    $timeTip = ['icon'=>'ti-apple',   'text'=>'Afternoon snack window. A small protein-rich snack now prevents blood sugar dips before dinner.'];
+
+/* ── Meal slot tracker ───────────────────────────────── */
+$loggedByType = [];
+foreach ($todayLogs ?? [] as $l) {
+    $t = $l['meal_type'];
+    if (!isset($loggedByType[$t])) $loggedByType[$t] = ['count'=>0,'carbs'=>0,'name'=>''];
+    $loggedByType[$t]['count']++;
+    $loggedByType[$t]['carbs'] += (float)$l['carbs'];
+    $loggedByType[$t]['name']   = $l['meal_name'];
 }
 
-// ── Group all logs by date for drawer ─────────────────────
+/* ── Macro ring ──────────────────────────────────────── */
+$carbRingPct = $totalCals > 0 ? round(($totalCarbs * 4 / $totalCals) * 100) : 0;
+$protRingPct = $totalCals > 0 ? round(($totalProt  * 4 / $totalCals) * 100) : 0;
+$fatRingPct  = $totalCals > 0 ? round(($totalFat   * 9 / $totalCals) * 100) : 0;
+$circ = 339.3;
+$carbArc   = min($carbRingPct, 100) / 100 * $circ;
+$protArc   = min($protRingPct, 100) / 100 * $circ;
+$fatArc    = min($fatRingPct,  100) / 100 * $circ;
+$protOffset = $carbArc;
+$fatOffset  = $carbArc + $protArc;
+
+/* ── Clinical insight ────────────────────────────────── */
+$insight = null;
+if ($totalMeals > 0) {
+    if ($carbPct >= 100)
+        $insight = ['icon'=>'ti-alert-triangle','badge'=>'bad',  'badgeText'=>'Action needed','text'=>'You\'ve hit your <strong>'.round($carbTarget).'g carb limit</strong> for today. Avoid starchy foods and sugary drinks.'];
+    elseif ($carbPct >= 75)
+        $insight = ['icon'=>'ti-alert-circle',  'badge'=>'warn', 'badgeText'=>'Near limit',  'text'=>'You\'re at <strong>'.$carbPct.'%</strong> of your daily carb limit. Choose low-carb options for remaining meals.'];
+    elseif ($totalFiber > 0 && $totalFiber >= $fiberTarget)
+        $insight = ['icon'=>'ti-leaf',           'badge'=>'good', 'badgeText'=>'Great job',   'text'=>'Excellent fiber intake today (<strong>'.round($totalFiber,1).'g</strong>). Fiber significantly slows glucose absorption.'];
+    elseif ($totalFiber > 0 && $totalFiber < $fiberTarget * 0.4)
+        $insight = ['icon'=>'ti-leaf',           'badge'=>'warn', 'badgeText'=>'Low fiber',   'text'=>'Only <strong>'.round($totalFiber,1).'g</strong> fiber so far. Add vegetables or legumes for better glucose control.'];
+    elseif ($lowProtein)
+        $insight = ['icon'=>'ti-meat',           'badge'=>'warn', 'badgeText'=>'Low protein', 'text'=>'Low protein per meal (<strong>'.round($avgProtPerMeal,1).'g avg</strong>). Protein slows digestion and reduces blood sugar spikes.'];
+    else
+        $insight = ['icon'=>'ti-circle-check',   'badge'=>'good', 'badgeText'=>'On track',   'text'=>'Good nutritional balance today. Keep including protein and fiber with each meal.'];
+}
+
+/* ── 7-day chart data ────────────────────────────────── */
+$carbsByDate = [];
+foreach ($logs ?? [] as $l) {
+    $d = date('Y-m-d', strtotime($l['logged_at']));
+    $carbsByDate[$d]['carbs'] = ($carbsByDate[$d]['carbs'] ?? 0) + (float)$l['carbs'];
+    $carbsByDate[$d]['count'] = ($carbsByDate[$d]['count'] ?? 0) + 1;
+}
+$weekDays = [];
+for ($i = 6; $i >= 0; $i--) {
+    $date = date('Y-m-d', strtotime("-{$i} days"));
+    $dc   = $carbsByDate[$date] ?? ['carbs' => 0, 'count' => 0];
+    $c    = (float)$dc['carbs'];
+    $weekDays[] = ['date'=>$date,'carbs'=>$c,'count'=>$dc['count'],
+        'state'=> $dc['count']===0 ? 'none' : ($c>$carbTarget ? 'over' : ($c>$carbTarget*0.77 ? 'warn' : 'good'))];
+}
+$chartLabels = array_map(fn($d) => date('M d', strtotime($d['date'])), $weekDays);
+$chartData   = array_map(fn($d) => round($d['carbs'], 1), $weekDays);
+$chartColors = array_map(fn($d) => $d['state'] === 'over' ? '#ef4444' : ($d['state'] === 'warn' ? '#f59e0b' : '#F97447'), $weekDays);
+
+/* ── Group logs by date for drawer ──────────────────── */
 $logsByDate = [];
-foreach ($allLogs as $l) {
+foreach ($logs ?? [] as $l) {
     $d = date('Y-m-d', strtotime($l['logged_at']));
     $logsByDate[$d][] = $l;
 }
 krsort($logsByDate);
 
-// ── Micro ring helper (SVG) ───────────────────────────────
-function microRing(float $val, float $max, string $color, string $label, string $unit): string {
-    $r    = 18; $circ = 2 * M_PI * $r;
-    $pct  = $max > 0 ? min(100, $val / $max * 100) : 0;
-    $dash = round($circ * $pct / 100, 1);
-    if ($max > 0 && $val >= $max) $color = '#ef4444';
-    elseif ($max > 0 && $val >= $max * 0.8) $color = '#f59e0b';
-    $dispVal = $val < 1000 ? round($val) : round($val/1000,1).'k';
-    $isOver  = $max > 0 && $val > $max;
-    $amtClass = $isOver ? 'over' : ($val >= $max * 0.8 ? 'warn' : '');
-    $limitDisp = $max < 1000 ? round($max) : round($max/1000,1).'k';
-    ob_start(); ?>
-    <div class="cgml-ring-col">
-        <svg width="44" height="44" viewBox="0 0 44 44" class="cgml-ring-svg">
-            <circle cx="22" cy="22" r="<?= $r ?>" class="cgml-ring-bg" stroke="rgba(255,255,255,0.07)" stroke-width="4"/>
-            <circle cx="22" cy="22" r="<?= $r ?>" class="cgml-ring-fill"
-                    stroke="<?= $color ?>" stroke-width="4"
-                    stroke-dasharray="<?= $dash ?> <?= round($circ,1) ?>"
-                    stroke-dashoffset="<?= round($circ/4,1) ?>"/>
-            <text x="22" y="22" class="cgml-ring-center-val" fill="<?= $color ?>"><?= $dispVal ?></text>
-        </svg>
-        <div class="cgml-ring-label"><?= $label ?></div>
-        <div class="cgml-ring-amount <?= $amtClass ?>"><?= round($val) ?>/<?= $limitDisp ?><?= $unit ?></div>
-    </div>
-    <?php return ob_get_clean();
-}
+$drawerBreakfast = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Breakfast'));
+$drawerLunch     = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Lunch'));
+$drawerDinner    = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Dinner'));
+$drawerSnack     = count(array_filter($logs ?? [], fn($l) => $l['meal_type'] === 'Snack'));
 
-$mealTypeIcons = ['Breakfast'=>'🌅','Lunch'=>'☀️','Dinner'=>'🌙','Snack'=>'🍎'];
-$mealTypeClass = ['Breakfast'=>'breakfast','Lunch'=>'lunch','Dinner'=>'dinner','Snack'=>'snack'];
+$flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
+
+/* ── Caregiver limits banner ─────────────────────────── */
+$hasCustomLimits = isset($nutritionLimits) && !empty($nutritionLimits);
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_meals.css?v=<?= time() ?>" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link href="/diabetrack/public/assets/css/meals.css?v=<?= time() ?>" rel="stylesheet">
 
-<!-- ══ HEADER ════════════════════════════════════════════ -->
-<div class="cgml-header">
-    <div>
-        <div class="cgml-eyebrow"><i class="ti ti-salad"></i> Diet Monitor</div>
-        <h1 class="cgml-title">Meal <span>Monitor</span></h1>
-        <p class="cgml-sub"><?= date('l, F j') ?> &middot; Nutrition tracking &amp; limit management</p>
+<!-- ══ PAGE HEADER ═══════════════════════════════════════ -->
+<div class="meal-page-header">
+    <div class="meal-page-header-left">
+        <div class="meal-page-eyebrow">
+            <i class="ti ti-bowl-spoon"></i> Meals &amp; Carbs Tracker
+        </div>
+        <h1 class="meal-page-title">Daily <span>Nutrition</span></h1>
+        <p class="meal-page-sub">Track your meals and stay within your nutritional goals, <?= htmlspecialchars($firstName) ?>.</p>
     </div>
-    <?php if ($patient): ?>
-    <div class="cgml-header-right">
-        <?php if ($overCount > 0): ?>
-        <div class="cgml-over-chip">
-            <i class="ti ti-alert-circle"></i>
-            <?= $overCount ?> limit<?= $overCount > 1 ? 's' : '' ?> exceeded today
+    <div class="meal-page-header-right">
+        <div class="meal-today-badge <?= $carbPct >= 100 ? 'warn' : ($totalMeals > 0 ? 'logged' : 'not-logged') ?>">
+            <i class="ti <?= $carbPct >= 100 ? 'ti-alert-triangle' : ($totalMeals > 0 ? 'ti-circle-check' : 'ti-clock') ?>"></i>
+            <?php if ($carbPct >= 100): ?>Carb limit exceeded
+            <?php elseif ($totalMeals > 0): ?><?= $totalMeals ?> meal<?= $totalMeals > 1 ? 's' : '' ?> logged today
+            <?php else: ?>No meals logged today<?php endif; ?>
+        </div>
+        <?php if ($logCount > 0): ?>
+        <button class="meal-history-btn" onclick="openHistoryDrawer()" aria-label="View all meal logs">
+            <i class="ti ti-history"></i> All Meals
+            <span class="meal-history-count"><?= $logCount ?></span>
+        </button>
+        <?php endif; ?>
+    </div>
+</div>
+
+<!-- ══ CAREGIVER DAILY LIMITS PANEL ══════════════════════ -->
+<div class="meal-limits-panel">
+    <div class="meal-limits-header">
+        <div class="meal-limits-header-left">
+            <div class="meal-limits-icon"><i class="ti ti-shield-check"></i></div>
+            <div>
+                <div class="meal-limits-title">Daily Limits Set by Your Caregiver</div>
+                <div class="meal-limits-sub">Your personalized nutritional targets for today</div>
+            </div>
+        </div>
+        <button class="meal-limits-toggle" onclick="toggleLimitsPanel()" id="limitsToggleBtn" aria-label="Toggle limits panel">
+            <i class="ti ti-chevron-up" id="limitsChevron"></i>
+        </button>
+    </div>
+    <div class="meal-limits-body" id="limitsBody">
+        <div class="meal-limits-grid">
+            <!-- Carbs -->
+            <div class="meal-limit-item <?= $carbZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-grain"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Carbohydrates</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalCarbs,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($carbTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $carbZone ?>" style="width:<?= $carbPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $carbPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Calories -->
+            <?php $calZone = $calPct >= 100 ? 'over' : ($calPct >= 80 ? 'warn' : 'good'); ?>
+            <div class="meal-limit-item <?= $calZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-flame"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Calories</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalCals) ?></span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($calTarget) ?> kcal</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $calZone ?>" style="width:<?= $calPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $calPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Sugar -->
+            <?php $sugarZone = $sugarPct >= 100 ? 'over' : ($sugarPct >= 80 ? 'warn' : 'good'); ?>
+            <div class="meal-limit-item <?= $sugarZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-candy"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Sugar</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalSugar,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($sugarTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $sugarZone ?>" style="width:<?= $sugarPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $sugarPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Protein -->
+            <?php $protZone = $protPct >= 100 ? 'good' : ($protPct >= 60 ? 'good' : 'warn'); ?>
+            <div class="meal-limit-item <?= $protZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-meat"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Protein</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalProt,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($protTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $protZone ?>" style="width:<?= $protPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $protPct ?>% of goal</div>
+                </div>
+            </div>
+            <!-- Fat -->
+            <?php $fatPct = $fatTarget > 0 ? min(round($totalFat / $fatTarget * 100), 100) : 0;
+                  $fatZone = $fatPct >= 100 ? 'over' : ($fatPct >= 80 ? 'warn' : 'good'); ?>
+            <div class="meal-limit-item <?= $fatZone ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-droplet"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Fat</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalFat,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($fatTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $fatZone ?>" style="width:<?= $fatPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $fatPct ?>% used</div>
+                </div>
+            </div>
+            <!-- Fiber -->
+            <?php $fiberZone2 = $fiberPct >= 100 ? 'good' : ($fiberPct >= 50 ? 'good' : 'warn'); ?>
+            <div class="meal-limit-item <?= $fiberZone2 ?>">
+                <div class="meal-limit-icon-wrap"><i class="ti ti-leaf"></i></div>
+                <div class="meal-limit-content">
+                    <div class="meal-limit-name">Fiber</div>
+                    <div class="meal-limit-numbers">
+                        <span class="meal-limit-current"><?= round($totalFiber,1) ?>g</span>
+                        <span class="meal-limit-sep">/</span>
+                        <span class="meal-limit-max"><?= round($fiberTarget) ?>g</span>
+                    </div>
+                    <div class="meal-limit-bar-track">
+                        <div class="meal-limit-bar-fill <?= $fiberZone2 ?>" style="width:<?= $fiberPct ?>%;"></div>
+                    </div>
+                    <div class="meal-limit-pct"><?= $fiberPct ?>% of goal</div>
+                </div>
+            </div>
+        </div>
+        <?php if ($insight): ?>
+        <div class="meal-insight-row">
+            <div class="meal-insight-icon"><i class="ti <?= $insight['icon'] ?>"></i></div>
+            <div class="meal-insight-text"><?= $insight['text'] ?></div>
+            <span class="meal-insight-badge <?= $insight['badge'] ?>"><?= $insight['badgeText'] ?></span>
         </div>
         <?php endif; ?>
-        <div class="cgml-patient-chip">
-            <div class="cgml-patient-avatar"><?= strtoupper(substr($patient['name'],0,1)) ?></div>
-            <div>
-                <div class="cgml-patient-name"><?= htmlspecialchars(ucwords(strtolower($patient['name']))) ?></div>
-                <div class="cgml-patient-label">Linked Patient</div>
-            </div>
-        </div>
     </div>
-    <?php endif; ?>
 </div>
 
-<?php if (!$patient): ?>
-<div class="cgml-no-patient">
-    <div class="cgml-no-patient-icon"><i class="ti ti-link"></i></div>
-    <div class="cgml-no-patient-title">No Patient Linked</div>
-    <div class="cgml-no-patient-sub"><a href="/diabetrack/public/caregiver/patients">Link a patient</a> to monitor their meals.</div>
+<!-- ══ MEAL SLOT TRACKER ══════════════════════════════════ -->
+<div class="meal-slot-strip">
+    <?php
+    $slotOrder = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+    $slotIcons = ['Breakfast'=>'ti-sunrise','Lunch'=>'ti-sun','Dinner'=>'ti-moon','Snack'=>'ti-apple'];
+    foreach ($slotOrder as $sType):
+        $logged   = isset($loggedByType[$sType]);
+        $isPast   = false; $upcoming = false;
+        if ($sType === 'Breakfast') { $isPast = $hour >= 10; $upcoming = $hour < 6; }
+        elseif ($sType === 'Lunch')   { $isPast = $hour >= 14; $upcoming = $hour < 11; }
+        elseif ($sType === 'Dinner')  { $isPast = $hour >= 20; $upcoming = $hour < 17; }
+        elseif ($sType === 'Snack')   { $isPast = $hour >= 17; $upcoming = $hour < 14; }
+        $state = $logged ? 'logged' : ($upcoming ? 'upcoming' : 'missed');
+    ?>
+    <div class="meal-slot <?= $state ?>">
+        <?php if ($logged): ?>
+        <div class="meal-slot-check"><i class="ti ti-check"></i></div>
+        <?php endif; ?>
+        <div class="meal-slot-icon"><i class="ti <?= $slotIcons[$sType] ?>"></i></div>
+        <div class="meal-slot-name"><?= $sType ?></div>
+        <?php if ($logged): ?>
+        <div class="meal-slot-detail">
+            <?= $loggedByType[$sType]['count'] ?> meal<?= $loggedByType[$sType]['count']>1?'s':'' ?><br>
+            <?= round($loggedByType[$sType]['carbs'],1) ?>g carbs
+        </div>
+        <?php elseif ($upcoming): ?>
+        <div class="meal-slot-detail">Upcoming</div>
+        <?php else: ?>
+        <div class="meal-slot-detail">Not logged</div>
+        <?php endif; ?>
+    </div>
+    <?php endforeach; ?>
 </div>
-
-<?php else: ?>
-
-<!-- ══ STAT CARDS ═════════════════════════════════════════ -->
-<?php
-$calStatus  = macroStatus($tCals,  $lim['calories']);
-$carbStatus = macroStatus($tCarbs, $lim['carbs']);
-$sugStatus  = macroStatus($tSugar, $lim['sugar']);
-$calPct     = macroPct($tCals,     $lim['calories']);
-$circ54     = 2 * M_PI * 22;
-$calDash    = round($circ54 * $calPct / 100, 1);
-$calRingCol = $calStatus === 'danger' ? '#ef4444' : ($calStatus === 'warn' ? '#f59e0b' : '#22c55e');
-?>
-<div class="cgml-stat-row">
-
-    <!-- 1. Calories — primary -->
-    <div class="cgml-stat-card card-primary <?= $calStatus === 'danger' ? 'card-over' : '' ?>">
-        <div class="cgml-stat-card-top">
-            <div class="cgml-stat-icon-wrap"><i class="ti ti-flame"></i></div>
-            <svg width="44" height="44" viewBox="0 0 54 54">
-                <circle cx="27" cy="27" r="22" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="5"/>
-                <circle cx="27" cy="27" r="22" fill="none" stroke="#fff" stroke-width="5"
-                        stroke-dasharray="<?= $calDash ?> <?= round($circ54,1) ?>"
-                        stroke-dashoffset="<?= round($circ54/4,1) ?>"
-                        stroke-linecap="round" class="cgml-ring-arc"/>
-                <text x="27" y="30" text-anchor="middle" fill="rgba(255,255,255,0.9)"
-                      style="font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:9px;"><?= $calPct ?>%</text>
-            </svg>
-        </div>
-        <div class="cgml-stat-val"><?= round($tCals) ?><small>kcal</small></div>
-        <div class="cgml-stat-label">Calories Today</div>
-        <div class="cgml-stat-sub white"><i class="ti ti-target"></i> limit <?= round($lim['calories']) ?> kcal</div>
-    </div>
-
-    <!-- 2. Carbs -->
-    <div class="cgml-stat-card <?= $carbStatus === 'danger' ? 'card-danger' : ($carbStatus === 'warn' ? 'card-warn' : 'card-glass') ?>">
-        <div class="cgml-stat-card-top">
-            <div class="cgml-stat-icon-wrap <?= $carbStatus === 'danger' ? 'danger' : ($carbStatus === 'warn' ? 'warn' : 'glass') ?>">
-                <i class="ti ti-bread"></i>
-            </div>
-        </div>
-        <div class="cgml-stat-val <?= $carbStatus === 'normal' ? 'dark' : $carbStatus ?>"><?= round($tCarbs,1) ?><small>g</small></div>
-        <div class="cgml-stat-label <?= $carbStatus === 'normal' ? 'dark' : $carbStatus ?>">Carbs</div>
-        <div class="cgml-stat-sub <?= $carbStatus === 'normal' ? 'dark' : $carbStatus ?>">
-            <i class="ti ti-<?= $carbStatus === 'danger' ? 'alert-circle' : 'target' ?>"></i>
-            limit <?= $lim['carbs'] ?>g
-        </div>
-    </div>
-
-    <!-- 3. Sugar -->
-    <div class="cgml-stat-card <?= $sugStatus === 'danger' ? 'card-danger' : ($sugStatus === 'warn' ? 'card-warn' : 'card-glass') ?>">
-        <div class="cgml-stat-card-top">
-            <div class="cgml-stat-icon-wrap <?= $sugStatus === 'danger' ? 'danger' : ($sugStatus === 'warn' ? 'warn' : 'glass') ?>">
-                <i class="ti ti-candy"></i>
-            </div>
-        </div>
-        <div class="cgml-stat-val <?= $sugStatus === 'normal' ? 'dark' : $sugStatus ?>"><?= round($tSugar,1) ?><small>g</small></div>
-        <div class="cgml-stat-label <?= $sugStatus === 'normal' ? 'dark' : $sugStatus ?>">Sugar</div>
-        <div class="cgml-stat-sub <?= $sugStatus === 'normal' ? 'dark' : $sugStatus ?>">
-            <i class="ti ti-<?= $sugStatus === 'danger' ? 'alert-circle' : 'target' ?>"></i>
-            limit <?= $lim['sugar'] ?>g
-        </div>
-    </div>
-
-    <!-- 4. Meals count -->
-    <div class="cgml-stat-card card-normal">
-        <div class="cgml-stat-card-top">
-            <div class="cgml-stat-icon-wrap normal"><i class="ti ti-tools-kitchen-2"></i></div>
-        </div>
-        <div class="cgml-stat-val normal"><?= $tMeals ?></div>
-        <div class="cgml-stat-label normal">Meals Logged</div>
-        <div class="cgml-stat-sub normal"><i class="ti ti-calendar-today"></i> today</div>
-    </div>
-
-    <!-- 5. Protein -->
-    <?php $protStatus = macroStatus($tProtein, $lim['protein']); ?>
-    <div class="cgml-stat-card card-glass">
-        <div class="cgml-stat-card-top">
-            <div class="cgml-stat-icon-wrap glass"><i class="ti ti-meat"></i></div>
-        </div>
-        <div class="cgml-stat-val dark"><?= round($tProtein,1) ?><small>g</small></div>
-        <div class="cgml-stat-label dark">Protein</div>
-        <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;margin-top:8px;">
-            <div style="height:100%;width:<?= macroPct($tProtein,$lim['protein']) ?>%;background:<?= macroColor($tProtein,$lim['protein']) ?>;border-radius:100px;transition:width 1.2s ease;"></div>
-        </div>
-        <div class="cgml-stat-sub dark"><i class="ti ti-target"></i> <?= round($tProtein,1) ?> / <?= $lim['protein'] ?>g</div>
-    </div>
-
-</div><!-- /.cgml-stat-row -->
-
 
 <!-- ══ MAIN GRID ══════════════════════════════════════════ -->
-<div class="cgml-main-grid">
+<div class="meal-main-grid">
 
-    <!-- ── LEFT: Meal Feed grouped by type ── -->
-    <div class="cgml-feed-card">
-        <div class="cgml-feed-header">
-            <div>
-                <div class="cgml-section-eyebrow">Today's Meals</div>
-                <div class="cgml-section-title">Daily Feed</div>
-            </div>
-            <div>
-                <span class="cgml-meal-count"><i class="ti ti-tools-kitchen-2"></i> <?= $tMeals ?> meal<?= $tMeals !== 1 ? 's' : '' ?> logged</span>
-            </div>
-        </div>
-
-        <?php if (empty($todayLogs)): ?>
-        <div class="cgml-feed-empty">
-            <i class="ti ti-salad"></i>
-            No meals logged for <?= date('M j') ?> yet.
-        </div>
-        <?php else: ?>
-        <div>
-            <?php foreach ($mealTypeOrder as $typeIdx => $type):
-                if (empty($mealsByType[$type])) continue;
-                $typeCals = array_sum(array_column($mealsByType[$type], 'calories'));
-                $typeCarbs = array_sum(array_column($mealsByType[$type], 'carbs'));
-            ?>
-            <div class="cgml-type-group">
-                <div class="cgml-type-header">
-                    <div class="cgml-type-icon <?= $mealTypeClass[$type] ?>"><?= $mealTypeIcons[$type] ?></div>
-                    <span class="cgml-type-name"><?= $type ?></span>
-                    <?php if ($typeCals > 0): ?>
-                    <span class="cgml-type-cal-total"><?= round($typeCals) ?> kcal · <?= round($typeCarbs) ?>g carbs</span>
-                    <?php endif; ?>
+    <!-- Today's Meals Card -->
+    <div class="meal-today-card">
+        <div class="meal-today-hero">
+            <div class="meal-today-hero-top">
+                <div>
+                    <div class="meal-today-hero-label">Today's Meals</div>
+                    <div class="meal-today-hero-date"><?= date('l, F j') ?></div>
                 </div>
+                <?php if ($carbPct >= 100): ?>
+                <div class="meal-today-hero-badge over"><i class="ti ti-alert-triangle"></i> Over limit</div>
+                <?php elseif ($carbPct >= 75): ?>
+                <div class="meal-today-hero-badge warn"><i class="ti ti-alert-circle"></i> Near limit</div>
+                <?php elseif ($totalMeals > 0): ?>
+                <div class="meal-today-hero-badge"><i class="ti ti-circle-check"></i> On track</div>
+                <?php endif; ?>
+            </div>
 
-                <?php foreach ($mealsByType[$type] as $idx => $meal): ?>
-                <div class="cgml-meal-row" style="animation-delay:<?= $idx * 0.05 ?>s">
-                    <div class="cgml-meal-icon"><?= $mealTypeIcons[$type] ?></div>
-                    <div class="cgml-meal-info">
-                        <div class="cgml-meal-name"><?= htmlspecialchars($meal['meal_name']) ?></div>
-                        <div class="cgml-macro-chips">
-                            <?php if ($meal['carbs'] > 0): ?>
-                            <span class="cgml-macro-chip carbs"><i class="ti ti-bread"></i><?= round($meal['carbs'],1) ?>g carbs</span>
-                            <?php endif; ?>
-                            <?php if ($meal['calories'] > 0): ?>
-                            <span class="cgml-macro-chip cal"><i class="ti ti-flame"></i><?= round($meal['calories']) ?> kcal</span>
-                            <?php endif; ?>
-                            <?php if ($meal['protein'] > 0): ?>
-                            <span class="cgml-macro-chip prot"><i class="ti ti-meat"></i><?= round($meal['protein'],1) ?>g</span>
-                            <?php endif; ?>
-                            <?php if ($meal['fat'] > 0): ?>
-                            <span class="cgml-macro-chip fat"><i class="ti ti-droplet"></i><?= round($meal['fat'],1) ?>g fat</span>
-                            <?php endif; ?>
-                            <?php if ($meal['sugar'] > 0): ?>
-                            <span class="cgml-macro-chip sugar"><i class="ti ti-candy"></i><?= round($meal['sugar'],1) ?>g sugar</span>
-                            <?php endif; ?>
-                            <?php if (!empty($meal['glycemic_index'])): ?>
-                            <span class="cgml-macro-chip gi <?= $meal['glycemic_index'] >= 70 ? 'high' : '' ?>">
-                                <i class="ti ti-chart-line"></i>GI <?= $meal['glycemic_index'] ?><?= $meal['glycemic_index'] >= 70 ? ' ⚠' : '' ?>
-                            </span>
-                            <?php endif; ?>
+            <?php if ($totalMeals > 0): ?>
+            <div class="meal-macro-bar">
+                <div class="meal-macro-item">
+                    <div class="meal-macro-val"><?= round($totalCarbs,1) ?><span class="meal-macro-unit">g</span></div>
+                    <div class="meal-macro-name">Carbs</div>
+                </div>
+                <div class="meal-macro-item">
+                    <div class="meal-macro-val"><?= round($totalProt,1) ?><span class="meal-macro-unit">g</span></div>
+                    <div class="meal-macro-name">Protein</div>
+                </div>
+                <div class="meal-macro-item">
+                    <div class="meal-macro-val"><?= round($totalFat,1) ?><span class="meal-macro-unit">g</span></div>
+                    <div class="meal-macro-name">Fat</div>
+                </div>
+                <div class="meal-macro-item">
+                    <div class="meal-macro-val"><?= round($totalFiber,1) ?><span class="meal-macro-unit">g</span></div>
+                    <div class="meal-macro-name">Fiber</div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($timeTip): ?>
+            <div class="meal-tip-row">
+                <i class="ti <?= $timeTip['icon'] ?>"></i>
+                <div class="meal-tip-text"><?= htmlspecialchars($timeTip['text']) ?></div>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Meal list -->
+        <div class="meal-today-body">
+            <?php if (empty($todayLogs)): ?>
+            <div class="meal-empty">
+                <i class="ti ti-bowl-spoon" style="font-size:3rem;color:rgba(249,116,71,0.3);"></i>
+                <p>No meals logged today yet.</p>
+                <p style="font-size:11px;color:#c4a090;">Tap the button below to log your first meal.</p>
+                <button class="meal-empty-cta" onclick="openAddMealModal()">
+                    <i class="ti ti-plus"></i> Log First Meal
+                </button>
+            </div>
+            <?php else: ?>
+            <div id="today-meals-list">
+                <?php foreach ($todayLogs as $meal):
+                    $typeIcon = match($meal['meal_type']) { 'Breakfast'=>'ti-sunrise','Lunch'=>'ti-sun','Dinner'=>'ti-moon',default=>'ti-apple' };
+                ?>
+                <div class="meal-item" id="meal-row-<?= $meal['id'] ?>">
+                    <div class="meal-item-icon"><i class="ti <?= $typeIcon ?>"></i></div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="meal-item-name"><?= htmlspecialchars($meal['meal_name']) ?></div>
+                        <div class="meal-item-meta">
+                            <?php if ($meal['calories']): ?><span><i class="ti ti-flame"></i><?= $meal['calories'] ?> kcal</span><?php endif; ?>
+                            <?php if ($meal['protein']):  ?><span><i class="ti ti-meat"></i><?= $meal['protein'] ?>g protein</span><?php endif; ?>
+                            <?php if (!empty($meal['fiber']) && $meal['fiber'] > 0): ?><span><i class="ti ti-leaf"></i><?= $meal['fiber'] ?>g fiber</span><?php endif; ?>
+                            <span><i class="ti ti-clock"></i><?= date('h:i A', strtotime($meal['logged_at'])) ?></span>
                         </div>
-                        <?php if (!empty($meal['notes'])): ?>
-                        <div class="cgml-meal-notes">"<?= htmlspecialchars($meal['notes']) ?>"</div>
-                        <?php endif; ?>
                     </div>
-                    <div class="cgml-meal-time-col">
-                        <?= date('h:i A', strtotime($meal['logged_at'])) ?>
-                    </div>
+                    <span class="meal-type-badge"><?= $meal['meal_type'] ?></span>
+                    <div class="meal-item-carbs"><?= $meal['carbs'] ?><small>g carbs</small></div>
+                    <button class="meal-del-btn"
+                            data-id="<?= $meal['id'] ?>"
+                            data-name="<?= htmlspecialchars($meal['meal_name']) ?>"
+                            onclick="confirmDeleteMeal(this)"
+                            aria-label="Delete meal">
+                        <i class="ti ti-trash"></i>
+                    </button>
                 </div>
                 <?php endforeach; ?>
             </div>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-    </div><!-- /.cgml-feed-card -->
-
-
-    <!-- ── RIGHT: Summary Card ── -->
-    <div class="cgml-summary-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:0;">
-            <div>
-                <div class="cgml-section-eyebrow">Today's Nutrition</div>
-                <div class="cgml-section-title">vs. Your Limits</div>
-            </div>
-            <button class="cgml-limits-edit-btn" onclick="openLimitsModal()" title="Edit daily limits">
-                <i class="ti ti-adjustments-horizontal"></i>
-                <?php if (!empty($_GET['saved'])): ?>
-                <span class="cgml-limits-saved-dot" title="Limits saved"></span>
-                <?php endif; ?>
-            </button>
-        </div>
-        <?php if (!empty($_GET['saved'])): ?>
-        <div class="cgml-saved-inline"><i class="ti ti-circle-check"></i> Daily limits updated</div>
-        <?php endif; ?>
-
-        <!-- 5 Macro rings — the page's unique centrepiece -->
-        <div class="cgml-rings-row">
-            <?= microRing($tCarbs,   $lim['carbs'],    '#f97447', 'Carbs',    'g') ?>
-            <?= microRing($tCals,    $lim['calories'], '#fbbf24', 'Cals',     '') ?>
-            <?= microRing($tSugar,   $lim['sugar'],    '#ef4444', 'Sugar',    'g') ?>
-            <?= microRing($tProtein, $lim['protein'],  '#22c55e', 'Protein',  'g') ?>
-            <?= microRing($tFat,     $lim['fat'],      '#f59e0b', 'Fat',      'g') ?>
+            <?php endif; ?>
         </div>
 
-        <!-- Nutrition bars -->
-        <div class="cgml-nutrition-bars">
-            <?php
-            $nutrRows = [
-                ['icon'=>'ti-bread',   'name'=>'Carbs',    'val'=>$tCarbs,   'max'=>$lim['carbs'],    'unit'=>'g',    'base'=>'#c04a20,#f97447'],
-                ['icon'=>'ti-flame',   'name'=>'Calories', 'val'=>$tCals,    'max'=>$lim['calories'], 'unit'=>'kcal', 'base'=>'#d97706,#fbbf24'],
-                ['icon'=>'ti-candy',   'name'=>'Sugar',    'val'=>$tSugar,   'max'=>$lim['sugar'],    'unit'=>'g',    'base'=>'#dc2626,#ef4444'],
-                ['icon'=>'ti-meat',    'name'=>'Protein',  'val'=>$tProtein, 'max'=>$lim['protein'],  'unit'=>'g',    'base'=>'#15803d,#22c55e'],
-                ['icon'=>'ti-droplet', 'name'=>'Fat',      'val'=>$tFat,     'max'=>$lim['fat'],      'unit'=>'g',    'base'=>'#b45309,#f59e0b'],
-                ['icon'=>'ti-leaf',    'name'=>'Fiber',    'val'=>$tFiber,   'max'=>$lim['fiber'],    'unit'=>'g',    'base'=>'#166534,#4ade80'],
-                ['icon'=>'ti-circles', 'name'=>'Sodium',   'val'=>$tSodium,  'max'=>$lim['sodium'],   'unit'=>'mg',   'base'=>'#1d4ed8,#60a5fa'],
-            ];
-            foreach ($nutrRows as $n):
-                $pct  = macroPct($n['val'], $n['max']);
-                $bg   = barGradient($n['val'], $n['max'], $n['base']);
-                $isOver = ($n['max'] > 0 && $n['val'] > $n['max']);
-            ?>
-            <div class="cgml-nutr-row">
-                <div class="cgml-nutr-top">
-                    <span class="cgml-nutr-name"><i class="ti <?= $n['icon'] ?>"></i><?= $n['name'] ?></span>
-                    <span class="cgml-nutr-vals">
-                        <span class="<?= $isOver ? 'over-val' : 'val' ?>"><?= round($n['val'],1) ?></span>
-                        <span style="color:rgba(255,200,160,0.25);"> / <?= round($n['max'],0) ?><?= $n['unit'] ?></span>
-                    </span>
-                </div>
-                <div class="cgml-nutr-track">
-                    <div class="cgml-nutr-fill" style="width:<?= $pct ?>%;background:<?= $bg ?>;opacity:0.75;"></div>
+        <!-- Nutrition Breakdown Trigger (inside card, below meal list) -->
+        <button class="meal-nutrition-trigger" onclick="openModal('nutritionModal')" <?= $totalMeals === 0 ? 'disabled style="opacity:0.55;cursor:default;"' : '' ?>>
+            <div class="meal-nutrition-trigger-icon"><i class="ti ti-chart-pie"></i></div>
+            <div style="flex:1;">
+                <div class="meal-nutrition-trigger-title">Full Nutrition Breakdown</div>
+                <div class="meal-nutrition-trigger-sub">
+                    <?= $totalMeals > 0 ? 'Macros, targets &amp; dietary insights' : 'Log a meal to unlock' ?>
                 </div>
             </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Summary rows (today snapshot) -->
-        <div class="cgml-summary-rows">
-            <div class="cgml-summary-row">
-                <span class="cgml-sum-dot" style="background:#f97447;"></span>
-                <span class="cgml-sum-key">Meals logged</span>
-                <span class="cgml-sum-val"><?= $tMeals ?></span>
+            <?php if ($totalMeals > 0): ?>
+            <div class="meal-nutrition-trigger-pills">
+                <span class="meal-nutrition-trigger-pill"><i class="ti ti-grain"></i><?= round($totalCarbs, 1) ?>g</span>
+                <span class="meal-nutrition-trigger-pill"><i class="ti ti-flame"></i><?= round($totalCals) ?></span>
             </div>
-            <div class="cgml-summary-row">
-                <span class="cgml-sum-dot" style="background:<?= $overCount > 0 ? '#ef4444' : '#22c55e' ?>;"></span>
-                <span class="cgml-sum-key">Limits exceeded</span>
-                <span class="cgml-sum-val" style="color:<?= $overCount > 0 ? '#f87171' : '#4ade80' ?>;"><?= $overCount ?></span>
-            </div>
-            <div class="cgml-summary-row">
-                <span class="cgml-sum-dot" style="background:#fbbf24;"></span>
-                <span class="cgml-sum-key">Calorie balance</span>
-                <span class="cgml-sum-val" style="font-size:0.85rem;"><?= round($tCals) ?><span class="cgml-sum-unit">kcal</span></span>
-            </div>
-        </div>
-
-        <!-- History button -->
-        <?php if (!empty($allLogs)): ?>
-        <button class="cgml-history-btn" onclick="openDrawer()">
-            <i class="ti ti-history"></i> Meal History
-            <span class="cgml-history-count"><?= count($allLogs) ?></span>
+            <?php endif; ?>
+            <div class="meal-nutrition-trigger-arrow"><i class="ti ti-chevron-right"></i></div>
         </button>
-        <?php endif; ?>
+    </div><!-- /.meal-today-card -->
 
-    </div><!-- /.cgml-summary-card -->
+    <!-- Quick Add Panel -->
+    <div class="meal-qa-panel" id="qaPanel">
+        <div class="meal-qa-panel-header">
+            <div class="meal-qa-header-left">
+                <div class="meal-qa-icon"><i class="ti ti-bowl-spoon"></i></div>
+                <div>
+                    <div class="meal-qa-title">Quick Add</div>
+                    <div class="meal-qa-sub">Tap to pre-fill &amp; log</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button class="qa-save-btn" onclick="openSavePresetModal()">
+                    <i class="ti ti-bookmark"></i> Save Meal
+                </button>
+                <button class="meal-qa-panel-close" id="qaPanelClose" onclick="closeQaPanel()" aria-label="Close">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+        </div>
 
-</div><!-- /.cgml-main-grid -->
+        <div class="qa-tabs">
+            <button class="qa-tab active" onclick="switchQaTab('suggested',this)"><i class="ti ti-star"></i> Suggested</button>
+            <button class="qa-tab" onclick="switchQaTab('saved',this)"><i class="ti ti-bookmark"></i> My Meals</button>
+        </div>
 
+        <!-- Suggested presets -->
+        <div class="qa-list" id="qa-suggested">
+            <?php foreach ($defaultPresets as $preset): ?>
+            <div class="qa-list-item" onclick="quickAdd(<?= htmlspecialchars(json_encode($preset)) ?>)">
+                <div class="qa-list-icon"><i class="ti ti-bowl-spoon"></i></div>
+                <div style="flex:1;min-width:0;">
+                    <div class="qa-list-name"><?= htmlspecialchars($preset['meal_name']) ?></div>
+                    <div class="qa-list-meta"><?= $preset['carbs'] ?>g carbs · <?= $preset['calories'] ?> kcal · <?= $preset['meal_type'] ?></div>
+                </div>
+                <div class="qa-list-add"><i class="ti ti-plus"></i></div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <!-- Saved presets (My Meals) -->
+        <div class="qa-list" id="qa-saved" style="display:none;">
+            <?php if (empty($userPresets)): ?>
+            <div class="qa-empty">
+                <i class="ti ti-bookmark-off"></i>
+                <div class="qa-empty-text">No saved meals yet.</div>
+                <div class="qa-empty-sub">Click "Save Meal" to add favorites for fast logging.</div>
+            </div>
+            <?php else: ?>
+            <?php foreach ($userPresets as $preset): ?>
+            <div class="qa-list-item" id="preset-row-<?= $preset['id'] ?>"
+                 onclick="quickAdd(<?= htmlspecialchars(json_encode([
+                     'meal_name'=>$preset['meal_name'],'meal_type'=>$preset['meal_type'],
+                     'carbs'=>$preset['carbs'],'calories'=>$preset['calories'],
+                     'sugar'=>$preset['sugar'],'protein'=>$preset['protein'],
+                     'fat'=>$preset['fat'],'fiber'=>$preset['fiber'],'sodium'=>$preset['sodium'],
+                 ])) ?>)">
+                <div class="qa-list-icon"><i class="ti ti-bowl-spoon"></i></div>
+                <div style="flex:1;min-width:0;">
+                    <div class="qa-list-name"><?= htmlspecialchars($preset['meal_name']) ?></div>
+                    <div class="qa-list-meta"><?= $preset['carbs'] ?>g carbs<?= $preset['calories'] ? ' · '.$preset['calories'].' kcal' : '' ?> · <?= $preset['meal_type'] ?></div>
+                </div>
+                <a href="#" class="qa-list-del"
+                   onclick="event.stopPropagation(); deletePreset(<?= $preset['id'] ?>, this); return false;"
+                   title="Remove">
+                    <i class="ti ti-x"></i>
+                </a>
+                <div class="qa-list-add"><i class="ti ti-plus"></i></div>
+            </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div><!-- /.meal-qa-panel -->
+
+</div><!-- /.meal-main-grid -->
+
+<!-- ══ 7-DAY CARB CHART ══════════════════════════════════ -->
+<div class="meal-chart-card">
+    <div class="meal-chart-header">
+        <div class="meal-section-label" style="margin-bottom:0;">
+            <i class="ti ti-chart-bar"></i> 7-Day Carb Trend
+        </div>
+        <div class="meal-chart-legend">
+            <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#F97447;"></span> Under limit</div>
+            <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#f59e0b;"></span> Near limit</div>
+            <div class="meal-chart-legend-item"><span class="meal-chart-legend-dot" style="background:#ef4444;"></span> Over limit</div>
+        </div>
+    </div>
+    <div class="meal-chart-wrap">
+        <canvas id="carbChart"></canvas>
+    </div>
+</div>
+
+<!-- ══ HISTORY DRAWER OVERLAY ════════════════════════════ -->
+<div class="meal-drawer-overlay" id="drawerOverlay" onclick="closeHistoryDrawer()"></div>
 
 <!-- ══ HISTORY DRAWER ════════════════════════════════════ -->
-<div class="cgml-drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-<div class="cgml-drawer" id="historyDrawer" role="dialog" aria-modal="true">
-
-    <div class="cgml-drawer-header">
-        <div class="cgml-drawer-header-left">
-            <div class="cgml-drawer-icon"><i class="ti ti-history"></i></div>
+<div class="meal-drawer" id="historyDrawer" role="dialog" aria-label="All Meal Logs" aria-modal="true">
+    <div class="meal-drawer-header">
+        <div class="meal-drawer-header-left">
+            <div class="meal-drawer-icon"><i class="ti ti-history"></i></div>
             <div>
-                <div class="cgml-drawer-title">Meal History</div>
-                <div class="cgml-drawer-sub"><?= count($allLogs) ?> total entries &middot; <?= count($logsByDate) ?> days</div>
+                <div class="meal-drawer-title">All Meal Logs</div>
+                <div class="meal-drawer-sub"><?= $logCount ?> total · <?= $drawerBreakfast ?> breakfast · <?= $drawerLunch ?> lunch · <?= $drawerDinner ?> dinner</div>
             </div>
         </div>
-        <button class="cgml-drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button>
+        <button class="meal-drawer-close" onclick="closeHistoryDrawer()" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
     </div>
 
-    <div class="cgml-drawer-controls">
-        <div class="cgml-drawer-search">
+    <div class="meal-drawer-controls">
+        <div class="meal-drawer-search">
             <i class="ti ti-search"></i>
-            <input type="text" id="drawerSearch" placeholder="Search meal name…" oninput="filterDrawer()">
+            <input type="text" id="drawerSearch" placeholder="Search meals, notes…" oninput="filterDrawer()">
         </div>
-        <div class="cgml-drawer-filters">
-            <button class="cgml-drawer-filter active" onclick="setFilter('all',this)">All</button>
-            <?php foreach ($mealTypeOrder as $t): ?>
-            <button class="cgml-drawer-filter" onclick="setFilter('<?= strtolower($t) ?>',this)"><?= $t ?></button>
-            <?php endforeach; ?>
+        <div class="meal-drawer-filters">
+            <button class="meal-drawer-filter active" data-mdf="all"       onclick="setDrawerFilter('all',this)">All</button>
+            <button class="meal-drawer-filter"         data-mdf="Breakfast" onclick="setDrawerFilter('Breakfast',this)">
+                <span class="meal-df-dot breakfast"></span> Breakfast
+            </button>
+            <button class="meal-drawer-filter"         data-mdf="Lunch"     onclick="setDrawerFilter('Lunch',this)">
+                <span class="meal-df-dot lunch"></span> Lunch
+            </button>
+            <button class="meal-drawer-filter"         data-mdf="Dinner"    onclick="setDrawerFilter('Dinner',this)">
+                <span class="meal-df-dot dinner"></span> Dinner
+            </button>
+            <button class="meal-drawer-filter"         data-mdf="Snack"     onclick="setDrawerFilter('Snack',this)">
+                <span class="meal-df-dot snack"></span> Snack
+            </button>
         </div>
     </div>
 
-    <div class="cgml-drawer-body" id="drawerBody">
-        <?php if (empty($allLogs)): ?>
-        <div class="cgml-drawer-empty"><i class="ti ti-salad"></i><p>No meal history yet.</p></div>
+    <div class="meal-drawer-body" id="drawerBody">
+        <?php if (empty($logs)): ?>
+        <div class="meal-drawer-empty">
+            <i class="ti ti-bowl-spoon"></i>
+            <p>No meal logs yet.</p>
+        </div>
         <?php else: ?>
-        <?php foreach ($logsByDate as $date => $dayMeals):
-            $isToday = $date === date('Y-m-d');
-            $isYest  = $date === date('Y-m-d', strtotime('-1 day'));
-            $dlabel  = $isToday ? 'Today' : ($isYest ? 'Yesterday' : date('l, M j', strtotime($date)));
-            $dayCals = round(array_sum(array_column($dayMeals,'calories')));
-            $dayCarbs= round(array_sum(array_column($dayMeals,'carbs')),1);
+        <?php foreach ($logsByDate as $date => $dayLogs):
+            $dayCarbs    = array_sum(array_column($dayLogs, 'carbs'));
+            $dayMeals    = count($dayLogs);
+            $dayOver     = $dayCarbs > $carbTarget;
+            $dayWarn     = !$dayOver && $dayCarbs > $carbTarget * 0.77;
+            $isDateToday = $date === date('Y-m-d');
+            $isYesterday = $date === date('Y-m-d', strtotime('-1 day'));
+            $dateLabel   = $isDateToday ? 'Today' : ($isYesterday ? 'Yesterday' : date('l, M j', strtotime($date)));
         ?>
-        <div class="cgml-drawer-day-group" data-date="<?= $date ?>">
-            <div class="cgml-drawer-day-header">
-                <div class="cgml-drawer-day-label">
-                    <?= $dlabel ?>
-                    <?php if ($isToday): ?><span class="cgml-today-chip">Today</span><?php endif; ?>
+        <div class="meal-drawer-day-group" data-date="<?= $date ?>">
+            <div class="meal-drawer-day-header">
+                <div class="meal-drawer-day-label">
+                    <?= $dateLabel ?>
+                    <?php if ($isDateToday): ?><span class="meal-today-chip">Today</span><?php endif; ?>
                 </div>
-                <div class="cgml-drawer-day-stats">
-                    <span><?= count($dayMeals) ?> meal<?= count($dayMeals)>1?'s':'' ?></span>
-                    <?php if ($dayCals > 0): ?>
-                    <span class="cgml-day-flag"><i class="ti ti-flame" style="font-size:11px;"></i> <?= $dayCals ?> kcal</span>
+                <div class="meal-drawer-day-stats">
+                    <span><?= $dayMeals ?> meal<?= $dayMeals > 1 ? 's' : '' ?></span>
+                    <span class="meal-drawer-day-carbs"><?= round($dayCarbs, 1) ?>g carbs</span>
+                    <?php if ($dayOver): ?>
+                    <span class="meal-drawer-day-flag over"><i class="ti ti-alert-triangle"></i> Over limit</span>
+                    <?php elseif ($dayWarn): ?>
+                    <span class="meal-drawer-day-flag warn"><i class="ti ti-alert-circle"></i> Near limit</span>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <div class="cgml-tl-list">
-                <?php foreach ($dayMeals as $meal): ?>
-                <div class="cgml-tl-item"
-                     data-type="<?= strtolower($meal['meal_type']) ?>"
-                     data-search="<?= strtolower($meal['meal_name']) ?>">
-                    <div class="cgml-tl-spine">
-                        <div class="cgml-tl-dot"><?= $mealTypeIcons[$meal['meal_type']] ?? '🍽️' ?></div>
-                        <div class="cgml-tl-line"></div>
+            <div class="meal-timeline">
+                <?php foreach ($dayLogs as $log):
+                    $carbs     = (float)$log['carbs'];
+                    $dotState  = $carbs > 45 ? 'over' : ($carbs > 30 ? 'warn' : 'good');
+                    $dotIcon   = $dotState === 'over' ? 'ti-alert-triangle' : ($dotState === 'warn' ? 'ti-alert-circle' : 'ti-circle-check');
+                    $barPct    = min(round(($carbs / 60) * 100), 100);
+                    $typeIcon  = match($log['meal_type']) { 'Breakfast'=>'ti-sunrise','Lunch'=>'ti-sun','Dinner'=>'ti-moon',default=>'ti-apple' };
+                    $carbLabel = $carbs > 45 ? 'over' : ($carbs > 30 ? 'warn' : 'good');
+                    $carbText  = $carbs > 45 ? 'High Carb' : ($carbs > 30 ? 'Moderate' : 'Low Carb');
+                ?>
+                <div class="meal-timeline-item"
+                     data-type="<?= $log['meal_type'] ?>"
+                     data-search="<?= strtolower(htmlspecialchars($log['meal_name'] . ' ' . $log['meal_type'] . ' ' . ($log['notes'] ?? ''))) ?>">
+                    <div class="meal-timeline-spine">
+                        <div class="meal-timeline-dot <?= $dotState ?>">
+                            <i class="ti <?= $dotIcon ?>"></i>
+                        </div>
+                        <div class="meal-timeline-line"></div>
                     </div>
-                    <div class="cgml-tl-card">
-                        <div class="cgml-tl-card-top">
-                            <div class="cgml-tl-name"><?= htmlspecialchars($meal['meal_name']) ?></div>
-                            <div class="cgml-tl-time"><i class="ti ti-clock"></i><?= date('h:i A', strtotime($meal['logged_at'])) ?></div>
+                    <div class="meal-timeline-card">
+                        <div class="meal-tl-top">
+                            <div class="meal-tl-name"><?= htmlspecialchars($log['meal_name']) ?></div>
+                            <div class="meal-tl-right">
+                                <span class="meal-tl-time">
+                                    <i class="ti ti-clock"></i>
+                                    <?= date('h:i A', strtotime($log['logged_at'])) ?>
+                                </span>
+                                <button class="meal-tl-del"
+                                        data-id="<?= $log['id'] ?>"
+                                        data-name="<?= htmlspecialchars($log['meal_name']) ?>"
+                                        onclick="confirmDeleteLog(this)"
+                                        aria-label="Delete meal">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="cgml-tl-chips">
-                            <?php if ($meal['carbs']   > 0): ?><span class="cgml-macro-chip carbs"><?= round($meal['carbs'],1) ?>g carbs</span><?php endif; ?>
-                            <?php if ($meal['calories']> 0): ?><span class="cgml-macro-chip cal"><?= round($meal['calories']) ?> kcal</span><?php endif; ?>
-                            <?php if ($meal['protein'] > 0): ?><span class="cgml-macro-chip prot"><?= round($meal['protein'],1) ?>g prot</span><?php endif; ?>
-                            <?php if ($meal['fat']     > 0): ?><span class="cgml-macro-chip fat"><?= round($meal['fat'],1) ?>g fat</span><?php endif; ?>
-                            <?php if ($meal['sugar']   > 0): ?><span class="cgml-macro-chip sugar"><?= round($meal['sugar'],1) ?>g sugar</span><?php endif; ?>
-                            <span class="cgml-tl-type"><?= $meal['meal_type'] ?></span>
+                        <div class="meal-tl-bar-track">
+                            <div class="meal-tl-bar-fill <?= $carbLabel ?>" style="width:<?= $barPct ?>%;"></div>
+                            <div class="meal-tl-bar-line" style="left:50%;"></div>
                         </div>
-                        <?php if (!empty($meal['notes'])): ?>
-                        <div class="cgml-meal-notes" style="margin-top:5px;">"<?= htmlspecialchars($meal['notes']) ?>"</div>
-                        <?php endif; ?>
+                        <div class="meal-tl-meta">
+                            <span class="meal-tl-type"><i class="ti <?= $typeIcon ?>"></i><?= $log['meal_type'] ?></span>
+                            <span class="meal-tl-carbs"><?= $log['carbs'] ?>g carbs</span>
+                            <span class="meal-tl-status <?= $carbLabel ?>"><?= $carbText ?></span>
+                            <?php if ($log['calories']): ?>
+                            <span style="color:#b8927e;font-size:11px;display:flex;align-items:center;gap:3px;"><i class="ti ti-flame" style="font-size:12px;"></i><?= $log['calories'] ?> kcal</span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
@@ -478,188 +648,497 @@ $calRingCol = $calStatus === 'danger' ? '#ef4444' : ($calStatus === 'warn' ? '#f
         </div>
         <?php endforeach; ?>
         <?php endif; ?>
-        <div class="cgml-drawer-no-results" id="drawerNoResults">
-            <i class="ti ti-search-off"></i> No records match your search.
-        </div>
     </div>
 
-    <div class="cgml-drawer-footer">
-        <div class="cgml-drawer-footer-stats">
-            <span><i class="ti ti-tools-kitchen-2" style="color:#fbab6e;"></i> <?= count($allLogs) ?> Meals</span>
-            <span><i class="ti ti-flame" style="color:#fbbf24;"></i> <?= round(array_sum(array_column($allLogs,'calories'))) ?> kcal total</span>
-            <span><i class="ti ti-bread" style="color:#f97447;"></i> <?= round(array_sum(array_column($allLogs,'carbs')),1) ?>g carbs</span>
+    <div class="meal-drawer-footer">
+        <div class="meal-drawer-no-results" id="drawerNoResults">
+            <i class="ti ti-search-off"></i> No meals match your search.
+        </div>
+        <div class="meal-drawer-footer-stats">
+            <span><i class="ti ti-sunrise" style="color:#F97447;"></i> <?= $drawerBreakfast ?> Breakfast</span>
+            <span><i class="ti ti-sun"     style="color:#d95f2b;"></i> <?= $drawerLunch ?> Lunch</span>
+            <span><i class="ti ti-moon"    style="color:#c04a20;"></i> <?= $drawerDinner ?> Dinner</span>
+            <span><i class="ti ti-apple"   style="color:#a83818;"></i> <?= $drawerSnack ?> Snack</span>
         </div>
     </div>
+</div><!-- /.meal-drawer -->
 
-</div><!-- /.cgml-drawer -->
-
-
-<!-- ══ NUTRITION LIMITS MODAL ════════════════════════════ -->
-<div class="cgml-modal-overlay" id="limitsOverlay" onclick="handleModalOverlayClick(event)">
-    <div class="cgml-modal" id="limitsModal">
-        <div class="cgml-modal-header">
-            <div class="cgml-modal-header-left">
-                <div class="cgml-modal-icon"><i class="ti ti-adjustments-horizontal"></i></div>
+<!-- ══ NUTRITION BREAKDOWN MODAL ═════════════════════════ -->
+<div class="meal-modal-overlay" id="nutritionModal" onclick="overlayCloseModal(event,'nutritionModal')" aria-modal="true" role="dialog">
+    <div class="meal-modal" style="max-width:600px;">
+        <div class="meal-modal-header">
+            <div class="meal-modal-header-left">
+                <div class="meal-modal-icon"><i class="ti ti-chart-pie"></i></div>
                 <div>
-                    <div class="cgml-modal-title">Daily Nutrition Limits</div>
-                    <div class="cgml-modal-sub">
-                        <?= htmlspecialchars(ucwords(strtolower($patient['name']))) ?> &middot; Personalized targets
+                    <div class="meal-modal-title">Nutrition Breakdown</div>
+                    <div class="meal-modal-sub"><?= date('l, F j') ?> · <?= $totalMeals ?> meal<?= $totalMeals !== 1 ? 's' : '' ?> · <?= round($totalCals) ?> kcal</div>
+                </div>
+            </div>
+            <button class="meal-modal-close" onclick="closeModal('nutritionModal')" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="meal-modal-body" style="padding-bottom:24px;">
+            <?php if ($totalMeals > 0): ?>
+            <div class="meal-nutrition-content">
+                <div class="meal-macro-stack">
+                    <?php
+                    $macroRows = [
+                        ['label'=>'Carbohydrates','icon'=>'ti-grain',  'val'=>$totalCarbs,'target'=>$carbTarget, 'class'=>'carbs',  'unit'=>'g'],
+                        ['label'=>'Protein',      'icon'=>'ti-meat',   'val'=>$totalProt, 'target'=>$protTarget, 'class'=>'protein','unit'=>'g'],
+                        ['label'=>'Fat',          'icon'=>'ti-droplet','val'=>$totalFat,  'target'=>$fatTarget,  'class'=>'fat',    'unit'=>'g'],
+                        ['label'=>'Fiber',        'icon'=>'ti-leaf',   'val'=>$totalFiber,'target'=>$fiberTarget,'class'=>'fiber',  'unit'=>'g'],
+                        ['label'=>'Sugar',        'icon'=>'ti-candy',  'val'=>$totalSugar,'target'=>$sugarTarget,'class'=>'sugar',  'unit'=>'g'],
+                    ];
+                    foreach ($macroRows as $row):
+                        $pct = $row['target'] > 0 ? min(round($row['val'] / $row['target'] * 100), 100) : 0;
+                    ?>
+                    <div class="meal-macro-row">
+                        <div class="meal-macro-row-top">
+                            <div class="meal-macro-row-name"><i class="ti <?= $row['icon'] ?>"></i> <?= $row['label'] ?></div>
+                            <div class="meal-macro-row-val"><?= round($row['val'],1) ?><?= $row['unit'] ?></div>
+                        </div>
+                        <div class="meal-macro-row-track">
+                            <div class="meal-macro-row-fill <?= $row['class'] ?>" style="width:<?= $pct ?>%;"></div>
+                        </div>
+                        <div class="meal-macro-row-goal"><?= $pct ?>% of <?= $row['target'] ?><?= $row['unit'] ?> daily limit</div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="meal-macro-ring-wrap">
+                    <div class="meal-ring-svg-wrap">
+                        <svg class="meal-ring-svg" width="140" height="140" viewBox="0 0 140 140">
+                            <circle class="meal-ring-track" cx="70" cy="70" r="54"/>
+                            <circle class="meal-ring-segment" cx="70" cy="70" r="54"
+                                stroke="#F97447"
+                                stroke-dasharray="<?= $carbArc ?> <?= $circ - $carbArc ?>"
+                                stroke-dashoffset="0"/>
+                            <circle class="meal-ring-segment" cx="70" cy="70" r="54"
+                                stroke="#d95f2b"
+                                stroke-dasharray="<?= $protArc ?> <?= $circ - $protArc ?>"
+                                stroke-dashoffset="-<?= $protOffset ?>"/>
+                            <circle class="meal-ring-segment" cx="70" cy="70" r="54"
+                                stroke="#c04a20"
+                                stroke-dasharray="<?= $fatArc ?> <?= $circ - $fatArc ?>"
+                                stroke-dashoffset="-<?= $fatOffset ?>"/>
+                        </svg>
+                        <div class="meal-ring-center">
+                            <div class="meal-ring-center-val"><?= round($totalCals) ?></div>
+                            <div class="meal-ring-center-sub">kcal</div>
+                        </div>
+                    </div>
+                    <div class="meal-ring-legend">
+                        <div class="meal-ring-legend-item"><span class="meal-ring-legend-dot" style="background:#F97447;"></span> Carbs (<?= $carbRingPct ?>%)</div>
+                        <div class="meal-ring-legend-item"><span class="meal-ring-legend-dot" style="background:#d95f2b;"></span> Protein (<?= $protRingPct ?>%)</div>
+                        <div class="meal-ring-legend-item"><span class="meal-ring-legend-dot" style="background:#c04a20;"></span> Fat (<?= $fatRingPct ?>%)</div>
                     </div>
                 </div>
             </div>
-            <button class="cgml-modal-close" onclick="closeLimitsModal()"><i class="ti ti-x"></i></button>
-        </div>
-
-        <div class="cgml-modal-body">
-            <div class="cgml-modal-info">
-                <i class="ti ti-info-circle"></i>
-                Set personalized daily nutrition limits for this patient. Progress bars and status indicators
-                throughout this page will update to reflect your targets. These are saved per-patient.
+            <?php if ($insight): ?>
+            <div class="meal-insight-row" style="margin-top:18px;">
+                <div class="meal-insight-icon"><i class="ti <?= $insight['icon'] ?>"></i></div>
+                <div class="meal-insight-text"><?= $insight['text'] ?></div>
+                <span class="meal-insight-badge <?= $insight['badge'] ?>"><?= $insight['badgeText'] ?></span>
             </div>
-
-            <form action="/diabetrack/public/caregiver/saveNutritionLimits" method="POST" id="limitsForm">
-                <div class="cgml-limits-grid">
-
-                    <div class="cgml-limit-field">
-                        <label><i class="ti ti-bread"></i> Carbohydrates</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="carbs" id="lim_carbs"
-                                   value="<?= round($lim['carbs']) ?>" min="0" max="500" step="1" placeholder="130">
-                            <span class="cgml-limit-unit">g / day</span>
-                        </div>
-                    </div>
-
-                    <div class="cgml-limit-field">
-                        <label><i class="ti ti-flame"></i> Calories</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="calories" id="lim_calories"
-                                   value="<?= round($lim['calories']) ?>" min="0" max="5000" step="50" placeholder="1800">
-                            <span class="cgml-limit-unit">kcal / day</span>
-                        </div>
-                    </div>
-
-                    <div class="cgml-limit-field">
-                        <label><i class="ti ti-candy"></i> Sugar</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="sugar" id="lim_sugar"
-                                   value="<?= round($lim['sugar']) ?>" min="0" max="300" step="1" placeholder="50">
-                            <span class="cgml-limit-unit">g / day</span>
-                        </div>
-                    </div>
-
-                    <div class="cgml-limit-field">
-                        <label><i class="ti ti-meat"></i> Protein</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="protein" id="lim_protein"
-                                   value="<?= round($lim['protein']) ?>" min="0" max="400" step="1" placeholder="60">
-                            <span class="cgml-limit-unit">g / day</span>
-                        </div>
-                    </div>
-
-                    <div class="cgml-limit-field">
-                        <label><i class="ti ti-droplet"></i> Fat</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="fat" id="lim_fat"
-                                   value="<?= round($lim['fat']) ?>" min="0" max="300" step="1" placeholder="65">
-                            <span class="cgml-limit-unit">g / day</span>
-                        </div>
-                    </div>
-
-                    <div class="cgml-limit-field">
-                        <label><i class="ti ti-leaf"></i> Fiber</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="fiber" id="lim_fiber"
-                                   value="<?= round($lim['fiber']) ?>" min="0" max="100" step="1" placeholder="25">
-                            <span class="cgml-limit-unit">g / day</span>
-                        </div>
-                    </div>
-
-                    <div class="cgml-limit-field" style="grid-column:1/-1;">
-                        <label><i class="ti ti-circles"></i> Sodium</label>
-                        <div class="cgml-limit-input-wrap">
-                            <input type="number" name="sodium" id="lim_sodium"
-                                   value="<?= round($lim['sodium']) ?>" min="0" max="10000" step="50" placeholder="2300">
-                            <span class="cgml-limit-unit">mg / day</span>
-                        </div>
-                    </div>
-
-                </div>
-            </form>
-        </div>
-
-        <div class="cgml-modal-footer">
-            <button class="cgml-modal-reset" type="button" onclick="resetToDefaults()">
-                <i class="ti ti-refresh"></i> Reset to defaults
-            </button>
-            <button class="cgml-modal-save" onclick="document.getElementById('limitsForm').submit()">
-                <i class="ti ti-device-floppy"></i> Save Limits
-            </button>
+            <?php endif; ?>
+            <?php else: ?>
+            <div class="meal-empty" style="padding:48px 0;">
+                <i class="ti ti-chart-pie" style="font-size:2.5rem;color:rgba(249,116,71,0.3);"></i>
+                <p>Log your first meal to see your nutrition breakdown.</p>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
-</div><!-- /.cgml-modal-overlay -->
+</div>
 
-<?php endif; ?>
+<!-- ══ ADD MEAL MODAL ════════════════════════════════════ -->
+<div class="meal-modal-overlay" id="addMealModal" onclick="overlayCloseModal(event,'addMealModal')" aria-modal="true" role="dialog">
+    <div class="meal-modal">
+        <div class="meal-modal-header">
+            <div class="meal-modal-header-left">
+                <div class="meal-modal-icon"><i class="ti ti-bowl-spoon"></i></div>
+                <div>
+                    <div class="meal-modal-title">Log a Meal</div>
+                    <div class="meal-modal-sub">Record your meal and nutritional details</div>
+                </div>
+            </div>
+            <button class="meal-modal-close" onclick="closeModal('addMealModal')" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <form method="POST" action="/diabetrack/public/patient/meals" id="addMealForm">
+            <div class="meal-modal-body">
+                <div class="meal-form-group">
+                    <label class="meal-form-label"><i class="ti ti-pencil"></i> Meal Name <span class="meal-required">*</span></label>
+                    <input type="text" name="meal_name" id="add-meal-name" class="meal-form-input" placeholder="e.g. Sinangag, Adobo, Rice and Chicken" required>
+                </div>
+                <div class="meal-form-group">
+                    <label class="meal-form-label"><i class="ti ti-category"></i> Meal Type <span class="meal-required">*</span></label>
+                    <div class="meal-type-grid">
+                        <button type="button" class="meal-type-btn selected" onclick="selectMealType('Breakfast',this,'add-meal-type')"><i class="ti ti-sunrise"></i> Breakfast</button>
+                        <button type="button" class="meal-type-btn" onclick="selectMealType('Lunch',this,'add-meal-type')"><i class="ti ti-sun"></i> Lunch</button>
+                        <button type="button" class="meal-type-btn" onclick="selectMealType('Dinner',this,'add-meal-type')"><i class="ti ti-moon"></i> Dinner</button>
+                        <button type="button" class="meal-type-btn" onclick="selectMealType('Snack',this,'add-meal-type')"><i class="ti ti-apple"></i> Snack</button>
+                    </div>
+                    <input type="hidden" name="meal_type" id="add-meal-type" value="Breakfast">
+                </div>
+                <div class="meal-form-divider">Required</div>
+                <div class="meal-form-group">
+                    <label class="meal-form-label"><i class="ti ti-grain"></i> Carbohydrates (g) <span class="meal-required">*</span></label>
+                    <input type="number" step="0.01" name="carbs" id="add-meal-carbs" class="meal-form-input" placeholder="e.g. 45" min="0" required>
+                </div>
+                <div class="meal-form-divider">Optional Nutrition</div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div>
+                        <label class="meal-form-label">Calories <span class="meal-optional">optional</span></label>
+                        <input type="number" step="0.01" name="calories" id="add-meal-calories" class="meal-form-input" placeholder="e.g. 350" min="0">
+                    </div>
+                    <div>
+                        <label class="meal-form-label">Sugar (g) <span class="meal-optional">optional</span></label>
+                        <input type="number" step="0.01" name="sugar" id="add-meal-sugar" class="meal-form-input" placeholder="e.g. 12" min="0">
+                    </div>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div>
+                        <label class="meal-form-label">Protein (g) <span class="meal-optional">optional</span></label>
+                        <input type="number" step="0.01" name="protein" id="add-meal-protein" class="meal-form-input" placeholder="e.g. 25" min="0">
+                    </div>
+                    <div>
+                        <label class="meal-form-label">Fat (g) <span class="meal-optional">optional</span></label>
+                        <input type="number" step="0.01" name="fat" id="add-meal-fat" class="meal-form-input" placeholder="e.g. 8" min="0">
+                    </div>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div>
+                        <label class="meal-form-label">Fiber (g) <span class="meal-optional">optional</span></label>
+                        <input type="number" step="0.01" name="fiber" id="add-meal-fiber" class="meal-form-input" placeholder="e.g. 3" min="0">
+                    </div>
+                    <div>
+                        <label class="meal-form-label">Sodium (mg) <span class="meal-optional">optional</span></label>
+                        <input type="number" step="0.01" name="sodium" id="add-meal-sodium" class="meal-form-input" placeholder="e.g. 420" min="0">
+                    </div>
+                </div>
+                <div class="meal-form-group">
+                    <label class="meal-form-label"><i class="ti ti-notes"></i> Notes <span class="meal-label-optional">(optional)</span></label>
+                    <textarea name="notes" class="meal-form-textarea" rows="2" placeholder="e.g. Home cooked, restaurant, portion size…"></textarea>
+                </div>
+            </div>
+            <div class="meal-modal-footer">
+                <button type="button" class="meal-modal-cancel" onclick="closeModal('addMealModal')">Cancel</button>
+                <button type="submit" class="meal-save-btn"><i class="ti ti-device-floppy"></i> Log Meal</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<!-- ══ SAVE PRESET MODAL ══════════════════════════════════ -->
+<div class="meal-modal-overlay" id="savePresetModal" onclick="overlayCloseModal(event,'savePresetModal')" aria-modal="true" role="dialog">
+    <div class="meal-modal">
+        <div class="meal-modal-header">
+            <div class="meal-modal-header-left">
+                <div class="meal-modal-icon"><i class="ti ti-bookmark"></i></div>
+                <div>
+                    <div class="meal-modal-title">Save a Meal</div>
+                    <div class="meal-modal-sub">Add to your quick-add list for fast logging</div>
+                </div>
+            </div>
+            <button class="meal-modal-close" onclick="closeModal('savePresetModal')" aria-label="Close"><i class="ti ti-x"></i></button>
+        </div>
+        <form method="POST" action="/diabetrack/public/patient/meals">
+            <input type="hidden" name="action" value="save_preset">
+            <div class="meal-modal-body">
+                <div class="meal-form-group">
+                    <label class="meal-form-label"><i class="ti ti-pencil"></i> Meal Name <span class="meal-required">*</span></label>
+                    <input type="text" name="meal_name" class="meal-form-input" placeholder="e.g. Sinangag, Adobo…" required>
+                </div>
+                <div class="meal-form-group">
+                    <label class="meal-form-label"><i class="ti ti-category"></i> Meal Type <span class="meal-required">*</span></label>
+                    <div class="meal-type-grid">
+                        <button type="button" class="meal-type-btn selected" onclick="selectMealType('Breakfast',this,'preset-meal-type')"><i class="ti ti-sunrise"></i> Breakfast</button>
+                        <button type="button" class="meal-type-btn" onclick="selectMealType('Lunch',this,'preset-meal-type')"><i class="ti ti-sun"></i> Lunch</button>
+                        <button type="button" class="meal-type-btn" onclick="selectMealType('Dinner',this,'preset-meal-type')"><i class="ti ti-moon"></i> Dinner</button>
+                        <button type="button" class="meal-type-btn" onclick="selectMealType('Snack',this,'preset-meal-type')"><i class="ti ti-apple"></i> Snack</button>
+                    </div>
+                    <input type="hidden" name="meal_type" id="preset-meal-type" value="Breakfast">
+                </div>
+                <div class="meal-form-divider">Nutrition</div>
+                <div class="meal-form-group">
+                    <label class="meal-form-label">Carbohydrates (g) <span class="meal-required">*</span></label>
+                    <input type="number" step="0.01" name="carbs" class="meal-form-input" placeholder="e.g. 45" min="0" required>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div><label class="meal-form-label">Calories <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="calories" class="meal-form-input" placeholder="e.g. 350" min="0"></div>
+                    <div><label class="meal-form-label">Protein (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="protein" class="meal-form-input" placeholder="e.g. 25" min="0"></div>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div><label class="meal-form-label">Fat (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="fat" class="meal-form-input" placeholder="e.g. 8" min="0"></div>
+                    <div><label class="meal-form-label">Fiber (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="fiber" class="meal-form-input" placeholder="e.g. 3" min="0"></div>
+                </div>
+                <div class="meal-form-grid-2 meal-form-group">
+                    <div><label class="meal-form-label">Sugar (g) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="sugar" class="meal-form-input" placeholder="e.g. 12" min="0"></div>
+                    <div><label class="meal-form-label">Sodium (mg) <span class="meal-optional">optional</span></label><input type="number" step="0.01" name="sodium" class="meal-form-input" placeholder="e.g. 420" min="0"></div>
+                </div>
+            </div>
+            <div class="meal-modal-footer">
+                <button type="button" class="meal-modal-cancel" onclick="closeModal('savePresetModal')">Cancel</button>
+                <button type="submit" class="meal-save-btn"><i class="ti ti-bookmark"></i> Save to My Meals</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ══ TOASTS ════════════════════════════════════════════ -->
+<div class="meal-toast meal-toast-success" id="saveToast" aria-live="polite">
+    <i class="ti ti-circle-check"></i>
+    <span>Meal logged successfully</span>
+    <button class="meal-toast-close" onclick="hideToast('saveToast')" aria-label="Dismiss"><i class="ti ti-x"></i></button>
+</div>
+<div class="meal-toast" id="deleteToast" aria-live="polite">
+    <i class="ti ti-trash"></i>
+    <span id="toastMsg">Meal deleted</span>
+    <button class="meal-toast-undo" id="toastUndo">Undo</button>
+    <button class="meal-toast-close" id="toastClose" aria-label="Dismiss"><i class="ti ti-x"></i></button>
+</div>
+
+<!-- ══ FAB ════════════════════════════════════════════════ -->
+<button class="patient-fab" onclick="openAddMealModal()" aria-label="Log a meal">
+    <span class="patient-fab-icon"><i class="ti ti-plus"></i></span>
+    <span class="patient-fab-label">Log Meal</span>
+</button>
+
+<!-- ══ CHART JS ══════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// ── History drawer ─────────────────────────────────────
-let activeFilter = 'all';
-function openDrawer() {
+(function() {
+    const ctx = document.getElementById('carbChart').getContext('2d');
+    const limitPlugin = {
+        id: 'limitLine',
+        beforeDraw(chart) {
+            const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+            if (!y) return;
+            const carbLimit = <?= (float)$carbTarget ?>;
+            const yPx = y.getPixelForValue(carbLimit);
+            ctx.save();
+            ctx.setLineDash([6, 4]);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(239,68,68,0.45)';
+            ctx.beginPath(); ctx.moveTo(left, yPx); ctx.lineTo(right, yPx); ctx.stroke();
+            ctx.fillStyle = 'rgba(239,68,68,0.6)';
+            ctx.font = '700 10px DM Sans';
+            ctx.fillText(carbLimit + 'g limit', right - 68, yPx - 5);
+            ctx.restore();
+        }
+    };
+    new Chart(ctx, {
+        type: 'bar',
+        plugins: [limitPlugin],
+        data: {
+            labels: <?= json_encode($chartLabels) ?>,
+            datasets: [{
+                label: 'Carbs (g)',
+                data: <?= json_encode($chartData) ?>,
+                backgroundColor: <?= json_encode($chartColors) ?>,
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1a0800',
+                    titleColor: '#fbab6e',
+                    bodyColor: '#fff8f5',
+                    borderColor: 'rgba(249,116,71,0.2)',
+                    borderWidth: 1, padding: 12, cornerRadius: 12,
+                    callbacks: {
+                        label: c => ` ${c.parsed.y}g carbs${c.parsed.y > <?= (float)$carbTarget ?> ? ' — over daily limit!' : ''}`
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(249,116,71,0.07)' }, ticks: { font: { size:11, family:'DM Sans' }, color:'#b8927e' }, border: { color:'transparent' } },
+                x: { grid: { display: false }, ticks: { font: { size:11, family:'DM Sans' }, color:'#b8927e' }, border: { color:'transparent' } }
+            }
+        }
+    });
+})();
+</script>
+
+<!-- ══ INTERACTIVITY ══════════════════════════════════════ -->
+<script>
+/* ── Limits panel toggle ────────────────────────────────── */
+let limitsOpen = true;
+function toggleLimitsPanel() {
+    limitsOpen = !limitsOpen;
+    const body    = document.getElementById('limitsBody');
+    const chevron = document.getElementById('limitsChevron');
+    body.style.maxHeight    = limitsOpen ? body.scrollHeight + 'px' : '0';
+    body.style.opacity      = limitsOpen ? '1' : '0';
+    body.style.paddingTop   = limitsOpen ? '' : '0';
+    body.style.paddingBottom= limitsOpen ? '' : '0';
+    chevron.className       = limitsOpen ? 'ti ti-chevron-up' : 'ti ti-chevron-down';
+}
+// Set initial height after layout
+document.addEventListener('DOMContentLoaded', () => {
+    const body = document.getElementById('limitsBody');
+    body.style.maxHeight = body.scrollHeight + 'px';
+});
+
+/* ── Toast helpers ─────────────────────────────────────── */
+function showToast(id, duration) {
+    const t = document.getElementById(id); if (!t) return;
+    t.classList.add('show');
+    if (duration > 0) setTimeout(() => t.classList.remove('show'), duration);
+}
+function hideToast(id) { const t = document.getElementById(id); if (t) t.classList.remove('show'); }
+
+document.getElementById('addMealForm').addEventListener('submit', () => sessionStorage.setItem('meal_saved','1'));
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('meal_saved') === '1') {
+        sessionStorage.removeItem('meal_saved'); showToast('saveToast', 3500);
+    }
+    <?php if ($flashDeleted): ?>
+    document.getElementById('toastMsg').textContent = 'Meal deleted successfully';
+    document.getElementById('toastUndo').style.display = 'none';
+    showToast('deleteToast', 3500);
+    <?php endif; ?>
+});
+
+/* ── Modal helpers ─────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); document.body.style.overflow = ''; }
+function overlayCloseModal(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+function openAddMealModal()    { openModal('addMealModal'); }
+function openSavePresetModal() { openModal('savePresetModal'); }
+
+/* ── Meal type selector ─────────────────────────────────── */
+function selectMealType(type, btn, inputId) {
+    btn.closest('.meal-type-grid').querySelectorAll('.meal-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById(inputId).value = type;
+}
+
+/* ── Quick Add tabs ─────────────────────────────────────── */
+function switchQaTab(tab, btn) {
+    document.querySelectorAll('.qa-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('qa-suggested').style.display = tab === 'suggested' ? '' : 'none';
+    document.getElementById('qa-saved').style.display     = tab === 'saved'     ? '' : 'none';
+}
+
+/* ── Quick Add — pre-fill modal ─────────────────────────── */
+function quickAdd(preset) {
+    document.getElementById('add-meal-name').value     = preset.meal_name || '';
+    document.getElementById('add-meal-carbs').value    = preset.carbs     || '';
+    document.getElementById('add-meal-calories').value = preset.calories  || '';
+    document.getElementById('add-meal-sugar').value    = preset.sugar     || '';
+    document.getElementById('add-meal-protein').value  = preset.protein   || '';
+    document.getElementById('add-meal-fat').value      = preset.fat       || '';
+    document.getElementById('add-meal-fiber').value    = preset.fiber     || '';
+    document.getElementById('add-meal-sodium').value   = preset.sodium    || '';
+    const t = (preset.meal_type || 'Breakfast').toLowerCase();
+    document.querySelector('#addMealModal .meal-type-grid').querySelectorAll('.meal-type-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent.trim().toLowerCase().includes(t));
+    });
+    document.getElementById('add-meal-type').value = preset.meal_type || 'Breakfast';
+    openAddMealModal();
+}
+
+/* ── Quick Add Panel (mobile) ───────────────────────────── */
+function closeQaPanel() {
+    if (window.innerWidth <= 1024) {
+        document.getElementById('qaPanel').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+/* ── History drawer ─────────────────────────────────────── */
+let drawerFilterActive = 'all';
+function openHistoryDrawer() {
     document.getElementById('historyDrawer').classList.add('open');
     document.getElementById('drawerOverlay').classList.add('show');
     document.body.style.overflow = 'hidden';
 }
-function closeDrawer() {
+function closeHistoryDrawer() {
     document.getElementById('historyDrawer').classList.remove('open');
     document.getElementById('drawerOverlay').classList.remove('show');
     document.body.style.overflow = '';
 }
-function filterDrawer() {
-    applyFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), activeFilter);
-}
-function setFilter(f, btn) {
-    activeFilter = f;
-    document.querySelectorAll('.cgml-drawer-filter').forEach(b => b.classList.remove('active'));
+function filterDrawer() { applyDrawerFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), drawerFilterActive); }
+function setDrawerFilter(filter, btn) {
+    drawerFilterActive = filter;
+    document.querySelectorAll('.meal-drawer-filter').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    applyFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), f);
+    applyDrawerFilters(document.getElementById('drawerSearch').value.toLowerCase().trim(), filter);
 }
-function applyFilters(q, f) {
-    let vis = 0;
-    document.querySelectorAll('.cgml-tl-item').forEach(el => {
-        const ok = (f === 'all' || el.dataset.type === f) && (!q || el.dataset.search.includes(q));
-        el.style.display = ok ? '' : 'none';
-        if (ok) vis++;
+function applyDrawerFilters(q, filter) {
+    let visible = 0;
+    document.querySelectorAll('.meal-timeline-item').forEach(item => {
+        const ok = (filter === 'all' || item.dataset.type === filter) && (!q || item.dataset.search.includes(q));
+        item.style.display = ok ? '' : 'none';
+        if (ok) visible++;
     });
-    document.querySelectorAll('.cgml-drawer-day-group').forEach(g => {
-        g.style.display = [...g.querySelectorAll('.cgml-tl-item')].some(i => i.style.display !== 'none') ? '' : 'none';
+    document.querySelectorAll('.meal-drawer-day-group').forEach(group => {
+        group.style.display = [...group.querySelectorAll('.meal-timeline-item')].some(i => i.style.display !== 'none') ? '' : 'none';
     });
-    document.getElementById('drawerNoResults').style.display = vis === 0 ? 'flex' : 'none';
+    const noRes = document.getElementById('drawerNoResults');
+    if (noRes) noRes.style.display = visible === 0 ? 'flex' : 'none';
 }
 
-// ── Limits modal ───────────────────────────────────────
-function openLimitsModal() {
-    document.getElementById('limitsOverlay').classList.add('show');
-    document.body.style.overflow = 'hidden';
+/* ── Delete with undo toast ─────────────────────────────── */
+let deleteTimer = null, pendingDelete = null;
+function confirmDeleteMeal(btn) {
+    const id = btn.dataset.id, name = btn.dataset.name;
+    const row = document.getElementById('meal-row-' + id);
+    if (row) row.classList.add('removing');
+    showDeleteToast(id, name, [row]);
 }
-function closeLimitsModal() {
-    document.getElementById('limitsOverlay').classList.remove('show');
-    document.body.style.overflow = '';
+function confirmDeleteLog(btn) {
+    const id = btn.dataset.id, name = btn.dataset.name;
+    const tlItem = btn.closest('.meal-timeline-item');
+    const todRow = document.getElementById('meal-row-' + id);
+    if (tlItem) tlItem.classList.add('meal-item-deleting');
+    if (todRow) todRow.classList.add('removing');
+    showDeleteToast(id, name, [tlItem, todRow]);
 }
-function handleModalOverlayClick(e) {
-    if (e.target === document.getElementById('limitsOverlay')) closeLimitsModal();
+function showDeleteToast(id, name, rows) {
+    document.getElementById('toastUndo').style.display = '';
+    document.getElementById('toastMsg').textContent = `"${name}" removed`;
+    showToast('deleteToast', 0);
+    pendingDelete = { id, rows };
+    clearTimeout(deleteTimer);
+    deleteTimer = setTimeout(() => { window.location.href = '/diabetrack/public/patient/meals?delete=' + id + '&deleted=1'; }, 5000);
 }
-function resetToDefaults() {
-    const defaults = {lim_carbs:130, lim_calories:1800, lim_sugar:50, lim_protein:60, lim_fat:65, lim_fiber:25, lim_sodium:2300};
-    Object.entries(defaults).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    });
+document.getElementById('toastUndo').addEventListener('click', () => {
+    clearTimeout(deleteTimer);
+    if (pendingDelete) {
+        pendingDelete.rows.forEach(r => { if (r) { r.classList.remove('removing'); r.classList.remove('meal-item-deleting'); } });
+        pendingDelete = null;
+    }
+    hideToast('deleteToast');
+});
+document.getElementById('toastClose').addEventListener('click', () => {
+    if (pendingDelete) { window.location.href = '/diabetrack/public/patient/meals?delete=' + pendingDelete.id + '&deleted=1'; pendingDelete = null; }
+    hideToast('deleteToast'); clearTimeout(deleteTimer);
+});
+
+/* ── Delete preset ─────────────────────────────────────── */
+function deletePreset(id, link) {
+    const item = link.closest('.qa-list-item');
+    fetch('/diabetrack/public/patient/meals?delete_preset=' + id)
+        .then(r => { if (r.ok && item) { item.classList.add('removing'); setTimeout(() => item.remove(), 300); } })
+        .catch(() => {});
 }
+
+/* ── Keyboard ────────────────────────────────────────────── */
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeDrawer(); closeLimitsModal(); }
+    if (e.key === 'Escape') {
+        closeModal('addMealModal'); closeModal('savePresetModal'); closeModal('nutritionModal');
+        closeHistoryDrawer(); closeQaPanel();
+    }
 });
 </script>
 
 <?php
 $content = ob_get_clean();
-require_once __DIR__ . '/../shared/caregiver_layout.php';
+require_once __DIR__ . '/../shared/patient_layout.php';
 ?>
