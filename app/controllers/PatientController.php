@@ -567,4 +567,133 @@ public function disable2fa() {
     header('Location: /diabetrack/public/patient/profile?success=' . urlencode('2FA has been disabled.'));
     exit;
 }
+private function ensureMessagesTable($db): void {
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS `chat_messages` (
+            `id`           int(11)   NOT NULL AUTO_INCREMENT,
+            `caregiver_id` int(11)   NOT NULL,
+            `patient_id`   int(11)   NOT NULL,
+            `sender_id`    int(11)   NOT NULL,
+            `sender_type`  enum('caregiver','patient') NOT NULL,
+            `body`         text      NOT NULL,
+            `sent_at`      timestamp NOT NULL DEFAULT current_timestamp(),
+            `read_at`      timestamp NULL DEFAULT NULL,
+            PRIMARY KEY (`id`),
+            KEY `idx_thread` (`caregiver_id`,`patient_id`,`sent_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+}
+
+private function getLinkedCaregiver($db, int $pid): ?array {
+    $stmt = $db->prepare("
+        SELECT u.* FROM users u
+        JOIN caregiver_links cl ON cl.caregiver_id = u.id
+        WHERE cl.patient_id = :pid AND cl.status = 'accepted'
+        ORDER BY cl.linked_at ASC LIMIT 1
+    ");
+    $stmt->execute(['pid' => $pid]);
+    return $stmt->fetch() ?: null;
+}
+
+public function messages() {
+    require_once __DIR__ . '/../../config/Database.php';
+    $db  = (new Database())->connect();
+    $pid = $_SESSION['user_id'];
+    $cg  = $this->getLinkedCaregiver($db, $pid);
+
+    $messages    = [];
+    $unreadCount = 0;
+
+    if ($cg) {
+        $cid = $cg['id'];
+        $this->ensureMessagesTable($db);
+
+        // Mark caregiver messages as read
+        $db->prepare("
+            UPDATE chat_messages SET read_at = NOW()
+            WHERE caregiver_id = :cid AND patient_id = :pid
+              AND sender_type = 'caregiver' AND read_at IS NULL
+        ")->execute(['cid' => $cid, 'pid' => $pid]);
+
+        $stmt = $db->prepare("
+            SELECT * FROM chat_messages
+            WHERE caregiver_id = :cid AND patient_id = :pid
+            ORDER BY sent_at ASC
+        ");
+        $stmt->execute(['cid' => $cid, 'pid' => $pid]);
+        $messages = $stmt->fetchAll();
+
+        $unreadCount = count(array_filter($messages, fn($m) =>
+            $m['sender_type'] === 'caregiver' && !$m['read_at']));
+    }
+
+    $this->view('patient/messages_view', [
+        'name'        => $_SESSION['user_name'],
+        'caregiver'   => $cg,
+        'messages'    => $messages,
+        'unreadCount' => $unreadCount,
+    ]);
+}
+
+public function sendPatientMessage() {
+    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['ok' => false]); exit;
+    }
+    require_once __DIR__ . '/../../config/Database.php';
+    $db  = (new Database())->connect();
+    $pid = $_SESSION['user_id'];
+    $cg  = $this->getLinkedCaregiver($db, $pid);
+
+    if (!$cg) { echo json_encode(['ok' => false, 'error' => 'No caregiver linked']); exit; }
+
+    $body = trim($_POST['message'] ?? '');
+    if (!$body || mb_strlen($body) > 500) {
+        echo json_encode(['ok' => false, 'error' => 'Invalid message']); exit;
+    }
+
+    $this->ensureMessagesTable($db);
+    $cid = $cg['id'];
+
+    $stmt = $db->prepare("
+        INSERT INTO chat_messages (caregiver_id, patient_id, sender_id, sender_type, body)
+        VALUES (:cid, :pid, :sid, 'patient', :body)
+    ");
+    $stmt->execute(['cid' => $cid, 'pid' => $pid, 'sid' => $pid, 'body' => $body]);
+    $newId = $db->lastInsertId();
+
+    echo json_encode(['ok' => true, 'id' => $newId, 'sent_at' => date('h:i A')]); exit;
+}
+
+public function getPatientMessages() {
+    header('Content-Type: application/json');
+    require_once __DIR__ . '/../../config/Database.php';
+    $db  = (new Database())->connect();
+    $pid = $_SESSION['user_id'];
+    $cg  = $this->getLinkedCaregiver($db, $pid);
+    if (!$cg) { echo json_encode(['messages' => []]); exit; }
+
+    $this->ensureMessagesTable($db);
+    $cid   = $cg['id'];
+    $after = (int)($_GET['after'] ?? 0);
+
+    // Mark new caregiver messages as read on poll
+    $db->prepare("
+        UPDATE chat_messages SET read_at = NOW()
+        WHERE caregiver_id = :cid AND patient_id = :pid
+          AND sender_type = 'caregiver' AND read_at IS NULL AND id > :after
+    ")->execute(['cid' => $cid, 'pid' => $pid, 'after' => $after]);
+
+    $stmt = $db->prepare("
+        SELECT id, sender_id, sender_type, body, sent_at, read_at
+        FROM chat_messages
+        WHERE caregiver_id = :cid AND patient_id = :pid AND id > :after
+        ORDER BY sent_at ASC LIMIT 50
+    ");
+    $stmt->execute(['cid' => $cid, 'pid' => $pid, 'after' => $after]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as &$r) { $r['sent_at'] = date('h:i A', strtotime($r['sent_at'])); }
+    echo json_encode(['messages' => $rows]); exit;
+}
+
 }
