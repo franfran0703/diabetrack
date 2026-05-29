@@ -78,6 +78,30 @@ if (empty($pendingCaregiverRequests)) {
                 </a>
             </div>
 
+            <div class="nav-item">
+                <?php
+                // Unread message count for patient
+                if (empty($__chatUnread)) {
+                    try {
+                        $__db2 = (new Database())->connect();
+                        $__db2->exec("CREATE TABLE IF NOT EXISTS `chat_messages` (`id` int(11) NOT NULL AUTO_INCREMENT,`caregiver_id` int(11) NOT NULL,`patient_id` int(11) NOT NULL,`sender_id` int(11) NOT NULL,`sender_type` enum('caregiver','patient') NOT NULL,`body` text NOT NULL,`sent_at` timestamp NOT NULL DEFAULT current_timestamp(),`read_at` timestamp NULL DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                        $__cu = $__db2->prepare("SELECT COUNT(*) FROM chat_messages WHERE patient_id = :pid AND sender_type = 'caregiver' AND read_at IS NULL");
+                        $__cu->execute(['pid' => $_SESSION['user_id']]);
+                        $__chatUnread = (int)$__cu->fetchColumn();
+                    } catch(Exception $e) { $__chatUnread = 0; }
+                }
+                ?>
+                <a href="/diabetrack/public/patient/messages"
+                   class="nav-btn <?= ($activeMenu ?? '') === 'messages' ? 'active' : '' ?>"
+                   style="position:relative;">
+                    <span class="nav-icon"><i class="ti ti-message-circle"></i></span>
+                    Messages
+                    <?php if (!empty($__chatUnread) && $__chatUnread > 0): ?>
+                    <span style="position:absolute;top:2px;right:2px;background:#f97447;color:#fff;font-size:9px;font-weight:900;border-radius:999px;min-width:16px;height:16px;display:flex;align-items:center;justify-content:center;padding:0 3px;"><?= $__chatUnread ?></span>
+                    <?php endif; ?>
+                </a>
+            </div>
+
             <!-- More -->
             <div class="nav-item" id="more-item">
                 <button class="nav-btn <?= in_array(($activeMenu ?? ''), ['appointments','reports','education','nearby']) ? 'active' : '' ?>"
@@ -150,6 +174,11 @@ if (empty($pendingCaregiverRequests)) {
         </div>
         <!-- end floatnav -->
 
+        <!-- Mobile hamburger (shown on <=640px) -->
+        <button class="mobile-menu-btn" onclick="openMobileNav()" aria-label="Open menu">
+            <i class="ti ti-menu-2"></i>
+        </button>
+
         <!-- User chip -->
         <div class="user-chip">
             <a href="/diabetrack/public/patient/profile" class="avatar" title="My Profile" style="text-decoration:none;color:inherit;"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></a>
@@ -173,6 +202,84 @@ if (empty($pendingCaregiverRequests)) {
 </div>
 
 
+<!-- Mobile Nav Overlay -->
+<div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileNav()"></div>
+
+<!-- Mobile Nav Drawer -->
+<nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
+    <div class="drawer-header">
+        <div class="drawer-brand">
+            <img src="/diabetrack/public/assets/img/diabetrack-icon.png" alt="" style="width:26px;height:26px;object-fit:contain;">
+            <span class="drawer-brand-name">DiabeTrack</span>
+        </div>
+        <button class="drawer-close" onclick="closeMobileNav()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="drawer-user">
+        <div class="avatar" style="width:36px;height:36px;font-size:0.82rem;"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></div>
+        <div class="drawer-user-info">
+            <div class="drawer-user-name"><?= htmlspecialchars(ucwords(strtolower($_SESSION['user_name']))) ?></div>
+            <div class="drawer-user-role">Patient</div>
+        </div>
+    </div>
+
+    <div class="drawer-nav">
+        <div class="drawer-nav-label">Main</div>
+        <a href="/diabetrack/public/patient/dashboard" class="drawer-nav-link <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-layout-grid"></i></span> Dashboard
+        </a>
+        <a href="/diabetrack/public/patient/bloodsugar" class="drawer-nav-link <?= ($activeMenu ?? '') === 'bloodsugar' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-droplet-half-2"></i></span> Blood Sugar
+        </a>
+        <a href="/diabetrack/public/patient/medication" class="drawer-nav-link <?= ($activeMenu ?? '') === 'medication' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-pill"></i></span> Medication
+        </a>
+        <a href="/diabetrack/public/patient/meals" class="drawer-nav-link <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-bowl-spoon"></i></span> Meals &amp; Carbs
+        </a>
+        <a href="/diabetrack/public/patient/activity" class="drawer-nav-link <?= ($activeMenu ?? '') === 'activity' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-activity"></i></span> Activity
+        </a>
+        <a href="/diabetrack/public/patient/messages" class="drawer-nav-link <?= ($activeMenu ?? '') === 'messages' ? 'active' : '' ?>" style="position:relative;">
+            <span class="drawer-nav-icon"><i class="ti ti-message-circle"></i></span> Messages
+            <?php if (!empty($__chatUnread) && $__chatUnread > 0): ?>
+            <span class="drawer-nav-badge"><?= $__chatUnread ?></span>
+            <?php endif; ?>
+        </a>
+
+        <div class="drawer-nav-label">Schedule</div>
+        <a href="/diabetrack/public/patient/appointments" class="drawer-nav-link <?= ($activeMenu ?? '') === 'appointments' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-calendar-check"></i></span> Appointments
+        </a>
+        <a href="/diabetrack/public/patient/reports" class="drawer-nav-link <?= ($activeMenu ?? '') === 'reports' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-report-medical"></i></span> Doctor Reports
+        </a>
+
+        <div class="drawer-nav-label">Resources</div>
+        <a href="/diabetrack/public/patient/education" class="drawer-nav-link <?= ($activeMenu ?? '') === 'education' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-book"></i></span> Education Hub
+        </a>
+        <a href="/diabetrack/public/patient/nearby" class="drawer-nav-link <?= ($activeMenu ?? '') === 'nearby' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon"><i class="ti ti-map-pin"></i></span> Nearby Services
+        </a>
+        <a href="/diabetrack/public/patient/caregiverRequests" class="drawer-nav-link <?= ($activeMenu ?? '') === 'caregiverRequests' ? 'active' : '' ?>">
+            <span class="drawer-nav-icon" style="position:relative;"><i class="ti ti-user-check"></i></span> Caregivers
+            <?php if (!empty($pendingCaregiverRequests) && $pendingCaregiverRequests > 0): ?>
+            <span class="drawer-nav-badge"><?= $pendingCaregiverRequests ?></span>
+            <?php endif; ?>
+        </a>
+    </div>
+
+    <div class="drawer-footer">
+        <a href="/diabetrack/public/patient/profile" class="drawer-nav-link">
+            <span class="drawer-nav-icon"><i class="ti ti-user-circle"></i></span> My Profile
+        </a>
+        <a href="/diabetrack/public/auth/logout" class="drawer-logout">
+            <span class="drawer-nav-icon" style="background:rgba(220,60,60,0.08);color:#c0392b;"><i class="ti ti-logout"></i></span> Log Out
+        </a>
+    </div>
+</nav>
+
 <script>
 function toggleMore(e) {
     e.stopPropagation();
@@ -190,6 +297,19 @@ function closeAll() {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('open'));
 }
 document.addEventListener('click', () => closeAll());
+
+// ── Mobile Nav Drawer ──
+function openMobileNav() {
+    document.getElementById('mobile-nav-drawer').classList.add('open');
+    document.getElementById('mobile-nav-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeMobileNav() {
+    document.getElementById('mobile-nav-drawer').classList.remove('open');
+    document.getElementById('mobile-nav-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobileNav(); });
 </script>
 </body>
 </html>
