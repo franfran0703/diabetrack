@@ -933,4 +933,33 @@ function confirmDelete(btn) {
     const item = btn.closest('.med-schedule-item');
     item.classList.add('med-item-deleting');
     document.getElementById('toastDeleteMsg').textContent = `"${name}" removed`;
-    docume... (2 KB left)
+    document.getElementById('deleteUndo').style.display = '';
+    showToast('toastDelete', 0);
+    pendingDelete = { id, item };
+    clearTimeout(deleteTimer);
+    deleteTimer = setTimeout(() => {
+        window.location.href = '/diabetrack/public/patient/medication?delete=' + id + '&_token=' + CSRF;
+    }, 5000);
+}
+document.getElementById('deleteUndo').addEventListener('click', () => {
+    clearTimeout(deleteTimer);
+    if (pendingDelete) { pendingDelete.item.classList.remove('med-item-deleting'); pendingDelete = null; }
+    hideToast('toastDelete');
+});
+document.getElementById('deleteClose').addEventListener('click', () => {
+    if (pendingDelete) window.location.href = '/diabetrack/public/patient/medication?delete=' + pendingDelete.id + '&_token=' + CSRF;
+    hideToast('toastDelete'); clearTimeout(deleteTimer);
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal('addModal'); closeModal('editModal'); closeHistoryDrawer(); }
+});
+
+document.getElementById('add-med-name')?.addEventListener('input', updateAddPreview);
+document.getElementById('add-med-dosage')?.addEventListener('input', updateAddPreview);
+</script>
+
+<?php
+$content = ob_get_clean();
+require_once __DIR__ . '/../shared/patient_layout.php';
+?>
