@@ -1,6 +1,9 @@
 <?php
 
 session_start();
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
 
 // Autoload base classes
 require_once __DIR__ . '/../app/controllers/Controller.php';
