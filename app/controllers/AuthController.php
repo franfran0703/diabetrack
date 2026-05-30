@@ -26,7 +26,7 @@ class AuthController extends Controller {
                     $_SESSION['2fa_pending_id']   = $user['id'];
                     $_SESSION['2fa_pending_name'] = $user['name'];
                     $_SESSION['2fa_pending_role'] = $user['role'];
-                    header('Location: /diabetrack/public/auth/verify2fa');
+                    header('Location: ' . BASE_URL . '/auth/verify2fa');
                     exit;
                 }
 
@@ -50,7 +50,7 @@ class AuthController extends Controller {
     public function verify2fa() {
         // Must have a pending 2FA session
         if (empty($_SESSION['2fa_pending_id'])) {
-            header('Location: /diabetrack/public/auth/login');
+            header('Location: ' . BASE_URL . '/auth/login');
             exit;
         }
 
@@ -103,7 +103,7 @@ class AuthController extends Controller {
                 $this->view('auth/register_view', ['error' => $error]);
             } else {
                 $this->userModel->register($name, $email, $password, $role);
-                header('Location: /diabetrack/public/auth/login');
+                header('Location: ' . BASE_URL . '/auth/login');
                 exit;
             }
         } else {
@@ -114,30 +114,30 @@ class AuthController extends Controller {
     // Logout
     public function logout() {
         session_destroy();
-        header('Location: /diabetrack/public/auth/login');
+        header('Location: ' . BASE_URL . '/auth/login');
         exit;
     }
 
     // Helper
     private function redirectToDashboard($role) {
         // Check if user has completed onboarding
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $db   = (new Database())->connect();
         $stmt = $db->prepare("SELECT onboarding_complete FROM users WHERE id = :id");
         $stmt->execute(['id' => $_SESSION['user_id']]);
         $done = (bool) $stmt->fetchColumn();
 
         if (!$done && $role !== 'admin') {
-            header('Location: /diabetrack/public/onboarding/index');
+            header('Location: ' . BASE_URL . '/onboarding/index');
             exit;
         }
 
         if ($role === 'patient') {
-            header('Location: /diabetrack/public/patient/dashboard');
+            header('Location: ' . BASE_URL . '/patient/dashboard');
         } elseif ($role === 'caregiver') {
-            header('Location: /diabetrack/public/caregiver/dashboard');
+            header('Location: ' . BASE_URL . '/caregiver/dashboard');
         } elseif ($role === 'admin') {
-            header('Location: /diabetrack/public/admin/dashboard');
+            header('Location: ' . BASE_URL . '/admin/dashboard');
         }
         exit;
     }

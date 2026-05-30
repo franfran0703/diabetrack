@@ -4,8 +4,8 @@ $activeMenu = 'reports';
 ob_start();
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_layout.css?v=<?= time() ?>" rel="stylesheet">
-<link href="/diabetrack/public/assets/css/caregiver_reports.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_layout.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_reports.css?v=<?= time() ?>" rel="stylesheet">
 
 <style>
 @media print {
@@ -29,7 +29,7 @@ ob_start();
     .cgr-header::before {
         content: '';
         display: block;
-        background-image: url('/diabetrack/public/assets/img/diabetrack-logo.png');
+        background-image: url('/assets/img/diabetrack-logo.png');
         background-repeat: no-repeat;
         background-size: contain;
         width: 180px;
@@ -98,7 +98,7 @@ ob_start();
     <div style="font-size:3rem;margin-bottom:16px;">🔗</div>
     <div style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:1.1rem;color:#ffe8d6;margin-bottom:8px;">No Patient Linked</div>
     <div style="font-size:0.85rem;color:rgba(255,200,160,0.55);">
-        <a href="/diabetrack/public/caregiver/patients" style="color:#fbab6e;font-weight:700;">Link a patient</a> to generate reports.
+        <a href="<?= BASE_URL ?>/caregiver/patients" style="color:#fbab6e;font-weight:700;">Link a patient</a> to generate reports.
     </div>
 </div>
 
@@ -106,17 +106,17 @@ ob_start();
 
 <!-- RANGE SELECTOR + DOWNLOAD -->
 <div class="cgr-range-bar">
-    <a href="/diabetrack/public/caregiver/reports?range=7"
+    <a href="<?= BASE_URL ?>/caregiver/reports?range=7"
        class="cgr-range-btn <?= $range === '7' && !isset($_GET['date_from']) ? 'active' : '' ?>">
        Last 7 Days
     </a>
-    <a href="/diabetrack/public/caregiver/reports?range=30"
+    <a href="<?= BASE_URL ?>/caregiver/reports?range=30"
        class="cgr-range-btn <?= $range === '30' && !isset($_GET['date_from']) ? 'active' : '' ?>">
        Last 30 Days
     </a>
 
     <!-- Custom range -->
-    <form method="GET" action="/diabetrack/public/caregiver/reports" class="cgr-custom-form">
+    <form method="GET" action="/caregiver/reports" class="cgr-custom-form">
         <input type="hidden" name="range" value="custom">
         <input type="date" name="date_from" class="cgr-date-input"
         value="<?= $dateFrom ?>" max="<?= date('Y-m-d') ?>">

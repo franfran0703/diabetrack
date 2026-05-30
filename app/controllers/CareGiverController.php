@@ -8,10 +8,10 @@ class CaregiverController extends Controller {
 
     public function __construct() {
         if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'caregiver') {
-            header('Location: /diabetrack/public/auth/login');
+            header('Location: ' . BASE_URL . '/auth/login');
             exit;
         }
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $database   = new Database();
         $this->db   = $database->connect();
     }
@@ -75,7 +75,7 @@ class CaregiverController extends Controller {
             'cid' => $_SESSION['user_id'],
             'pid' => $_GET['unlink']
         ]);
-        header('Location: /diabetrack/public/caregiver/patients');
+        header('Location: ' . BASE_URL . '/caregiver/patients');
         exit;
     }
 
@@ -468,12 +468,12 @@ public function meals() {
 
 public function saveNutritionLimits() {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        header('Location: /diabetrack/public/caregiver/meals');
+        header('Location: ' . BASE_URL . '/caregiver/meals');
         exit;
     }
     $patient = $this->getLinkedPatient();
     if (!$patient) {
-        header('Location: /diabetrack/public/caregiver/meals');
+        header('Location: ' . BASE_URL . '/caregiver/meals');
         exit;
     }
 
@@ -520,51 +520,243 @@ public function saveNutritionLimits() {
     ");
     $stmt->execute($data);
 
-    header('Location: /diabetrack/public/caregiver/meals?saved=1');
+    header('Location: ' . BASE_URL . '/caregiver/meals?saved=1');
     exit;
 }
 
+private function ensureMessagesTable(): void {
+    $this->db->exec("
+        CREATE TABLE IF NOT EXISTS `chat_messages` (
+            `id`           int(11)   NOT NULL AUTO_INCREMENT,
+            `caregiver_id` int(11)   NOT NULL,
+            `patient_id`   int(11)   NOT NULL,
+            `sender_id`    int(11)   NOT NULL,
+            `sender_type`  enum('caregiver','patient') NOT NULL,
+            `body`         text      NOT NULL,
+            `reaction`     varchar(10) NULL DEFAULT NULL,
+            `sent_at`      timestamp NOT NULL DEFAULT current_timestamp(),
+            `read_at`      timestamp NULL DEFAULT NULL,
+            PRIMARY KEY (`id`),
+            KEY `idx_thread` (`caregiver_id`,`patient_id`,`sent_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+    // typing indicator table (row per thread, updated on keypress)
+    $this->db->exec("
+        CREATE TABLE IF NOT EXISTS `chat_typing` (
+            `caregiver_id` int(11) NOT NULL,
+            `patient_id`   int(11) NOT NULL,
+            `typer_type`   enum('caregiver','patient') NOT NULL,
+            `updated_at`   timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+            PRIMARY KEY (`caregiver_id`,`patient_id`,`typer_type`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+    // alert acknowledgements
+    $this->db->exec("
+        CREATE TABLE IF NOT EXISTS `alert_acks` (
+            `id`           int(11)   NOT NULL AUTO_INCREMENT,
+            `alert_id`     int(11)   NOT NULL,
+            `caregiver_id` int(11)   NOT NULL,
+            `note`         text      NULL,
+            `acked_at`     timestamp NOT NULL DEFAULT current_timestamp(),
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `uq_alert_cg` (`alert_id`,`caregiver_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
+    // add reaction column if not exists (safe migration)
+    try {
+        $this->db->exec("ALTER TABLE `chat_messages` ADD COLUMN `reaction` varchar(10) NULL DEFAULT NULL");
+    } catch(Exception $e) {}
+}
+
 public function alerts() {
-    $patient      = $this->getLinkedPatient();
-    $allAlerts    = [];
-    $unreadCount  = 0;
-    $stats        = ['total' => 0, 'high' => 0, 'missed' => 0, 'other' => 0];
+    $patient     = $this->getLinkedPatient();
+    $allAlerts   = [];
+    $unreadCount = 0;
+    $unreadIds   = [];
+    $messages    = [];
+    $stats       = ['total' => 0, 'high' => 0, 'low' => 0, 'missed' => 0, 'other' => 0];
 
     if ($patient) {
         $pid = $patient['id'];
+        $cid = $_SESSION['user_id'];
 
-        // Mark all as read when caregiver opens this page
-        $this->db->prepare("
-            UPDATE alerts SET is_read = 1
-            WHERE user_id = :pid
-        ")->execute(['pid' => $pid]);
+        // Capture unread IDs BEFORE marking read
+        $u = $this->db->prepare("SELECT id FROM alerts WHERE user_id = :pid AND is_read = 0");
+        $u->execute(['pid' => $pid]);
+        $unreadIds   = array_column($u->fetchAll(), 'id');
+        $unreadCount = count($unreadIds);
 
-        // Get all alerts
-        $stmt = $this->db->prepare("
-            SELECT * FROM alerts
-            WHERE user_id = :pid
-            ORDER BY created_at DESC
-        ");
+        $this->db->prepare("UPDATE alerts SET is_read = 1 WHERE user_id = :pid")
+                 ->execute(['pid' => $pid]);
+
+        $stmt = $this->db->prepare("SELECT * FROM alerts WHERE user_id = :pid ORDER BY created_at DESC");
         $stmt->execute(['pid' => $pid]);
         $allAlerts = $stmt->fetchAll();
 
-        // Stats
         $stats['total'] = count($allAlerts);
         foreach ($allAlerts as $a) {
-            if (str_contains($a['type'], 'Sugar'))  $stats['high']++;
+            if (str_contains($a['type'], 'High'))                              $stats['high']++;
+            elseif (str_contains($a['type'], 'Low'))                           $stats['low']++;
             elseif (str_contains($a['type'], 'Dose') ||
-                    str_contains($a['type'], 'Missed')) $stats['missed']++;
-            else $stats['other']++;
+                    str_contains($a['type'], 'Missed'))                         $stats['missed']++;
+            else                                                                $stats['other']++;
         }
+
+        // Load chat thread
+        $this->ensureMessagesTable();
+
+        // Mark patient messages as read now that caregiver opened the page
+        $this->db->prepare("
+            UPDATE chat_messages SET read_at = NOW()
+            WHERE caregiver_id = :cid AND patient_id = :pid
+              AND sender_type = 'patient' AND read_at IS NULL
+        ")->execute(['cid' => $cid, 'pid' => $pid]);
+
+        $ms = $this->db->prepare("
+            SELECT * FROM chat_messages
+            WHERE caregiver_id = :cid AND patient_id = :pid
+            ORDER BY sent_at ASC
+        ");
+        $ms->execute(['cid' => $cid, 'pid' => $pid]);
+        $messages = $ms->fetchAll();
     }
 
+        // Fetch which alerts this caregiver has acknowledged
+        $ackStmt = $this->db->prepare("SELECT alert_id, note, acked_at FROM alert_acks WHERE caregiver_id = :cid");
+        $ackStmt->execute(['cid' => $cid ?? $_SESSION['user_id']]);
+        $ackedMap = [];
+        foreach ($ackStmt->fetchAll(PDO::FETCH_ASSOC) as $a) {
+            $ackedMap[$a['alert_id']] = $a;
+        }
+
     $this->view('caregiver/alerts_view', [
-        'name'       => $_SESSION['user_name'],
-        'patient'    => $patient,
-        'allAlerts'  => $allAlerts,
-        'stats'      => $stats,
+        'name'        => $_SESSION['user_name'],
+        'patient'     => $patient,
+        'allAlerts'   => $allAlerts,
+        'stats'       => $stats,
+        'unreadCount' => $unreadCount,
+        'unreadIds'   => $unreadIds,
+        'messages'    => $messages,
+        'ackedMap'    => $ackedMap ?? [],
     ]);
 }
+
+public function sendMessage() {
+    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['ok' => false]); exit;
+    }
+    $patient = $this->getLinkedPatient();
+    if (!$patient) {
+        echo json_encode(['ok' => false, 'error' => 'No patient linked']); exit;
+    }
+    $body = trim($_POST['message'] ?? '');
+    if (!$body || mb_strlen($body) > 500) {
+        echo json_encode(['ok' => false, 'error' => 'Invalid message']); exit;
+    }
+
+    $this->ensureMessagesTable();
+    $cid = $_SESSION['user_id'];
+    $pid = $patient['id'];
+
+    $stmt = $this->db->prepare("
+        INSERT INTO chat_messages (caregiver_id, patient_id, sender_id, sender_type, body)
+        VALUES (:cid, :pid, :sid, 'caregiver', :body)
+    ");
+    $stmt->execute(['cid' => $cid, 'pid' => $pid, 'sid' => $cid, 'body' => $body]);
+    $newId = $this->db->lastInsertId();
+
+    echo json_encode(['ok' => true, 'id' => $newId, 'sent_at' => date('h:i A')]); exit;
+}
+
+public function getMessages() {
+    header('Content-Type: application/json');
+    $patient = $this->getLinkedPatient();
+    if (!$patient) { echo json_encode(['messages'=>[],'typing'=>false,'readUpto'=>0]); exit; }
+
+    $this->ensureMessagesTable();
+    $cid   = $_SESSION['user_id'];
+    $pid   = $patient['id'];
+    $after = (int)($_GET['after'] ?? 0);
+
+    // New messages
+    $stmt = $this->db->prepare("
+        SELECT id, sender_id, sender_type, body, reaction, sent_at, read_at
+        FROM chat_messages
+        WHERE caregiver_id = :cid AND patient_id = :pid AND id > :after
+        ORDER BY sent_at ASC LIMIT 50
+    ");
+    $stmt->execute(['cid'=>$cid,'pid'=>$pid,'after'=>$after]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as &$r) { $r['sent_at'] = date('h:i A', strtotime($r['sent_at'])); }
+
+    // Is patient typing?
+    $ts = $this->db->prepare("
+        SELECT updated_at FROM chat_typing
+        WHERE caregiver_id=:cid AND patient_id=:pid AND typer_type='patient'
+    ");
+    $ts->execute(['cid'=>$cid,'pid'=>$pid]);
+    $tRow = $ts->fetch(PDO::FETCH_ASSOC);
+    $typing = $tRow && (time() - strtotime($tRow['updated_at'])) < 4;
+
+    // Highest id caregiver messages that patient has read
+    $rs = $this->db->prepare("
+        SELECT MAX(id) FROM chat_messages
+        WHERE caregiver_id=:cid AND patient_id=:pid AND sender_type='caregiver' AND read_at IS NOT NULL
+    ");
+    $rs->execute(['cid'=>$cid,'pid'=>$pid]);
+    $readUpto = (int)$rs->fetchColumn();
+
+    echo json_encode(['messages'=>$rows,'typing'=>$typing,'readUpto'=>$readUpto]); exit;
+}
+
+public function setTyping() {
+    header('Content-Type: application/json');
+    $patient = $this->getLinkedPatient();
+    if (!$patient) { echo json_encode(['ok'=>false]); exit; }
+    $this->ensureMessagesTable();
+    $cid = $_SESSION['user_id']; $pid = $patient['id'];
+    $this->db->prepare("
+        INSERT INTO chat_typing (caregiver_id,patient_id,typer_type,updated_at)
+        VALUES (:cid,:pid,'caregiver',NOW())
+        ON DUPLICATE KEY UPDATE updated_at=NOW()
+    ")->execute(['cid'=>$cid,'pid'=>$pid]);
+    echo json_encode(['ok'=>true]); exit;
+}
+
+public function reactMessage() {
+    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') { echo json_encode(['ok'=>false]); exit; }
+    $patient = $this->getLinkedPatient();
+    if (!$patient) { echo json_encode(['ok'=>false]); exit; }
+    $this->ensureMessagesTable();
+    $id       = (int)($_POST['id'] ?? 0);
+    $reaction = in_array($_POST['reaction']??'', ['👍','❤️','✅','😮','😢','']) ? ($_POST['reaction']??'') : '';
+    $cid = $_SESSION['user_id']; $pid = $patient['id'];
+    $this->db->prepare("
+        UPDATE chat_messages SET reaction=:r
+        WHERE id=:id AND caregiver_id=:cid AND patient_id=:pid
+    ")->execute(['r'=>$reaction?:null,'id'=>$id,'cid'=>$cid,'pid'=>$pid]);
+    echo json_encode(['ok'=>true]); exit;
+}
+
+public function ackAlert() {
+    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') { echo json_encode(['ok'=>false]); exit; }
+    $patient = $this->getLinkedPatient();
+    if (!$patient) { echo json_encode(['ok'=>false]); exit; }
+    $this->ensureMessagesTable();
+    $alertId = (int)($_POST['alert_id'] ?? 0);
+    $note    = mb_substr(trim($_POST['note'] ?? ''), 0, 300);
+    $cid     = $_SESSION['user_id'];
+    $this->db->prepare("
+        INSERT INTO alert_acks (alert_id, caregiver_id, note)
+        VALUES (:aid, :cid, :note)
+        ON DUPLICATE KEY UPDATE note=VALUES(note), acked_at=NOW()
+    ")->execute(['aid'=>$alertId,'cid'=>$cid,'note'=>$note?:null]);
+    echo json_encode(['ok'=>true,'acked_at'=>date('h:i A')]); exit;
+}
+
 public function reports() {
     $patient = $this->getLinkedPatient();
 
@@ -678,10 +870,10 @@ public function switchPatient() {
             $_SESSION['active_patient_id'] = $pid;
         }
     }
-    $redirect = $_GET['redirect'] ?? '/diabetrack/public/caregiver/dashboard';
+    $redirect = $_GET['redirect'] ?? BASE_URL . '/caregiver/dashboard';
     // Whitelist: only allow relative paths within this app
-    if (!str_starts_with($redirect, '/diabetrack/')) {
-        $redirect = '/diabetrack/public/caregiver/dashboard';
+    if (!str_starts_with($redirect, '/public/')) {
+        $redirect = BASE_URL . '/caregiver/dashboard';
     }
     header('Location: ' . $redirect);
     exit;
@@ -750,14 +942,14 @@ public function updateProfile() {
         $check = $this->db->prepare("SELECT id FROM users WHERE email = :email AND id != :id");
         $check->execute(['email' => $email, 'id' => $_SESSION['user_id']]);
         if ($check->fetch()) {
-            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('Email already in use.'));
+            header('Location: ' . BASE_URL . '/caregiver/profile?error=' . urlencode('Email already in use.'));
             exit;
         }
 
         $stmt = $this->db->prepare("UPDATE users SET name = :name, email = :email WHERE id = :id");
         $stmt->execute(['name' => $name, 'email' => $email, 'id' => $_SESSION['user_id']]);
         $_SESSION['user_name'] = $name;
-        header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Profile updated successfully.'));
+        header('Location: ' . BASE_URL . '/caregiver/profile?success=' . urlencode('Profile updated successfully.'));
         exit;
     }
 
@@ -767,22 +959,22 @@ public function updateProfile() {
         $user = $stmt->fetch();
 
         if (!password_verify($_POST['current_password'], $user['password'])) {
-            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('Current password is incorrect.'));
+            header('Location: ' . BASE_URL . '/caregiver/profile?error=' . urlencode('Current password is incorrect.'));
             exit;
         }
         if ($_POST['new_password'] !== $_POST['confirm_password']) {
-            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('New passwords do not match.'));
+            header('Location: ' . BASE_URL . '/caregiver/profile?error=' . urlencode('New passwords do not match.'));
             exit;
         }
         if (strlen($_POST['new_password']) < 8) {
-            header('Location: /diabetrack/public/caregiver/profile?error=' . urlencode('Password must be at least 8 characters.'));
+            header('Location: ' . BASE_URL . '/caregiver/profile?error=' . urlencode('Password must be at least 8 characters.'));
             exit;
         }
 
         $hash = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
         $stmt = $this->db->prepare("UPDATE users SET password = :pw WHERE id = :id");
         $stmt->execute(['pw' => $hash, 'id' => $_SESSION['user_id']]);
-        header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Password updated successfully.'));
+        header('Location: ' . BASE_URL . '/caregiver/profile?success=' . urlencode('Password updated successfully.'));
         exit;
     }
 
@@ -793,11 +985,11 @@ public function updateProfile() {
             'contact_number'          => $_POST['contact_number']          ?? null,
             'address'                 => $_POST['address']                 ?? null,
         ]);
-        header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('Profile updated.'));
+        header('Location: ' . BASE_URL . '/caregiver/profile?success=' . urlencode('Profile updated.'));
         exit;
     }
 
-    header('Location: /diabetrack/public/caregiver/profile');
+    header('Location: ' . BASE_URL . '/caregiver/profile');
     exit;
 }
 public function setup2fa() {
@@ -817,11 +1009,11 @@ public function setup2fa() {
         if ($valid) {
             $db->prepare("UPDATE users SET two_fa_secret = :s, two_fa_enabled = 1 WHERE id = :id")
                ->execute(['s' => $secret, 'id' => $uid]);
-            header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('2FA enabled successfully!'));
+            header('Location: ' . BASE_URL . '/caregiver/profile?success=' . urlencode('2FA enabled successfully!'));
             exit;
         } else {
             // Wrong code — regenerate and show error
-            header('Location: /diabetrack/public/caregiver/setup2fa?error=1');
+            header('Location: ' . BASE_URL . '/caregiver/setup2fa?error=1');
             exit;
         }
     }
@@ -856,7 +1048,7 @@ public function setup2fa() {
 public function disable2fa() {
     $this->db->prepare("UPDATE users SET two_fa_enabled = 0, two_fa_secret = NULL WHERE id = :id")
             ->execute(['id' => $_SESSION['user_id']]);
-    header('Location: /diabetrack/public/caregiver/profile?success=' . urlencode('2FA has been disabled.'));
+    header('Location: ' . BASE_URL . '/caregiver/profile?success=' . urlencode('2FA has been disabled.'));
     exit;
 }
 }

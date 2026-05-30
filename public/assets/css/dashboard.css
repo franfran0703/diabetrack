@@ -733,3 +733,27 @@ body {
 .db-modal-empty-icon { margin-bottom:12px; }
 .db-modal-empty-icon i { font-size:40px; color:#c4714a; opacity:0.55; }
 .db-modal-empty-text { font-family:'Cabinet Grotesk',sans-serif; font-size:14px; font-weight:700; color:#b8927e; }
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  MOBILE RESPONSIVE — Patient Dashboard                   ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+@media (max-width: 1024px) {
+    .db-stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .db-card-bottom-row { grid-template-columns: 1fr 1fr; }
+    .db-banner { padding: 22px 22px; }
+}
+
+@media (max-width: 768px) {
+    .db-stats-grid { grid-template-columns: 1fr; gap: 10px; }
+    .db-right-col { gap: 10px; }
+    .db-card-bottom-row { grid-template-columns: 1fr; gap: 10px; }
+    .db-banner { padding: 18px 18px; }
+    .db-banner-illus { display: none; }
+}
+
+@media (max-width: 480px) {
+    .db-banner { padding: 16px 16px; border-radius: 16px; }
+    .db-banner-meta { gap: 6px; }
+    .db-next-action { padding: 12px 14px; }
+    .db-section-heading { margin-top: 16px; }
+}

@@ -8,10 +8,10 @@ class OnboardingController extends Controller {
 
     public function __construct() {
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /diabetrack/public/auth/login');
+            header('Location: ' . BASE_URL . '/auth/login');
             exit;
         }
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $this->db = (new Database())->connect();
     }
 
@@ -78,7 +78,7 @@ class OnboardingController extends Controller {
             // Step 2: done — mark onboarding complete
             $this->db->prepare("UPDATE users SET onboarding_complete = 1 WHERE id = :id")
                      ->execute(['id' => $uid]);
-            echo json_encode(['redirect' => '/diabetrack/public/patient/dashboard']);
+            echo json_encode(['redirect' => BASE_URL . '/patient/dashboard']);
             exit;
         }
     }
@@ -105,7 +105,7 @@ class OnboardingController extends Controller {
         if ($step === 2) {
             $this->db->prepare("UPDATE users SET onboarding_complete = 1 WHERE id = :id")
                      ->execute(['id' => $uid]);
-            echo json_encode(['redirect' => '/diabetrack/public/caregiver/dashboard']);
+            echo json_encode(['redirect' => BASE_URL . '/caregiver/dashboard']);
             exit;
         }
     }
@@ -119,9 +119,9 @@ class OnboardingController extends Controller {
 
     private function redirectToDashboard($role) {
         if ($role === 'patient') {
-            header('Location: /diabetrack/public/patient/dashboard');
+            header('Location: ' . BASE_URL . '/patient/dashboard');
         } elseif ($role === 'caregiver') {
-            header('Location: /diabetrack/public/caregiver/dashboard');
+            header('Location: ' . BASE_URL . '/caregiver/dashboard');
         }
         exit;
     }

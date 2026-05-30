@@ -98,7 +98,7 @@ $mealTypeIcons = ['Breakfast'=>'🌅','Lunch'=>'☀️','Dinner'=>'🌙','Snack'
 $mealTypeClass = ['Breakfast'=>'breakfast','Lunch'=>'lunch','Dinner'=>'dinner','Snack'=>'snack'];
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_meals.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_meals.css?v=<?= time() ?>" rel="stylesheet">
 
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="cgml-header">
@@ -130,7 +130,7 @@ $mealTypeClass = ['Breakfast'=>'breakfast','Lunch'=>'lunch','Dinner'=>'dinner','
 <div class="cgml-no-patient">
     <div class="cgml-no-patient-icon"><i class="ti ti-link"></i></div>
     <div class="cgml-no-patient-title">No Patient Linked</div>
-    <div class="cgml-no-patient-sub"><a href="/diabetrack/public/caregiver/patients">Link a patient</a> to monitor their meals.</div>
+    <div class="cgml-no-patient-sub"><a href="<?= BASE_URL ?>/caregiver/patients">Link a patient</a> to monitor their meals.</div>
 </div>
 
 <?php else: ?>
@@ -517,7 +517,7 @@ $calRingCol = $calStatus === 'danger' ? '#ef4444' : ($calStatus === 'warn' ? '#f
                 throughout this page will update to reflect your targets. These are saved per-patient.
             </div>
 
-            <form action="/diabetrack/public/caregiver/saveNutritionLimits" method="POST" id="limitsForm">
+            <form action="/caregiver/saveNutritionLimits" method="POST" id="limitsForm">
                 <div class="cgml-limits-grid">
 
                     <div class="cgml-limit-field">

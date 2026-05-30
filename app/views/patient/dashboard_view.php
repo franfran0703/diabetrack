@@ -114,16 +114,16 @@ if ($medMissed > 0 && $dayStatus === 'on-track') {
 // ── Smart next action ─────────────────────────────────────
 $nextAction = null;
 if (!isset($latestBloodSugar)) {
-    $nextAction = ['icon'=>'ti-droplet-half-2','label'=>'Log your first blood sugar reading today','href'=>'/diabetrack/public/patient/bloodsugar','cta'=>'Log Reading','urgency'=>'high'];
+    $nextAction = ['icon'=>'ti-droplet-half-2','label'=>'Log your first blood sugar reading today','href'=>'/patient/bloodsugar','cta'=>'Log Reading','urgency'=>'high'];
 } elseif ($nextMedUrgent && $nextMedName) {
     $minsLeft   = round(($nextMedTime - time()) / 60);
-    $nextAction = ['icon'=>'ti-pill','label'=>$nextMedName . ' is due in ' . $minsLeft . ' min','href'=>'/diabetrack/public/patient/medication','cta'=>'Mark Taken','urgency'=>'urgent'];
+    $nextAction = ['icon'=>'ti-pill','label'=>$nextMedName . ' is due in ' . $minsLeft . ' min','href'=>'/patient/medication','cta'=>'Mark Taken','urgency'=>'urgent'];
 } elseif ($nextMedName) {
-    $nextAction = ['icon'=>'ti-pill','label'=>'Next dose: ' . $nextMedName . ' at ' . date('h:i A', $nextMedTime),'href'=>'/diabetrack/public/patient/medication','cta'=>'View Schedule','urgency'=>'normal'];
+    $nextAction = ['icon'=>'ti-pill','label'=>'Next dose: ' . $nextMedName . ' at ' . date('h:i A', $nextMedTime),'href'=>'/patient/medication','cta'=>'View Schedule','urgency'=>'normal'];
 } elseif (!$hasNutrition) {
-    $nextAction = ['icon'=>'ti-bowl','label'=>"You haven't logged any meals today",'href'=>'/diabetrack/public/patient/meals','cta'=>'Log Meal','urgency'=>'normal'];
+    $nextAction = ['icon'=>'ti-bowl','label'=>"You haven't logged any meals today",'href'=>'/patient/meals','cta'=>'Log Meal','urgency'=>'normal'];
 } elseif ($actMinutes === 0) {
-    $nextAction = ['icon'=>'ti-run','label'=>'No activity logged yet — stay active!','href'=>'/diabetrack/public/patient/activity','cta'=>'Log Activity','urgency'=>'low'];
+    $nextAction = ['icon'=>'ti-run','label'=>'No activity logged yet — stay active!','href'=>'/patient/activity','cta'=>'Log Activity','urgency'=>'low'];
 } else {
     $nextAction = ['icon'=>'ti-circle-check','label'=>'Great job! All key health data logged today.','href'=>null,'cta'=>null,'urgency'=>'done'];
 }
@@ -132,7 +132,7 @@ if (!isset($latestBloodSugar)) {
 $streak = (int)($streak ?? 0);
 ?>
 
-<link href="/diabetrack/public/assets/css/dashboard.css?<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/dashboard.css?<?= time() ?>" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- ══ BANNER ═══════════════════════════════════════════ -->
@@ -161,7 +161,7 @@ $streak = (int)($streak ?? 0);
         </div>
     </div>
     <div class="db-banner-illus">
-        <img src="/diabetrack/public/assets/img/diabetrack-icon.png"
+        <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png"
              style="width:90px;height:auto;object-fit:contain;opacity:0.85;" alt="Diabetrack">
     </div>
 </div>
@@ -389,10 +389,10 @@ $streak = (int)($streak ?? 0);
       <button class="db-modal-close" onclick="closeModal('modal-bs')" aria-label="Close"><i class="ti ti-x"></i></button>
     </div>
     <div class="db-modal-cta-bar">
-        <a href="/diabetrack/public/patient/bloodsugar" class="db-modal-cta-btn">
+        <a href="<?= BASE_URL ?>/patient/bloodsugar" class="db-modal-cta-btn">
             <i class="ti ti-plus"></i> Log New Reading
         </a>
-        <a href="/diabetrack/public/patient/bloodsugar" class="db-modal-cta-link">
+        <a href="<?= BASE_URL ?>/patient/bloodsugar" class="db-modal-cta-link">
             View all <i class="ti ti-arrow-right"></i>
         </a>
     </div>
@@ -463,10 +463,10 @@ $streak = (int)($streak ?? 0);
       <button class="db-modal-close" onclick="closeModal('modal-med')" aria-label="Close"><i class="ti ti-x"></i></button>
     </div>
     <div class="db-modal-cta-bar">
-        <a href="/diabetrack/public/patient/medication" class="db-modal-cta-btn">
+        <a href="<?= BASE_URL ?>/patient/medication" class="db-modal-cta-btn">
             <i class="ti ti-clipboard-check"></i> Update Schedule
         </a>
-        <a href="/diabetrack/public/patient/medication" class="db-modal-cta-link">
+        <a href="<?= BASE_URL ?>/patient/medication" class="db-modal-cta-link">
             Full schedule <i class="ti ti-arrow-right"></i>
         </a>
     </div>
@@ -565,10 +565,10 @@ $streak = (int)($streak ?? 0);
       <button class="db-modal-close" onclick="closeModal('modal-nut')" aria-label="Close"><i class="ti ti-x"></i></button>
     </div>
     <div class="db-modal-cta-bar">
-        <a href="/diabetrack/public/patient/meals" class="db-modal-cta-btn">
+        <a href="<?= BASE_URL ?>/patient/meals" class="db-modal-cta-btn">
             <i class="ti ti-plus"></i> Log a Meal
         </a>
-        <a href="/diabetrack/public/patient/meals" class="db-modal-cta-link">
+        <a href="<?= BASE_URL ?>/patient/meals" class="db-modal-cta-link">
             Full log <i class="ti ti-arrow-right"></i>
         </a>
     </div>
@@ -645,10 +645,10 @@ $streak = (int)($streak ?? 0);
       <button class="db-modal-close" onclick="closeModal('modal-act')" aria-label="Close"><i class="ti ti-x"></i></button>
     </div>
     <div class="db-modal-cta-bar">
-        <a href="/diabetrack/public/patient/activity" class="db-modal-cta-btn">
+        <a href="<?= BASE_URL ?>/patient/activity" class="db-modal-cta-btn">
             <i class="ti ti-plus"></i> Log Activity
         </a>
-        <a href="/diabetrack/public/patient/activity" class="db-modal-cta-link">
+        <a href="<?= BASE_URL ?>/patient/activity" class="db-modal-cta-link">
             Full log <i class="ti ti-arrow-right"></i>
         </a>
     </div>

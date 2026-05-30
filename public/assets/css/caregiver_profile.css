@@ -395,3 +395,39 @@ body {
     .cgp-identity { padding: 0 16px 16px; flex-wrap: wrap; }
     .cgp-cover { height: 120px; }
 }
+
+@media (max-width: 640px) {
+    .cgp-cover { height: 100px; border-radius: 0; }
+
+    .cgp-identity { flex-direction: column; gap: 12px; padding: 0 14px 14px; }
+    .cgp-identity-info { text-align: left; }
+    .cgp-identity-name { font-size: 1.4rem; letter-spacing: -0.5px; }
+
+    .cgp-stats { padding: 0 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cgp-stat-chip { min-width: unset; border-radius: 14px; padding: 12px; }
+    .cgp-stat-num  { font-size: 1.4rem; }
+
+    .cgp-settings { grid-template-columns: 1fr !important; padding: 0 14px; gap: 12px; }
+
+    .cgp-tabs { position: static; display: flex; flex-direction: row; overflow-x: auto; flex-wrap: nowrap; gap: 4px; padding: 0 14px 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .cgp-tabs::-webkit-scrollbar { display: none; }
+    .cgp-tab-divider { display: none; }
+    .cgp-tab { border-radius: 100px; flex-shrink: 0; white-space: nowrap; padding: 7px 14px; }
+
+    .cgp-form-2col { grid-template-columns: 1fr !important; }
+
+    .cgp-panel { border-radius: 18px; }
+    .cgp-panel-head { padding: 14px 16px; }
+    .cgp-panel-body { padding: 16px; }
+
+    .cgp-person-row { gap: 10px; padding: 11px 12px; }
+
+    .cgp-btn-row { flex-direction: column-reverse; gap: 8px; }
+    .cgp-btn-row .cgp-btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 400px) {
+    .cgp-stats { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .cgp-stat-num { font-size: 1.2rem; }
+    .cgp-identity-name { font-size: 1.25rem; }
+}

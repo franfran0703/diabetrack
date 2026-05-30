@@ -139,7 +139,7 @@ $sliderDefault = $latestVal ? (int) $latestVal : 120;
 $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 ?>
 
-<link href="/diabetrack/public/assets/css/bloodsugar.css?<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/bloodsugar.css?<?= time() ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ════════════════════════════════════════ -->
@@ -349,7 +349,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             </button>
         </div>
 
-        <form method="POST" action="/diabetrack/public/patient/bloodsugar" id="bs-form">
+        <form method="POST" action="/patient/bloodsugar" id="bs-form">
 
             <div class="bs-dial-wrap" id="dialWrap">
                 <div class="bs-dial-inner">
@@ -433,7 +433,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
         </div>
 
         <div class="bs-modal-body">
-            <form method="POST" action="/diabetrack/public/patient/bloodsugar" id="bs-modal-form">
+            <form method="POST" action="/patient/bloodsugar" id="bs-modal-form">
 
                 <div class="bs-dial-wrap" id="mDialWrap">
                     <div class="bs-dial-inner">
@@ -989,7 +989,7 @@ function confirmDelete(btn) {
     pendingDelete = { id, item };
     clearTimeout(deleteTimer);
     deleteTimer = setTimeout(() => {
-        window.location.href = '/diabetrack/public/patient/bloodsugar?delete=' + id + '&deleted=1';
+        window.location.href = '/patient/bloodsugar?delete=' + id + '&deleted=1';
     }, 5000);
 }
 document.getElementById('toastUndo').addEventListener('click', () => {
@@ -998,7 +998,7 @@ document.getElementById('toastUndo').addEventListener('click', () => {
     hideToast('deleteToast');
 });
 document.getElementById('toastClose').addEventListener('click', () => {
-    if (pendingDelete) window.location.href = '/diabetrack/public/patient/bloodsugar?delete=' + pendingDelete.id + '&deleted=1';
+    if (pendingDelete) window.location.href = '/patient/bloodsugar?delete=' + pendingDelete.id + '&deleted=1';
     hideToast('deleteToast'); clearTimeout(deleteTimer);
 });
 

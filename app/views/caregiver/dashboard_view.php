@@ -92,16 +92,16 @@ $timeline = array_slice($timeline, 0, 8);
 
 // ── Nav items (Tabler icons) ───────────────────────────
 $navItems = [
-    ['/diabetrack/public/caregiver/bloodsugar', 'ti-droplet-half-2', 'Blood Sugar',  'Monitor readings',    'rgba(239,68,68,0.15)',    '#f87171'],
-    ['/diabetrack/public/caregiver/medication', 'ti-pill',           'Medication',   'Today\'s schedule',   'rgba(249,116,71,0.15)',   '#fbab6e'],
-    ['/diabetrack/public/caregiver/meals',      'ti-salad',          'Meals',        'Diet & nutrition',    'rgba(34,197,94,0.12)',    '#4ade80'],
-    ['/diabetrack/public/caregiver/patients',   'ti-users',          'My Patients',  'Manage linked',       'rgba(139,92,246,0.12)',   '#c4b5fd'],
-    ['/diabetrack/public/caregiver/alerts',     'ti-bell',           'Alerts',       'Full alert history',  'rgba(234,179,8,0.12)',    '#fbbf24'],
-    ['/diabetrack/public/caregiver/reports',    'ti-file-analytics', 'Reports',      'Generate summaries',  'rgba(14,165,233,0.12)',   '#38bdf8'],
+    ['/caregiver/bloodsugar', 'ti-droplet-half-2', 'Blood Sugar',  'Monitor readings',    'rgba(239,68,68,0.15)',    '#f87171'],
+    ['/caregiver/medication', 'ti-pill',           'Medication',   'Today\'s schedule',   'rgba(249,116,71,0.15)',   '#fbab6e'],
+    ['/caregiver/meals',      'ti-salad',          'Meals',        'Diet & nutrition',    'rgba(34,197,94,0.12)',    '#4ade80'],
+    ['/caregiver/patients',   'ti-users',          'My Patients',  'Manage linked',       'rgba(139,92,246,0.12)',   '#c4b5fd'],
+    ['/caregiver/alerts',     'ti-bell',           'Alerts',       'Full alert history',  'rgba(234,179,8,0.12)',    '#fbbf24'],
+    ['/caregiver/reports',    'ti-file-analytics', 'Reports',      'Generate summaries',  'rgba(14,165,233,0.12)',   '#38bdf8'],
 ];
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_dashboard.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_dashboard.css?v=<?= time() ?>" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <?php if ($isUrgent): ?>
@@ -116,7 +116,7 @@ $navItems = [
             <div class="cgd-urgent-msg"><?= $urgentMsg ?></div>
         </div>
     </div>
-    <a href="/diabetrack/public/caregiver/bloodsugar" class="cgd-urgent-btn">
+    <a href="<?= BASE_URL ?>/caregiver/bloodsugar" class="cgd-urgent-btn">
         <i class="ti ti-arrow-right"></i> View Readings
     </a>
 </div>
@@ -145,7 +145,7 @@ $navItems = [
             </div>
         </div>
         <div class="cgd-banner-logo-wrap">
-            <img src="/diabetrack/public/assets/img/diabetrack-icon.png" class="cgd-banner-logo" alt="DiabeTrack">
+            <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" class="cgd-banner-logo" alt="DiabeTrack">
             <div class="cgd-banner-logo-ring"></div>
         </div>
     </div>
@@ -166,7 +166,7 @@ $navItems = [
                 <div class="cgd-identity-name"><?= htmlspecialchars(ucwords(strtolower($patient['name']))) ?></div>
                 <div class="cgd-identity-email"><?= htmlspecialchars($patient['email']) ?></div>
             </div>
-            <a href="/diabetrack/public/caregiver/patients" class="cgd-identity-manage" title="Manage patients">
+            <a href="<?= BASE_URL ?>/caregiver/patients" class="cgd-identity-manage" title="Manage patients">
                 <i class="ti ti-settings"></i>
             </a>
         </div>
@@ -249,7 +249,7 @@ $navItems = [
         </div>
         <div class="cgd-no-patient-title">No Patient Linked</div>
         <div class="cgd-no-patient-sub">Send a request to start monitoring a patient's health.</div>
-        <a href="/diabetrack/public/caregiver/patients" class="cgd-action-btn">
+        <a href="<?= BASE_URL ?>/caregiver/patients" class="cgd-action-btn">
             <i class="ti ti-user-plus"></i> Link a Patient
         </a>
     </div>
@@ -268,7 +268,7 @@ $navItems = [
                 <div class="cgd-card-eyebrow">Last 7 Readings</div>
                 <div class="cgd-card-title">Blood Sugar Trend</div>
             </div>
-            <a href="/diabetrack/public/caregiver/bloodsugar" class="cgd-card-link">
+            <a href="<?= BASE_URL ?>/caregiver/bloodsugar" class="cgd-card-link">
                 Full Log <i class="ti ti-arrow-right" style="font-size:11px;"></i>
             </a>
         </div>
@@ -298,7 +298,7 @@ $navItems = [
                 <div class="cgd-card-eyebrow">This Week</div>
                 <div class="cgd-card-title">Medication</div>
             </div>
-            <a href="/diabetrack/public/caregiver/medication" class="cgd-card-link">
+            <a href="<?= BASE_URL ?>/caregiver/medication" class="cgd-card-link">
                 View <i class="ti ti-arrow-right" style="font-size:11px;"></i>
             </a>
         </div>
@@ -330,7 +330,7 @@ $navItems = [
                 <span class="cgd-med-count-label">Missed</span>
             </div>
         </div>
-        <a href="/diabetrack/public/caregiver/medication" class="cgd-action-btn" style="margin-top:auto;">
+        <a href="<?= BASE_URL ?>/caregiver/medication" class="cgd-action-btn" style="margin-top:auto;">
             <i class="ti ti-calendar-check"></i> Check Schedule
         </a>
     </div>

@@ -498,3 +498,120 @@ body {
     .pp-settings { padding: 0 16px; }
     .pp-stats { padding: 0 16px; }
 }
+
+/* ══════════════════════════════════════════════════════
+   HEALTH SETTINGS PANEL — new additions
+   ══════════════════════════════════════════════════════ */
+
+/* Tab badge (e.g. "Set up" warning on Health Settings) */
+.pp-tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 2px 7px; border-radius: 100px; margin-left: 6px;
+    text-transform: uppercase;
+}
+.pp-tab-badge--warn {
+    background: rgba(249,116,71,0.18);
+    color: #c04a20;
+    border: 1px solid rgba(249,116,71,0.28);
+}
+
+/* Section sub-label inside panel */
+.pp-health-section-label {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; color: #c4714a;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid rgba(249,116,71,0.1);
+    width: 100%;
+}
+.pp-health-section-label i { font-size: 15px; }
+
+/* Field hint text */
+.pp-field-hint {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px; font-weight: 500; color: #b8927e;
+    text-transform: none; letter-spacing: 0;
+    margin-left: 7px; display: inline;
+}
+
+/* Weight / goal input with unit badge */
+.pp-weight-input-wrap {
+    display: flex; align-items: center;
+    background: #FFF8F5;
+    border: 1.5px solid rgba(249,116,71,0.18);
+    border-radius: 12px; overflow: hidden;
+}
+.pp-weight-input-wrap .pp-input {
+    flex: 1; border: none; background: transparent;
+    border-radius: 0; outline: none;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: #1a0800;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.pp-weight-input-wrap .pp-input::-webkit-inner-spin-button,
+.pp-weight-input-wrap .pp-input::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; }
+.pp-weight-input-wrap:focus-within {
+    border-color: #F97447;
+    box-shadow: 0 0 0 3px rgba(249,116,71,0.1);
+    background: #fff;
+}
+.pp-unit-badge {
+    padding: 0 14px;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 11px; font-weight: 800; color: #c4714a;
+    background: rgba(249,116,71,0.07);
+    border-left: 1px solid rgba(249,116,71,0.16);
+    height: 100%; display: flex; align-items: center;
+    white-space: nowrap;
+    align-self: stretch;
+}
+
+/* Field notice (info / ok) */
+.pp-field-notice {
+    display: flex; align-items: flex-start; gap: 6px;
+    font-size: 11px; font-weight: 500; color: #b8927e;
+    margin-top: 7px; line-height: 1.5;
+}
+.pp-field-notice i { font-size: 13px; color: #c4714a; flex-shrink: 0; margin-top: 1px; }
+.pp-field-notice--ok { color: #0f7a45; }
+.pp-field-notice--ok i { color: #0f7a45; }
+
+/* BMI display */
+.pp-bmi-display {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; color: #7a4a30;
+    margin-top: 8px;
+}
+.pp-bmi-display i { font-size: 14px; color: #c4714a; }
+
+/* Goal preset pill row */
+.pp-goal-preset-row {
+    display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 0;
+}
+.pp-goal-preset {
+    display: inline-flex; align-items: center;
+    padding: 7px 14px; border-radius: 100px;
+    border: 1.5px solid rgba(249,116,71,0.16);
+    background: #FFF8F5;
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-size: 12px; font-weight: 800; color: #b8927e;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.pp-goal-preset:hover {
+    border-color: rgba(249,116,71,0.35);
+    color: #c04a20; background: #FDE8DC;
+}
+.pp-goal-preset.active {
+    background: #F97447; border-color: #F97447;
+    color: #fff; box-shadow: 0 3px 10px rgba(249,116,71,0.32);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .pp-goal-preset-row { gap: 5px; }
+    .pp-goal-preset     { font-size: 11px; padding: 6px 11px; }
+}
+

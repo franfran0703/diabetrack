@@ -62,7 +62,7 @@ krsort($logsByDate);
 $isUrgent = in_array($latest['status'] ?? '', ['High', 'Low']);
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_bloodsugar.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_bloodsugar.css?v=<?= time() ?>" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <!-- ══ PAGE HEADER ═══════════════════════════════════ -->
@@ -102,7 +102,7 @@ $isUrgent = in_array($latest['status'] ?? '', ['High', 'Low']);
     <div class="cgbs-no-patient-icon"><i class="ti ti-link"></i></div>
     <div class="cgbs-no-patient-title">No Patient Linked</div>
     <div class="cgbs-no-patient-sub">Link a patient to start monitoring their glucose levels.</div>
-    <a href="/diabetrack/public/caregiver/patients" class="cgbs-action-btn">
+    <a href="<?= BASE_URL ?>/caregiver/patients" class="cgbs-action-btn">
         <i class="ti ti-user-plus"></i> Link a Patient
     </a>
 </div>

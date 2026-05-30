@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabeTrack — Set Up Your Profile</title>
-    <link rel="stylesheet" href="/diabetrack/public/assets/css/auth.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/auth.css?v=<?= time() ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .ob-wrap         { max-width: 520px; width: 100%; margin: 0 auto; padding: 2rem 1.5rem; }
@@ -52,9 +52,9 @@
 
 <div class="ob-wrap">
 
-    <a href="/diabetrack/public/" class="ob-brand">
+    <a href="/" class="ob-brand">
         <div class="ob-brand-pill">
-            <img src="/diabetrack/public/assets/img/diabetrack-icon.png" style="width:28px;height:28px;object-fit:contain;">
+            <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" style="width:28px;height:28px;object-fit:contain;">
         </div>
         <span class="ob-brand-name">DiabeTrack</span>
     </a>
@@ -157,7 +157,7 @@ function submitStep(step) {
         data.append('emergency_contact_number', document.getElementById('emergency_contact_number').value);
     }
 
-    fetch('/diabetrack/public/onboarding/index', { method: 'POST', body: data })
+    fetch('/onboarding/index', { method: 'POST', body: data })
         .then(r => r.json())
         .then(res => {
             if (res.redirect) {
@@ -195,7 +195,7 @@ function goToStep(n) {
 }
 
 function skipOnboarding() {
-    window.location.href = '/diabetrack/public/onboarding/skip';
+    window.location.href = '/onboarding/skip';
 }
 </script>
 </body>

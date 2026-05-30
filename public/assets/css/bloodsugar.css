@@ -959,3 +959,218 @@ body {
     .bs-page-header-right { align-items: flex-start; }
     .bs-page-title { font-size: 2rem; }
 }
+
+.bs-scard-secondary {
+    background: #fff !important;
+    box-shadow: 0 4px 20px rgba(168,56,24,0.06) !important;
+    border: 1.5px solid rgba(249,116,71,0.1);
+}
+.bs-scard-tertiary {
+    background: #fff !important;
+    box-shadow: 0 4px 20px rgba(168,56,24,0.06) !important;
+    border: 1.5px solid rgba(249,116,71,0.1);
+}
+/* White card value + label colours */
+.bs-scard-secondary .bs-scard-val,
+.bs-scard-tertiary  .bs-scard-val { color: #1a0800; }
+.bs-scard-secondary .bs-scard-val small,
+.bs-scard-tertiary  .bs-scard-val small { color: #b8927e; }
+.bs-scard-secondary .bs-scard-label,
+.bs-scard-tertiary  .bs-scard-label { color: #b8927e; }
+/* Icon wrap for white cards */
+.bs-scard-icon-wrap.secondary {
+    background: rgba(249,116,71,0.1);
+    border-color: rgba(249,116,71,0.18);
+}
+.bs-scard-icon-wrap.secondary i { color: #c04a20; }
+.bs-scard-icon-wrap.tertiary {
+    background: rgba(249,116,71,0.08);
+    border-color: rgba(249,116,71,0.15);
+}
+.bs-scard-icon-wrap.tertiary i { color: #c04a20; }
+/* Pills on white cards use colour */
+.bs-scard-secondary .bs-pill.pill-good,
+.bs-scard-tertiary  .bs-pill.pill-good  { background: #d4f7e8; color: #0f7a45; }
+.bs-scard-secondary .bs-pill.pill-warn,
+.bs-scard-tertiary  .bs-pill.pill-warn  { background: #fef3c7; color: #b45309; }
+.bs-scard-secondary .bs-pill.pill-danger,
+.bs-scard-tertiary  .bs-pill.pill-danger { background: #fde8e8; color: #dc2626; }
+.bs-scard-secondary .bs-pill.pill-neutral,
+.bs-scard-tertiary  .bs-pill.pill-neutral { background: rgba(249,116,71,0.07); color: #c04a20; }
+.bs-scard-secondary .bs-scard-range,
+.bs-scard-tertiary  .bs-scard-range { color: #b8927e; }
+
+/* ── Per-type pattern insight strip ──────────────────── */
+.bs-pattern-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.bs-pattern-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid transparent;
+    transition: transform 0.15s;
+}
+.bs-pattern-chip:hover { transform: translateY(-1px); }
+.bs-pattern-chip i    { font-size: 14px; flex-shrink: 0; }
+.bs-pattern-chip span { color: #9e7b6a; }
+.bs-pattern-chip strong {
+    font-family: 'Cabinet Grotesk', sans-serif;
+    font-weight: 900; letter-spacing: -0.5px; font-size: 13px;
+}
+.bs-pattern-chip small { font-size: 9px; color: #b8927e; font-weight: 600; }
+
+.bs-pattern-chip--normal {
+    background: rgba(34,197,94,0.07);
+    border-color: rgba(34,197,94,0.18);
+}
+.bs-pattern-chip--normal i,
+.bs-pattern-chip--normal strong { color: #0f7a45; }
+
+.bs-pattern-chip--high {
+    background: rgba(239,68,68,0.07);
+    border-color: rgba(239,68,68,0.18);
+}
+.bs-pattern-chip--high i,
+.bs-pattern-chip--high strong { color: #dc2626; }
+
+.bs-pattern-chip--low {
+    background: rgba(245,158,11,0.07);
+    border-color: rgba(245,158,11,0.2);
+}
+.bs-pattern-chip--low i,
+.bs-pattern-chip--low strong { color: #d97706; }
+
+/* ── Chart legend note (threshold varies by type) ────── */
+.bs-legend-note {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #c4937e;
+    font-weight: 600;
+    font-style: italic;
+    margin-left: auto;
+}
+.bs-legend-note i { font-size: 12px; color: #c4714a; }
+
+/* ── Target hint below the dial ──────────────────────── */
+.bs-target-hint {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #9e7b6a;
+    background: rgba(249,116,71,0.05);
+    border: 1px solid rgba(249,116,71,0.12);
+    border-radius: 10px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+    min-height: 36px; /* prevent layout shift when text changes */
+    line-height: 1.4;
+    transition: background 0.25s, border-color 0.25s;
+}
+.bs-target-hint:empty { display: none; }
+.bs-target-hint i { font-size: 14px; flex-shrink: 0; }
+
+/* ── Threshold marker label in timeline mini-bar ──────── */
+.bs-tl-threshold {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(180,100,60,0.5);
+    font-style: italic;
+    letter-spacing: 0.3px;
+    padding: 1px 7px;
+    border-radius: 100px;
+    border: 1px solid rgba(249,116,71,0.12);
+    background: rgba(249,116,71,0.05);
+    white-space: nowrap;
+}
+
+.bs-glucose-range {
+    transition: background 0.35s ease;
+}
+
+/* ── FAB shows on ≤1024 to open slide-in panel ────────
+   On desktop the panel is always visible, so FAB triggers
+   the modal instead. Both paths call openLogModal(). ─ */
+@media (max-width: 1024px) {
+    .bs-log-panel {
+        padding-bottom: 100px; /* clearance for FAB */
+    }
+}
+
+/* ── Mobile stat cards: stack with accent colour bars ── */
+@media (max-width: 640px) {
+    .bs-scard-secondary,
+    .bs-scard-tertiary {
+        border-left: 4px solid rgba(249,116,71,0.3);
+        padding-left: 18px;
+    }
+}
+
+@media (max-width: 640px) {
+    .bs-heatmap-card { padding: 16px 14px; }
+
+    .bs-heatmap-strip {
+        display: flex !important;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .bs-heatmap-strip::-webkit-scrollbar { display: none; }
+
+    .bs-heatmap-day {
+        flex: 0 0 62px;
+        min-width: 62px;
+        min-height: 88px;
+        padding: 10px 6px;
+        border-radius: 14px;
+    }
+    .bs-heatmap-day-num  { font-size: 1.05rem; }
+    .bs-heatmap-day-name { font-size: 9px; }
+    .bs-heatmap-day-count { font-size: 10px; }
+    .bs-heatmap-day-avg   { font-size: 9px; }
+
+    .bs-heatmap-legend { flex-wrap: wrap; gap: 6px; }
+}
+
+@media (max-width: 640px) {
+    .bs-heatmap-card { padding: 16px 14px; }
+
+    .bs-heatmap-strip {
+        display: flex !important;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .bs-heatmap-strip::-webkit-scrollbar { display: none; }
+
+    .bs-heatmap-day {
+        flex: 0 0 62px;
+        min-width: 62px;
+        min-height: 88px;
+        padding: 10px 6px;
+        border-radius: 14px;
+    }
+    .bs-heatmap-day-num   { font-size: 1.05rem; }
+    .bs-heatmap-day-name  { font-size: 9px; }
+    .bs-heatmap-day-count { font-size: 10px; }
+    .bs-heatmap-day-avg   { font-size: 9px; }
+
+    .bs-heatmap-legend { flex-wrap: wrap; gap: 6px; }
+}
