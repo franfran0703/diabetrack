@@ -6,7 +6,7 @@ ob_start();
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link href="/diabetrack/public/assets/css/nearby.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/nearby.css?v=<?= time() ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ═══════════════════════════════════════ -->

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabeTrack — Two-Factor Verification</title>
-    <link rel="stylesheet" href="/diabetrack/public/assets/css/auth.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/auth.css?v=<?= time() ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .twofa-icon-ring {
@@ -136,7 +136,7 @@
 </head>
 <body>
 
-<a href="/diabetrack/public/" class="auth-home-float">
+<a href="/" class="auth-home-float">
     <span class="home-arrow">←</span> Home
 </a>
 
@@ -149,9 +149,9 @@
     <!-- LEFT — Form -->
     <div class="auth-left">
         <div style="position:relative;z-index:1;">
-            <a href="/diabetrack/public/" class="auth-brand">
+            <a href="/" class="auth-brand">
                 <div class="auth-brand-pill">
-                    <img src="/diabetrack/public/assets/img/diabetrack-icon.png" style="width:32px;height:32px;object-fit:contain;">
+                    <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" style="width:32px;height:32px;object-fit:contain;">
                 </div>
                 <span class="auth-brand-name">DiabeTrack</span>
             </a>
@@ -165,7 +165,7 @@
             <div class="twofa-error">❌ <?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="/diabetrack/public/auth/verify2fa" id="verifyForm">
+            <form method="POST" action="/auth/verify2fa" id="verifyForm">
                 <input type="hidden" name="code" id="fullCode">
 
                 <div class="twofa-code-inputs">
@@ -177,7 +177,7 @@
                 <button type="submit" class="auth-submit">Verify & Sign In →</button>
             </form>
 
-            <a href="/diabetrack/public/auth/login" class="twofa-back-link">← Back to Login</a>
+            <a href="<?= BASE_URL ?>/auth/login" class="twofa-back-link">← Back to Login</a>
         </div>
 
         <div class="auth-bottom-row">

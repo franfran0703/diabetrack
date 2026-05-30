@@ -667,3 +667,54 @@ body {
     .cgd-banner-logo { width: 80px; height: 80px; }
     .cgd-urgent-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
 }
+@media (max-width: 480px) {
+    .cgd-stats-col { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cgd-title { font-size: 1.7rem; letter-spacing: -1px; }
+    .cgd-banner { padding: 18px; border-radius: 20px; }
+    .cgd-banner-logo { display: none; }
+    .cgd-top-row, .cgd-mid-row, .cgd-bot-row { gap: 10px; }
+}
+
+@media (max-width: 640px) {
+    .cgd-top-row { gap: 10px; }
+    .cgd-banner { padding: 22px 20px; border-radius: 20px; }
+    .cgd-title { font-size: 1.65rem; letter-spacing: -1.2px; }
+    .cgd-sub   { font-size: 0.8rem; }
+    .cgd-date-pill { font-size: 10px; padding: 6px 12px; }
+    .cgd-banner-logo { width: 64px; height: 64px; }
+    .cgd-banner-logo-ring { width: 90px; height: 90px; }
+
+    .cgd-identity-card { padding: 18px; }
+
+    .cgd-urgent-banner { flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 16px; }
+    .cgd-urgent-btn { width: 100%; justify-content: center; }
+
+    .cgd-stats-col { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .cgd-stat-card { padding: 14px 14px 12px; border-radius: 16px; }
+    .cgd-stat-val  { font-size: 1.6rem; }
+
+    .cgd-mid-row,
+    .cgd-bot-row { gap: 10px; }
+
+    .cgd-chart-card { padding: 16px; border-radius: 18px; }
+
+    .cgd-tl-row { grid-template-columns: 28px 1fr auto; gap: 6px 8px; padding: 8px 0; }
+    .cgd-tl-icon { width: 28px; height: 28px; font-size: 12px; }
+    .cgd-tl-title { font-size: 11px; }
+    .cgd-tl-sub   { font-size: 10px; }
+    .cgd-tl-time  { font-size: 10px; }
+
+    .cgd-qnav-item { padding: 11px 12px; border-radius: 14px; }
+    .cgd-qnav-icon { width: 32px; height: 32px; }
+    .cgd-qnav-title { font-size: 11px; }
+
+    .cgd-identity-section { gap: 10px; }
+}
+
+@media (max-width: 400px) {
+    .cgd-banner-logo { display: none; }
+    .cgd-stats-col   { grid-template-columns: 1fr 1fr !important; gap: 6px; }
+    .cgd-stat-val    { font-size: 1.4rem; }
+    .cgd-stat-card   { padding: 12px 10px; }
+    .cgd-title       { font-size: 1.45rem; }
+}

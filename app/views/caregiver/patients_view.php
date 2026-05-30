@@ -7,7 +7,7 @@ $accepted = array_filter($linkedPatients, fn($p) => ($p['status'] ?? '') === 'ac
 $pending  = array_filter($linkedPatients, fn($p) => ($p['status'] ?? '') === 'pending');
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_patients.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_patients.css?v=<?= time() ?>" rel="stylesheet">
 
 <!-- ══ HEADER ════════════════════════════════════════════ -->
 <div class="cgp-header">
@@ -98,11 +98,11 @@ $pending  = array_filter($linkedPatients, fn($p) => ($p['status'] ?? '') === 'pe
             <!-- Actions -->
             <div class="cgp-patient-actions">
                 <?php if ($isAccepted): ?>
-                <a href="/diabetrack/public/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?= urlencode('/diabetrack/public/caregiver/dashboard') ?>"
+                <a href="<?= BASE_URL ?>/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?= urlencode('/caregiver/dashboard') ?>"
                    class="cgp-btn-view">
                     <i class="ti ti-layout-dashboard"></i> View Dashboard
                 </a>
-                <a href="/diabetrack/public/caregiver/patients?unlink=<?= $p['id'] ?>"
+                <a href="<?= BASE_URL ?>/caregiver/patients?unlink=<?= $p['id'] ?>"
                    onclick="return confirm('Unlink <?= htmlspecialchars($p['name'], ENT_QUOTES) ?>? This cannot be undone.')"
                    class="cgp-btn-unlink">
                     <i class="ti ti-unlink"></i> Unlink
@@ -111,7 +111,7 @@ $pending  = array_filter($linkedPatients, fn($p) => ($p['status'] ?? '') === 'pe
                 <div class="cgp-btn-pending">
                     <i class="ti ti-hourglass"></i> Awaiting Approval
                 </div>
-                <a href="/diabetrack/public/caregiver/patients?unlink=<?= $p['id'] ?>"
+                <a href="<?= BASE_URL ?>/caregiver/patients?unlink=<?= $p['id'] ?>"
                    onclick="return confirm('Cancel the link request to <?= htmlspecialchars($p['name'], ENT_QUOTES) ?>?')"
                    class="cgp-btn-unlink">
                     <i class="ti ti-x"></i> Cancel
@@ -137,7 +137,7 @@ $pending  = array_filter($linkedPatients, fn($p) => ($p['status'] ?? '') === 'pe
             </div>
         </div>
 
-        <form method="POST" action="/diabetrack/public/caregiver/patients">
+        <form method="POST" action="/caregiver/patients">
 
             <label class="cgp-form-label">Patient Email Address</label>
             <input

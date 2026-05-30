@@ -28,7 +28,7 @@ if ($next) {
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link href="/diabetrack/public/assets/css/appointments.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/appointments.css?v=<?= time() ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ═════════════════════════════════════ -->
@@ -261,7 +261,7 @@ if ($next) {
                         <?= $appt['status'] ?>
                     </span>
                     <?php if ($appt['status'] === 'Upcoming'): ?>
-                    <form method="POST" action="/diabetrack/public/patient/appointments" style="margin:0;">
+                    <form method="POST" action="/patient/appointments" style="margin:0;">
                         <input type="hidden" name="action"  value="status">
                         <input type="hidden" name="appt_id" value="<?= $appt['id'] ?>">
                         <input type="hidden" name="status"  value="Completed">
@@ -269,7 +269,7 @@ if ($next) {
                             <i class="ti ti-check"></i>
                         </button>
                     </form>
-                    <form method="POST" action="/diabetrack/public/patient/appointments" style="margin:0;">
+                    <form method="POST" action="/patient/appointments" style="margin:0;">
                         <input type="hidden" name="action"  value="status">
                         <input type="hidden" name="appt_id" value="<?= $appt['id'] ?>">
                         <input type="hidden" name="status"  value="Cancelled">
@@ -278,7 +278,7 @@ if ($next) {
                         </button>
                     </form>
                     <?php endif; ?>
-                    <a href="/diabetrack/public/patient/appointments?delete=<?= $appt['id'] ?>&_token=<?= $_SESSION['csrf_token'] ?>"
+                    <a href="<?= BASE_URL ?>/patient/appointments?delete=<?= $appt['id'] ?>&_token=<?= $_SESSION['csrf_token'] ?>"
                        onclick="return confirm('Delete this appointment?')"
                        class="appt-action-btn appt-action-btn--delete"
                        title="Delete">
@@ -334,7 +334,7 @@ if ($next) {
         </div>
 
         <div class="appt-modal-body">
-            <form method="POST" action="/diabetrack/public/patient/appointments" id="apptForm">
+        <form method="POST" action="/patient/appointments" id="apptForm">
                 <input type="hidden" name="action" value="add">
 
                 <div class="appt-form-group">

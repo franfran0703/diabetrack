@@ -6,7 +6,7 @@ class PatientController extends Controller {
 
     public function __construct() {
         if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'patient') {
-            header('Location: /diabetrack/public/auth/login');
+            header('Location: ' . BASE_URL . '/auth/login');
             exit;
         }
     }
@@ -40,7 +40,7 @@ class PatientController extends Controller {
                             ? $activityTotals['total_minutes']
                             : null;
 
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $__db = (new Database())->connect();
         $__stmt = $__db->prepare("SELECT COUNT(*) FROM caregiver_links WHERE patient_id = :pid AND status = 'pending'");
         $__stmt->execute(['pid' => $pid]);
@@ -73,13 +73,13 @@ class PatientController extends Controller {
                 trim($_POST['reading_type']),
                 trim($_POST['notes'] ?? '')
             );
-            header('Location: /diabetrack/public/patient/bloodsugar');
+            header('Location: ' . BASE_URL . '/patient/bloodsugar');
             exit;
         }
 
         if (isset($_GET['delete'])) {
             $bloodSugarModel->deleteLog($_GET['delete'], $_SESSION['user_id']);
-            header('Location: /diabetrack/public/patient/bloodsugar');
+            header('Location: ' . BASE_URL . '/patient/bloodsugar');
             exit;
         }
 
@@ -121,7 +121,7 @@ class PatientController extends Controller {
 
         if (isset($_GET['delete'])) {
             $medModel->deleteMedication($_GET['delete'], $pid);
-            header('Location: /diabetrack/public/patient/medication');
+            header('Location: ' . BASE_URL . '/patient/medication');
             exit;
         }
 
@@ -152,7 +152,7 @@ class PatientController extends Controller {
         $error     = null;
         $success   = null;
 
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $db = (new Database())->connect();
 
         // Handle add meal
@@ -198,14 +198,14 @@ class PatientController extends Controller {
         if (isset($_GET['delete_preset'])) {
             $db->prepare("DELETE FROM meal_presets WHERE id = :id AND patient_id = :pid")
                ->execute(['id' => $_GET['delete_preset'], 'pid' => $pid]);
-            header('Location: /diabetrack/public/patient/meals');
+            header('Location: ' . BASE_URL . '/patient/meals');
             exit;
         }
 
         // Handle delete log
         if (isset($_GET['delete'])) {
             $mealModel->deleteLog($_GET['delete'], $pid);
-            header('Location: /diabetrack/public/patient/meals');
+            header('Location: ' . BASE_URL . '/patient/meals');
             exit;
         }
 
@@ -298,7 +298,7 @@ class PatientController extends Controller {
 
         if (isset($_GET['delete'])) {
             $apptModel->delete($_GET['delete'], $pid);
-            header('Location: /diabetrack/public/patient/appointments');
+            header('Location: ' . BASE_URL . '/patient/appointments');
             exit;
         }
 
@@ -387,9 +387,28 @@ class PatientController extends Controller {
 
         if (isset($_GET['delete'])) {
             $activityModel->deleteLog($_GET['delete'], $pid);
-            header('Location: /diabetrack/public/patient/activity');
+            header('Location: ' . BASE_URL . '/patient/activity');
             exit;
         }
+
+        // Load personalised weight + activity goal from patient_profiles
+        require_once __DIR__ . '/../../config/database.php';
+        $db       = (new Database())->connect();
+        $profStmt = $db->prepare(
+            "SELECT weight_kg, activity_goal_mins
+               FROM patient_profiles
+              WHERE user_id = :uid
+              LIMIT 1"
+        );
+        $profStmt->execute(['uid' => $pid]);
+        $profile = $profStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $patientWeightKg  = isset($profile['weight_kg']) && $profile['weight_kg'] > 0
+                            ? (float) $profile['weight_kg']
+                            : null;                          // null = unknown
+        $activityGoalMins = isset($profile['activity_goal_mins']) && $profile['activity_goal_mins'] > 0
+                            ? (int) $profile['activity_goal_mins']
+                            : 30;                            // ADA default
 
         $logs        = $activityModel->getLogs($pid);
         $todayLogs   = $activityModel->getTodayLogs($pid);
@@ -398,36 +417,38 @@ class PatientController extends Controller {
         $last7Days   = $activityModel->getLast7Days($pid);
 
         $this->view('patient/activity_view', [
-            'name'        => $_SESSION['user_name'],
-            'logs'        => $logs,
-            'todayLogs'   => $todayLogs,
-            'todayTotals' => $todayTotals,
-            'weekTotals'  => $weekTotals,
-            'last7Days'   => $last7Days,
-            'error'       => $error,
-            'success'     => $success,
+            'name'             => $_SESSION['user_name'],
+            'logs'             => $logs,
+            'todayLogs'        => $todayLogs,
+            'todayTotals'      => $todayTotals,
+            'weekTotals'       => $weekTotals,
+            'last7Days'        => $last7Days,
+            'patientWeightKg'  => $patientWeightKg,   // NEW
+            'activityGoalMins' => $activityGoalMins,  // NEW
+            'error'            => $error,
+            'success'          => $success,
         ]);
     }
 
     public function caregiverRequests() {
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $db  = (new Database())->connect();
         $pid = $_SESSION['user_id'];
 
         if (isset($_GET['accept'])) {
             $db->prepare("UPDATE caregiver_links SET status = 'accepted', linked_at = NOW() WHERE caregiver_id = :cid AND patient_id = :pid AND status = 'pending'")
                ->execute(['cid' => $_GET['accept'], 'pid' => $pid]);
-            header('Location: /diabetrack/public/patient/caregiverRequests'); exit;
+            header('Location: ' . BASE_URL . '/patient/caregiverRequests'); exit;
         }
         if (isset($_GET['decline'])) {
             $db->prepare("UPDATE caregiver_links SET status = 'declined' WHERE caregiver_id = :cid AND patient_id = :pid AND status = 'pending'")
                ->execute(['cid' => $_GET['decline'], 'pid' => $pid]);
-            header('Location: /diabetrack/public/patient/caregiverRequests'); exit;
+            header('Location: ' . BASE_URL . '/patient/caregiverRequests'); exit;
         }
         if (isset($_GET['remove'])) {
             $db->prepare("DELETE FROM caregiver_links WHERE caregiver_id = :cid AND patient_id = :pid")
                ->execute(['cid' => $_GET['remove'], 'pid' => $pid]);
-            header('Location: /diabetrack/public/patient/caregiverRequests'); exit;
+            header('Location: ' . BASE_URL . '/patient/caregiverRequests'); exit;
         }
 
         $stmt = $db->prepare("SELECT u.id, u.name, u.email, cl.requested_at FROM users u JOIN caregiver_links cl ON cl.caregiver_id = u.id WHERE cl.patient_id = :pid AND cl.status = 'pending' ORDER BY cl.requested_at DESC");
@@ -450,7 +471,7 @@ class PatientController extends Controller {
         $pid       = $_SESSION['user_id'];
         $user      = $userModel->findById($pid);
 
-        require_once __DIR__ . '/../../config/Database.php';
+        require_once __DIR__ . '/../../config/database.php';
         $db = (new Database())->connect();
 
         $s = $db->prepare("SELECT COUNT(*) FROM blood_sugar_logs WHERE patient_id = :id"); $s->execute(['id'=>$pid]); $bsCount   = (int)$s->fetchColumn();
@@ -462,16 +483,22 @@ class PatientController extends Controller {
         $s->execute(['id' => $pid]);
         $caregivers = $s->fetchAll();
 
+        // Load weight + activity goal for profile display
+        $s = $db->prepare("SELECT * FROM patient_profiles WHERE user_id = :id LIMIT 1");
+        $s->execute(['id' => $pid]);
+        $patientProfile = $s->fetch(PDO::FETCH_ASSOC) ?: [];
+
         $this->view('patient/profile_view', [
-            'user'       => $user,
-            'stats'      => ['blood_sugar_logs'=>$bsCount,'medications'=>$medCount,'meal_logs'=>$mealCount,'caregivers'=>$cgCount],
-            'caregivers' => $caregivers,
+            'user'           => $user,
+            'stats'          => ['blood_sugar_logs'=>$bsCount,'medications'=>$medCount,'meal_logs'=>$mealCount,'caregivers'=>$cgCount],
+            'caregivers'     => $caregivers,
+            'patientProfile' => $patientProfile,  // NEW
         ]);
     }
 
     public function updateProfile() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /diabetrack/public/patient/profile'); exit;
+            header('Location: ' . BASE_URL . '/patient/profile'); exit;
         }
 
         $userModel = $this->model('UserModel');
@@ -490,6 +517,25 @@ class PatientController extends Controller {
             }
             $userModel->updateInfo($pid, $name, $email);
             $_SESSION['user_name'] = $name;
+
+            // Upsert weight and activity goal into patient_profiles
+            $weightKg = isset($_POST['weight_kg']) && is_numeric($_POST['weight_kg'])
+                        ? max(20, min(300, (float) $_POST['weight_kg']))
+                        : null;
+            $goalMins = isset($_POST['activity_goal_mins']) && is_numeric($_POST['activity_goal_mins'])
+                        ? max(10, min(180, (int) $_POST['activity_goal_mins']))
+                        : 30;
+
+            require_once __DIR__ . '/../../config/database.php';
+            $db = (new Database())->connect();
+            $db->prepare("
+                INSERT INTO patient_profiles (user_id, weight_kg, activity_goal_mins)
+                VALUES (:uid, :wt, :goal)
+                ON DUPLICATE KEY UPDATE
+                    weight_kg          = VALUES(weight_kg),
+                    activity_goal_mins = VALUES(activity_goal_mins)
+            ")->execute(['uid' => $pid, 'wt' => $weightKg, 'goal' => $goalMins]);
+
             $this->redirectProfile('patient', null, 'Profile updated successfully!');
 
         } elseif ($action === 'password') {
@@ -507,193 +553,235 @@ class PatientController extends Controller {
 
     private function redirectProfile($role, $error = null, $success = null) {
         $param = $error ? '?error='.urlencode($error) : '?success='.urlencode($success);
-        header("Location: /diabetrack/public/{$role}/profile{$param}");
+        header("Location: " . BASE_URL . "/{$role}/profile{$param}");
         exit;
     }
+
     public function setup2fa() {
-    require_once __DIR__ . '/../../config/Database.php';
-    $db  = (new Database())->connect();
-    $uid = $_SESSION['user_id'];
+        require_once __DIR__ . '/../../config/database.php';
+        $db  = (new Database())->connect();
+        $uid = $_SESSION['user_id'];
 
-    require_once __DIR__ . '/../../vendor/autoload.php';
+        require_once __DIR__ . '/../../vendor/autoload.php';
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enable') {
-        $code   = trim($_POST['code'] ?? '');
-        $secret = trim($_POST['secret'] ?? '');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'enable') {
+            $code   = trim($_POST['code'] ?? '');
+            $secret = trim($_POST['secret'] ?? '');
+
+            $google2fa = new \PragmaRX\Google2FA\Google2FA();
+            if ($google2fa->verifyKey($secret, $code)) {
+                $db->prepare("UPDATE users SET two_fa_secret = :s, two_fa_enabled = 1 WHERE id = :id")
+                   ->execute(['s' => $secret, 'id' => $uid]);
+                header('Location: ' . BASE_URL . '/patient/profile?success=' . urlencode('2FA enabled successfully!'));
+                exit;
+            } else {
+                header('Location: ' . BASE_URL . '/patient/setup2fa?error=1');
+                exit;
+            }
+        }
 
         $google2fa = new \PragmaRX\Google2FA\Google2FA();
-        if ($google2fa->verifyKey($secret, $code)) {
-            $db->prepare("UPDATE users SET two_fa_secret = :s, two_fa_enabled = 1 WHERE id = :id")
-               ->execute(['s' => $secret, 'id' => $uid]);
-            header('Location: /diabetrack/public/patient/profile?success=' . urlencode('2FA enabled successfully!'));
-            exit;
-        } else {
-            header('Location: /diabetrack/public/patient/setup2fa?error=1');
-            exit;
-        }
+        $secret    = $google2fa->generateSecretKey();
+
+        $stmt = $db->prepare("SELECT name, email FROM users WHERE id = :id");
+        $stmt->execute(['id' => $uid]);
+        $user = $stmt->fetch();
+
+        $qrUrl = $google2fa->getQRCodeUrl('DiabeTrack', $user['email'], $secret);
+
+        $renderer = new \BaconQrCode\Renderer\ImageRenderer(
+            new \BaconQrCode\Renderer\RendererStyle\RendererStyle(280),
+            new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
+        );
+        $writer = new \BaconQrCode\Writer($renderer);
+        $qrSvg  = $writer->writeString($qrUrl);
+
+        $error = isset($_GET['error']) ? 'Invalid code. Please scan again and try.' : null;
+
+        $this->view('patient/setup2fa_view', [
+            'name'   => $_SESSION['user_name'],
+            'secret' => $secret,
+            'qrSvg'  => $qrSvg,
+            'error'  => $error,
+        ]);
     }
 
-    $google2fa = new \PragmaRX\Google2FA\Google2FA();
-    $secret    = $google2fa->generateSecretKey();
+    public function disable2fa() {
+        require_once __DIR__ . '/../../config/database.php';
+        $db = (new Database())->connect();
+        $db->prepare("UPDATE users SET two_fa_enabled = 0, two_fa_secret = NULL WHERE id = :id")
+           ->execute(['id' => $_SESSION['user_id']]);
+        header('Location: ' . BASE_URL . '/patient/profile?success=' . urlencode('2FA has been disabled.'));
+        exit;
+    }
 
-    $stmt = $db->prepare("SELECT name, email FROM users WHERE id = :id");
-    $stmt->execute(['id' => $uid]);
-    $user = $stmt->fetch();
+    private function ensureMessagesTable($db): void {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS `chat_messages` (
+                `id`           int(11)   NOT NULL AUTO_INCREMENT,
+                `caregiver_id` int(11)   NOT NULL,
+                `patient_id`   int(11)   NOT NULL,
+                `sender_id`    int(11)   NOT NULL,
+                `sender_type`  enum('caregiver','patient') NOT NULL,
+                `body`         text      NOT NULL,
+                `reaction`     varchar(10) NULL DEFAULT NULL,
+                `sent_at`      timestamp NOT NULL DEFAULT current_timestamp(),
+                `read_at`      timestamp NULL DEFAULT NULL,
+                PRIMARY KEY (`id`),
+                KEY `idx_thread` (`caregiver_id`,`patient_id`,`sent_at`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+        $db->exec("CREATE TABLE IF NOT EXISTS `chat_typing` (`caregiver_id` int(11) NOT NULL,`patient_id` int(11) NOT NULL,`typer_type` enum('caregiver','patient') NOT NULL,`updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),PRIMARY KEY (`caregiver_id`,`patient_id`,`typer_type`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        try { $db->exec("ALTER TABLE `chat_messages` ADD COLUMN `reaction` varchar(10) NULL DEFAULT NULL"); } catch(Exception $e) {}
+    }
 
-    $qrUrl = $google2fa->getQRCodeUrl('DiabeTrack', $user['email'], $secret);
+    private function getLinkedCaregiver($db, int $pid): ?array {
+        $stmt = $db->prepare("
+            SELECT u.* FROM users u
+            JOIN caregiver_links cl ON cl.caregiver_id = u.id
+            WHERE cl.patient_id = :pid AND cl.status = 'accepted'
+            ORDER BY cl.linked_at ASC LIMIT 1
+        ");
+        $stmt->execute(['pid' => $pid]);
+        return $stmt->fetch() ?: null;
+    }
 
-    $renderer = new \BaconQrCode\Renderer\ImageRenderer(
-        new \BaconQrCode\Renderer\RendererStyle\RendererStyle(280),
-        new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
-    );
-    $writer = new \BaconQrCode\Writer($renderer);
-    $qrSvg  = $writer->writeString($qrUrl);
+    public function messages() {
+        require_once __DIR__ . '/../../config/database.php';
+        $db  = (new Database())->connect();
+        $pid = $_SESSION['user_id'];
+        $cg  = $this->getLinkedCaregiver($db, $pid);
 
-    $error = isset($_GET['error']) ? 'Invalid code. Please scan again and try.' : null;
+        $messages    = [];
+        $unreadCount = 0;
 
-    $this->view('patient/setup2fa_view', [
-        'name'   => $_SESSION['user_name'],
-        'secret' => $secret,
-        'qrSvg'  => $qrSvg,
-        'error'  => $error,
-    ]);
-}
+        if ($cg) {
+            $cid = $cg['id'];
+            $this->ensureMessagesTable($db);
 
-public function disable2fa() {
-    require_once __DIR__ . '/../../config/Database.php';
-    $db = (new Database())->connect();
-    $db->prepare("UPDATE users SET two_fa_enabled = 0, two_fa_secret = NULL WHERE id = :id")
-       ->execute(['id' => $_SESSION['user_id']]);
-    header('Location: /diabetrack/public/patient/profile?success=' . urlencode('2FA has been disabled.'));
-    exit;
-}
-private function ensureMessagesTable($db): void {
-    $db->exec("
-        CREATE TABLE IF NOT EXISTS `chat_messages` (
-            `id`           int(11)   NOT NULL AUTO_INCREMENT,
-            `caregiver_id` int(11)   NOT NULL,
-            `patient_id`   int(11)   NOT NULL,
-            `sender_id`    int(11)   NOT NULL,
-            `sender_type`  enum('caregiver','patient') NOT NULL,
-            `body`         text      NOT NULL,
-            `sent_at`      timestamp NOT NULL DEFAULT current_timestamp(),
-            `read_at`      timestamp NULL DEFAULT NULL,
-            PRIMARY KEY (`id`),
-            KEY `idx_thread` (`caregiver_id`,`patient_id`,`sent_at`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    ");
-}
+            // Mark caregiver messages as read
+            $db->prepare("
+                UPDATE chat_messages SET read_at = NOW()
+                WHERE caregiver_id = :cid AND patient_id = :pid
+                  AND sender_type = 'caregiver' AND read_at IS NULL
+            ")->execute(['cid' => $cid, 'pid' => $pid]);
 
-private function getLinkedCaregiver($db, int $pid): ?array {
-    $stmt = $db->prepare("
-        SELECT u.* FROM users u
-        JOIN caregiver_links cl ON cl.caregiver_id = u.id
-        WHERE cl.patient_id = :pid AND cl.status = 'accepted'
-        ORDER BY cl.linked_at ASC LIMIT 1
-    ");
-    $stmt->execute(['pid' => $pid]);
-    return $stmt->fetch() ?: null;
-}
+            $stmt = $db->prepare("
+                SELECT * FROM chat_messages
+                WHERE caregiver_id = :cid AND patient_id = :pid
+                ORDER BY sent_at ASC
+            ");
+            $stmt->execute(['cid' => $cid, 'pid' => $pid]);
+            $messages = $stmt->fetchAll();
 
-public function messages() {
-    require_once __DIR__ . '/../../config/Database.php';
-    $db  = (new Database())->connect();
-    $pid = $_SESSION['user_id'];
-    $cg  = $this->getLinkedCaregiver($db, $pid);
+            $unreadCount = count(array_filter($messages, fn($m) =>
+                $m['sender_type'] === 'caregiver' && !$m['read_at']));
+        }
 
-    $messages    = [];
-    $unreadCount = 0;
+        $this->view('patient/messages_view', [
+            'name'        => $_SESSION['user_name'],
+            'caregiver'   => $cg,
+            'messages'    => $messages,
+            'unreadCount' => $unreadCount,
+        ]);
+    }
 
-    if ($cg) {
-        $cid = $cg['id'];
+    public function sendPatientMessage() {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['ok' => false]); exit;
+        }
+        require_once __DIR__ . '/../../config/database.php';
+        $db  = (new Database())->connect();
+        $pid = $_SESSION['user_id'];
+        $cg  = $this->getLinkedCaregiver($db, $pid);
+
+        if (!$cg) { echo json_encode(['ok' => false, 'error' => 'No caregiver linked']); exit; }
+
+        $body = trim($_POST['message'] ?? '');
+        if (!$body || mb_strlen($body) > 500) {
+            echo json_encode(['ok' => false, 'error' => 'Invalid message']); exit;
+        }
+
         $this->ensureMessagesTable($db);
-
-        // Mark caregiver messages as read
-        $db->prepare("
-            UPDATE chat_messages SET read_at = NOW()
-            WHERE caregiver_id = :cid AND patient_id = :pid
-              AND sender_type = 'caregiver' AND read_at IS NULL
-        ")->execute(['cid' => $cid, 'pid' => $pid]);
+        $cid = $cg['id'];
 
         $stmt = $db->prepare("
-            SELECT * FROM chat_messages
-            WHERE caregiver_id = :cid AND patient_id = :pid
-            ORDER BY sent_at ASC
+            INSERT INTO chat_messages (caregiver_id, patient_id, sender_id, sender_type, body)
+            VALUES (:cid, :pid, :sid, 'patient', :body)
         ");
-        $stmt->execute(['cid' => $cid, 'pid' => $pid]);
-        $messages = $stmt->fetchAll();
+        $stmt->execute(['cid' => $cid, 'pid' => $pid, 'sid' => $pid, 'body' => $body]);
+        $newId = $db->lastInsertId();
 
-        $unreadCount = count(array_filter($messages, fn($m) =>
-            $m['sender_type'] === 'caregiver' && !$m['read_at']));
+        echo json_encode(['ok' => true, 'id' => $newId, 'sent_at' => date('h:i A')]); exit;
     }
 
-    $this->view('patient/messages_view', [
-        'name'        => $_SESSION['user_name'],
-        'caregiver'   => $cg,
-        'messages'    => $messages,
-        'unreadCount' => $unreadCount,
-    ]);
-}
+    public function getPatientMessages() {
+        header('Content-Type: application/json');
+        require_once __DIR__ . '/../../config/database.php';
+        $db  = (new Database())->connect();
+        $pid = $_SESSION['user_id'];
+        $cg  = $this->getLinkedCaregiver($db, $pid);
+        if (!$cg) { echo json_encode(['messages'=>[],'typing'=>false]); exit; }
 
-public function sendPatientMessage() {
-    header('Content-Type: application/json');
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        echo json_encode(['ok' => false]); exit;
+        $this->ensureMessagesTable($db);
+        $cid   = $cg['id'];
+        $after = (int)($_GET['after'] ?? 0);
+
+        // Mark new caregiver messages as read
+        $db->prepare("
+            UPDATE chat_messages SET read_at=NOW()
+            WHERE caregiver_id=:cid AND patient_id=:pid AND sender_type='caregiver' AND read_at IS NULL
+        ")->execute(['cid'=>$cid,'pid'=>$pid]);
+
+        $stmt = $db->prepare("
+            SELECT id, sender_id, sender_type, body, reaction, sent_at, read_at
+            FROM chat_messages
+            WHERE caregiver_id=:cid AND patient_id=:pid AND id > :after
+            ORDER BY sent_at ASC LIMIT 50
+        ");
+        $stmt->execute(['cid'=>$cid,'pid'=>$pid,'after'=>$after]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$r) { $r['sent_at'] = date('h:i A', strtotime($r['sent_at'])); }
+
+        // Is caregiver typing?
+        $ts = $db->prepare("SELECT updated_at FROM chat_typing WHERE caregiver_id=:cid AND patient_id=:pid AND typer_type='caregiver'");
+        $ts->execute(['cid'=>$cid,'pid'=>$pid]);
+        $tRow = $ts->fetch(PDO::FETCH_ASSOC);
+        $typing = $tRow && (time()-strtotime($tRow['updated_at'])) < 4;
+
+        echo json_encode(['messages'=>$rows,'typing'=>$typing]); exit;
     }
-    require_once __DIR__ . '/../../config/Database.php';
-    $db  = (new Database())->connect();
-    $pid = $_SESSION['user_id'];
-    $cg  = $this->getLinkedCaregiver($db, $pid);
 
-    if (!$cg) { echo json_encode(['ok' => false, 'error' => 'No caregiver linked']); exit; }
-
-    $body = trim($_POST['message'] ?? '');
-    if (!$body || mb_strlen($body) > 500) {
-        echo json_encode(['ok' => false, 'error' => 'Invalid message']); exit;
+    public function setPatientTyping() {
+        header('Content-Type: application/json');
+        require_once __DIR__ . '/../../config/database.php';
+        $db  = (new Database())->connect();
+        $pid = $_SESSION['user_id'];
+        $cg  = $this->getLinkedCaregiver($db, $pid);
+        if (!$cg) { echo json_encode(['ok'=>false]); exit; }
+        $this->ensureMessagesTable($db);
+        $db->prepare("
+            INSERT INTO chat_typing (caregiver_id,patient_id,typer_type,updated_at)
+            VALUES (:cid,:pid,'patient',NOW())
+            ON DUPLICATE KEY UPDATE updated_at=NOW()
+        ")->execute(['cid'=>$cg['id'],'pid'=>$pid]);
+        echo json_encode(['ok'=>true]); exit;
     }
 
-    $this->ensureMessagesTable($db);
-    $cid = $cg['id'];
-
-    $stmt = $db->prepare("
-        INSERT INTO chat_messages (caregiver_id, patient_id, sender_id, sender_type, body)
-        VALUES (:cid, :pid, :sid, 'patient', :body)
-    ");
-    $stmt->execute(['cid' => $cid, 'pid' => $pid, 'sid' => $pid, 'body' => $body]);
-    $newId = $db->lastInsertId();
-
-    echo json_encode(['ok' => true, 'id' => $newId, 'sent_at' => date('h:i A')]); exit;
-}
-
-public function getPatientMessages() {
-    header('Content-Type: application/json');
-    require_once __DIR__ . '/../../config/Database.php';
-    $db  = (new Database())->connect();
-    $pid = $_SESSION['user_id'];
-    $cg  = $this->getLinkedCaregiver($db, $pid);
-    if (!$cg) { echo json_encode(['messages' => []]); exit; }
-
-    $this->ensureMessagesTable($db);
-    $cid   = $cg['id'];
-    $after = (int)($_GET['after'] ?? 0);
-
-    // Mark new caregiver messages as read on poll
-    $db->prepare("
-        UPDATE chat_messages SET read_at = NOW()
-        WHERE caregiver_id = :cid AND patient_id = :pid
-          AND sender_type = 'caregiver' AND read_at IS NULL AND id > :after
-    ")->execute(['cid' => $cid, 'pid' => $pid, 'after' => $after]);
-
-    $stmt = $db->prepare("
-        SELECT id, sender_id, sender_type, body, sent_at, read_at
-        FROM chat_messages
-        WHERE caregiver_id = :cid AND patient_id = :pid AND id > :after
-        ORDER BY sent_at ASC LIMIT 50
-    ");
-    $stmt->execute(['cid' => $cid, 'pid' => $pid, 'after' => $after]);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($rows as &$r) { $r['sent_at'] = date('h:i A', strtotime($r['sent_at'])); }
-    echo json_encode(['messages' => $rows]); exit;
-}
-
+    public function reactPatientMessage() {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { echo json_encode(['ok'=>false]); exit; }
+        require_once __DIR__ . '/../../config/database.php';
+        $db  = (new Database())->connect();
+        $pid = $_SESSION['user_id'];
+        $cg  = $this->getLinkedCaregiver($db, $pid);
+        if (!$cg) { echo json_encode(['ok'=>false]); exit; }
+        $this->ensureMessagesTable($db);
+        $id       = (int)($_POST['id'] ?? 0);
+        $reaction = in_array($_POST['reaction']??'',['👍','❤️','✅','😮','😢','']) ? ($_POST['reaction']??'') : '';
+        $db->prepare("UPDATE chat_messages SET reaction=:r WHERE id=:id AND caregiver_id=:cid AND patient_id=:pid")
+           ->execute(['r'=>$reaction?:null,'id'=>$id,'cid'=>$cg['id'],'pid'=>$pid]);
+        echo json_encode(['ok'=>true]); exit;
+    }
 }

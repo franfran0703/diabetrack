@@ -8,11 +8,11 @@ class HomeController extends Controller {
         if (isset($_SESSION['user_id'])) {
             $role = $_SESSION['user_role'];
             if ($role === 'patient') {
-                header('Location: /diabetrack/public/patient/dashboard');
+                header('Location: ' . BASE_URL . '/patient/dashboard');
             } elseif ($role === 'caregiver') {
-                header('Location: /diabetrack/public/caregiver/dashboard');
+                header('Location: ' . BASE_URL . '/caregiver/dashboard');
             } elseif ($role === 'admin') {
-                header('Location: /diabetrack/public/admin/dashboard');
+                header('Location: ' . BASE_URL . '/admin/dashboard');
             }
             exit;
         }

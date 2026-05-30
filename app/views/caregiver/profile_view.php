@@ -12,14 +12,14 @@ $flashSuccess = $success ?? (isset($_GET['success']) ? urldecode($_GET['success'
 $flashError   = $error   ?? (isset($_GET['error'])   ? urldecode($_GET['error'])   : null);
 
 // Fetch 2FA status
-require_once __DIR__ . '/../../../config/Database.php';
+require_once __DIR__ . '/../../../config/database.php';
 $__db = (new Database())->connect();
 $__s  = $__db->prepare("SELECT two_fa_enabled FROM users WHERE id = :id");
 $__s->execute(['id' => $_SESSION['user_id']]);
 $twoFaEnabled = (bool) $__s->fetchColumn();
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_profile.css?<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_profile.css?<?= time() ?>" rel="stylesheet">
 
 <div class="cgp-page">
 
@@ -114,7 +114,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                     <div class="cgp-panel-sub">Update your name and email address</div>
                 </div>
                 <div class="cgp-panel-body">
-                    <form method="POST" action="/diabetrack/public/caregiver/updateProfile">
+                    <form method="POST" action="/caregiver/updateProfile">
                         <input type="hidden" name="action" value="info">
                         <div class="cgp-form-2col">
                             <div class="cgp-field">
@@ -139,7 +139,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                         <div class="cgp-panel-title">Caregiver Details</div>
                         <div class="cgp-panel-sub">Your contact and relationship info</div>
                     </div>
-                    <form method="POST" action="/diabetrack/public/caregiver/updateProfile">
+                    <form method="POST" action="/caregiver/updateProfile">
                         <input type="hidden" name="action" value="caregiver_profile">
                         <div class="cgp-form-2col">
                             <div class="cgp-field">
@@ -175,7 +175,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                     <div class="cgp-panel-sub">Choose a strong password to keep your account secure</div>
                 </div>
                 <div class="cgp-panel-body">
-                    <form method="POST" action="/diabetrack/public/caregiver/updateProfile">
+                    <form method="POST" action="/caregiver/updateProfile">
                         <input type="hidden" name="action" value="password">
                         <div class="cgp-field">
                             <label class="cgp-field-label">Current Password</label>
@@ -215,7 +215,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                                         <div class="cgp-person-name"><?= htmlspecialchars(ucwords(strtolower($p['name']))) ?></div>
                                         <div class="cgp-person-meta"><?= htmlspecialchars($p['email']) ?> · Linked <?= date('M d, Y', strtotime($p['linked_at'])) ?></div>
                                     </div>
-                                    <a href="/diabetrack/public/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?= urlencode('/diabetrack/public/caregiver/dashboard') ?>" class="cgp-view-btn">
+                                    <a href="<?= BASE_URL ?>/caregiver/switchPatient?pid=<?= $p['id'] ?>&redirect=<?= urlencode('/caregiver/dashboard') ?>" class="cgp-view-btn">
                                         <i class="ti ti-eye"></i> View
                                     </a>
                                 </div>
@@ -225,7 +225,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                         <div class="cgp-empty">
                             <i class="ti ti-user-x"></i>
                             <p>No patients linked yet.</p>
-                            <a href="/diabetrack/public/caregiver/patients" class="cgp-btn cgp-btn-ghost" style="display:inline-flex;">
+                            <a href="<?= BASE_URL ?>/caregiver/patients" class="cgp-btn cgp-btn-ghost" style="display:inline-flex;">
                                 <i class="ti ti-users"></i> Manage Patients
                             </a>
                         </div>
@@ -248,7 +248,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                                 <div style="font-size:0.75rem;color:rgba(255,200,160,0.4);margin-top:2px;">Your account is protected with two-factor authentication.</div>
                             </div>
                         </div>
-                        <a href="/diabetrack/public/caregiver/disable2fa"
+                        <a href="<?= BASE_URL ?>/caregiver/disable2fa"
                            class="cgp-btn cgp-btn-danger"
                            onclick="return confirm('Disable 2FA? Your account will be less secure.')"
                            style="display:inline-flex;">
@@ -262,7 +262,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                                 <div style="font-size:0.75rem;color:rgba(255,200,160,0.4);margin-top:2px;">Enable 2FA to protect your account with Google Authenticator.</div>
                             </div>
                         </div>
-                        <a href="/diabetrack/public/caregiver/setup2fa" class="cgp-btn cgp-btn-primary" style="display:inline-flex;">
+                        <a href="<?= BASE_URL ?>/caregiver/setup2fa" class="cgp-btn cgp-btn-primary" style="display:inline-flex;">
                             <i class="ti ti-shield-check"></i> Enable 2FA
                         </a>
                     <?php endif; ?>
@@ -277,7 +277,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                 </div>
                 <div class="cgp-panel-body">
                     <p class="cgp-danger-text">Signing out will end your current session. Make sure you've saved any changes before leaving.</p>
-                    <a href="/diabetrack/public/auth/logout" class="cgp-btn cgp-btn-danger">
+                    <a href="<?= BASE_URL ?>/auth/logout" class="cgp-btn cgp-btn-danger">
                         <i class="ti ti-logout"></i> Sign Out
                     </a>
                 </div>

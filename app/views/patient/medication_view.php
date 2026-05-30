@@ -108,7 +108,7 @@ $medCssPath = dirname(dirname(dirname(__DIR__))) . '/public/assets/css/medicatio
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link href="/diabetrack/public/assets/css/medication.css?v=<?= file_exists($medCssPath) ? filemtime($medCssPath) : '1' ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/medication.css?v=<?= file_exists($medCssPath) ? filemtime($medCssPath) : '1' ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ══════════════════════════════════════ -->
@@ -388,7 +388,7 @@ $medCssPath = dirname(dirname(dirname(__DIR__))) . '/public/assets/css/medicatio
                             <?php endif; ?>
                             <?php if (!$slotLogged): ?>
                             <div class="med-slot-actions">
-                                <form method="POST" action="/diabetrack/public/patient/medication" class="med-log-form">
+                                <form method="POST" action="<?= BASE_URL ?>/patient/medication" class="med-log-form">
                                     <input type="hidden" name="action"  value="log">
                                     <input type="hidden" name="med_id"  value="<?= $slot['id'] ?>">
                                     <input type="hidden" name="status"  value="Taken">
@@ -396,7 +396,7 @@ $medCssPath = dirname(dirname(dirname(__DIR__))) . '/public/assets/css/medicatio
                                         <i class="ti ti-check"></i> Taken
                                     </button>
                                 </form>
-                                <form method="POST" action="/diabetrack/public/patient/medication" class="med-log-form">
+                                <form method="POST" action="<?= BASE_URL ?>/patient/medication" class="med-log-form">
                                     <input type="hidden" name="action"  value="log">
                                     <input type="hidden" name="med_id"  value="<?= $slot['id'] ?>">
                                     <input type="hidden" name="status"  value="Missed">
@@ -472,13 +472,13 @@ $medCssPath = dirname(dirname(dirname(__DIR__))) . '/public/assets/css/medicatio
 
                 <div class="med-item-actions">
                     <?php if (!$logged): ?>
-                    <form method="POST" action="/diabetrack/public/patient/medication" class="med-log-form">
+                    <form method="POST" action="<?= BASE_URL ?>/patient/medication" class="med-log-form">
                         <input type="hidden" name="action" value="log">
                         <input type="hidden" name="med_id" value="<?= $med['id'] ?>">
                         <input type="hidden" name="status" value="Taken">
                         <button type="submit" class="med-action-btn btn-taken"><i class="ti ti-check"></i> Taken</button>
                     </form>
-                    <form method="POST" action="/diabetrack/public/patient/medication" class="med-log-form">
+                    <form method="POST" action="<?= BASE_URL ?>/patient/medication" class="med-log-form">
                         <input type="hidden" name="action" value="log">
                         <input type="hidden" name="med_id" value="<?= $med['id'] ?>">
                         <input type="hidden" name="status" value="Missed">
@@ -646,7 +646,7 @@ $medCssPath = dirname(dirname(dirname(__DIR__))) . '/public/assets/css/medicatio
             <button class="med-modal-close" onclick="closeModal('addModal')"><i class="ti ti-x"></i></button>
         </div>
         <div class="med-modal-body">
-            <form method="POST" action="/diabetrack/public/patient/medication" id="addForm"
+            <form method="POST" action="<?= BASE_URL ?>/patient/medication" id="addForm"
                   onsubmit="return handleAddSubmit(event)">
                 <input type="hidden" name="action" value="add">
                 <div class="med-form-group">
@@ -696,7 +696,7 @@ $medCssPath = dirname(dirname(dirname(__DIR__))) . '/public/assets/css/medicatio
             <button class="med-modal-close" onclick="closeModal('editModal')"><i class="ti ti-x"></i></button>
         </div>
         <div class="med-modal-body">
-            <form method="POST" action="/diabetrack/public/patient/medication" id="editForm">
+            <form method="POST" action="<?= BASE_URL ?>/patient/medication" id="editForm">
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="med_id" id="edit-med-id">
                 <div class="med-form-group">
@@ -818,10 +818,10 @@ async function handleAddSubmit(e) {
     try {
         for (const time of times) {
             const body = new URLSearchParams({ action:'add', name, dosage, schedule_time:time, frequency:freq });
-            await fetch('/diabetrack/public/patient/medication', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() });
+            await fetch('<?= BASE_URL ?>/patient/medication', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() });
         }
         sessionStorage.setItem('med_saved_msg', times.length > 1 ? `${name} added — ${times.length} doses scheduled` : `${name} added to your schedule`);
-        window.location.href = '/diabetrack/public/patient/medication';
+        window.location.href = '<?= BASE_URL ?>/patient/medication';
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save Medication';
@@ -938,7 +938,7 @@ function confirmDelete(btn) {
     pendingDelete = { id, item };
     clearTimeout(deleteTimer);
     deleteTimer = setTimeout(() => {
-        window.location.href = '/diabetrack/public/patient/medication?delete=' + id + '&_token=' + CSRF;
+        window.location.href = '<?= BASE_URL ?>/patient/medication?delete=' + id + '&_token=' + CSRF;
     }, 5000);
 }
 document.getElementById('deleteUndo').addEventListener('click', () => {
@@ -947,7 +947,7 @@ document.getElementById('deleteUndo').addEventListener('click', () => {
     hideToast('toastDelete');
 });
 document.getElementById('deleteClose').addEventListener('click', () => {
-    if (pendingDelete) window.location.href = '/diabetrack/public/patient/medication?delete=' + pendingDelete.id + '&_token=' + CSRF;
+    if (pendingDelete) window.location.href = '<?= BASE_URL ?>/patient/medication?delete=' + pendingDelete.id + '&_token=' + CSRF;
     hideToast('toastDelete'); clearTimeout(deleteTimer);
 });
 

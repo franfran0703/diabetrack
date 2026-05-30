@@ -716,3 +716,75 @@ body {
 @media (max-width: 480px) {
     .cgbs-stat-row { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+    .cgbs-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .cgbs-header-right { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+    .cgbs-title { font-size: 1.8rem; letter-spacing: -1.2px; }
+    .cgbs-eyebrow { font-size: 9px; }
+
+    .cgbs-stat-row { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .cgbs-stat-card { padding: 14px; border-radius: 16px; }
+    .cgbs-stat-val  { font-size: 1.5rem; }
+
+    .cgbs-main-grid { grid-template-columns: 1fr !important; gap: 12px; }
+
+    .cgbs-summary-card { flex-direction: row; flex-wrap: wrap; gap: 12px; padding: 16px; border-radius: 18px; }
+    .cgbs-donut-wrap { align-self: center; }
+
+    .cgbs-chart-card { padding: 16px; border-radius: 18px; }
+    .cgbs-chart-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+    .cgbs-tl-item { gap: 8px; padding: 10px 0; }
+    .cgbs-tl-dot  { width: 32px; height: 32px; }
+    .cgbs-tl-val  { font-size: 1.1rem; }
+
+    .cgbs-add-btn { width: 100%; justify-content: center; }
+
+    .cgbs-drawer { width: 100% !important; border-radius: 24px 24px 0 0; top: auto; bottom: 0; height: 90vh; }
+    .cgbs-drawer-overlay { align-items: flex-end; }
+}
+
+@media (max-width: 400px) {
+    .cgbs-stat-row  { gap: 6px; }
+    .cgbs-stat-card { padding: 12px; }
+    .cgbs-stat-val  { font-size: 1.3rem; }
+    .cgbs-title     { font-size: 1.6rem; }
+}
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  MOBILE RESPONSIVE — Patient Blood Sugar (Enhanced)      ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+@media (max-width: 640px) {
+    .bs-page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .bs-page-header-right { width: 100%; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+    .bs-page-title { font-size: 1.8rem; letter-spacing: -1.2px; }
+
+    .bs-stat-row { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .bs-scard { padding: 14px; border-radius: 16px; }
+
+    .bs-main-layout { grid-template-columns: 1fr !important; gap: 12px; }
+    .bs-log-panel { position: static !important; width: 100%; }
+    .bs-glucose-range { width: 100%; }
+
+    .bs-chart-card { padding: 16px; border-radius: 18px; }
+    .bs-chart-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .bs-chart-filters { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+    .bs-chart-filters::-webkit-scrollbar { display: none; }
+    .bs-chart-filter { flex-shrink: 0; }
+
+    .bs-history-item { gap: 10px; padding: 11px 0; }
+    .bs-history-dot  { width: 32px; height: 32px; }
+
+    .bs-add-btn, .bs-log-submit { width: 100%; justify-content: center; }
+
+    .bs-drawer { width: 100% !important; border-radius: 24px 24px 0 0; top: auto; bottom: 0; height: 90vh; }
+    .bs-drawer-overlay { align-items: flex-end; }
+}
+
+@media (max-width: 400px) {
+    .bs-stat-row  { gap: 6px; }
+    .bs-scard     { padding: 12px; }
+    .bs-page-title { font-size: 1.6rem; }
+}

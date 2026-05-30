@@ -36,7 +36,7 @@ $initials    = strtoupper(implode('', array_map(fn($w) => $w[0], array_slice(exp
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link href="/diabetrack/public/assets/css/reports.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/reports.css?v=<?= time() ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ═══════════════════════════════════════ -->
@@ -365,7 +365,7 @@ $initials    = strtoupper(implode('', array_map(fn($w) => $w[0], array_slice(exp
         <div class="rep-empty-icon"><i class="ti ti-droplet-off"></i></div>
         <div class="rep-empty-title">No readings yet</div>
         <div class="rep-empty-sub">Start logging blood sugar readings to generate your report.</div>
-        <a href="/diabetrack/public/patient/bloodsugar" class="rep-empty-link">
+        <a href="<?= BASE_URL ?>/patient/bloodsugar" class="rep-empty-link">
             Go to Blood Sugar Logger <i class="ti ti-arrow-right"></i>
         </a>
     </div>
@@ -419,7 +419,7 @@ $initials    = strtoupper(implode('', array_map(fn($w) => $w[0], array_slice(exp
         <div class="rep-empty-icon"><i class="ti ti-calendar-search"></i></div>
         <div class="rep-empty-title">No appointments</div>
         <div class="rep-empty-sub">Schedule doctor visits to track them here.</div>
-        <a href="/diabetrack/public/patient/appointments" class="rep-empty-link">
+        <a href="<?= BASE_URL ?>/patient/appointments" class="rep-empty-link">
             Go to Appointments <i class="ti ti-arrow-right"></i>
         </a>
     </div>

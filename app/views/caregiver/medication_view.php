@@ -133,7 +133,7 @@ foreach ($allLogs as $l) {
 krsort($logsByDate);
 ?>
 
-<link href="/diabetrack/public/assets/css/caregiver_medication.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_medication.css?v=<?= time() ?>" rel="stylesheet">
 
 <!-- ══ PAGE HEADER ═══════════════════════════════════════ -->
 <div class="cgmed-header">
@@ -167,7 +167,7 @@ krsort($logsByDate);
     <div class="cgmed-no-patient-icon"><i class="ti ti-link"></i></div>
     <div class="cgmed-no-patient-title">No Patient Linked</div>
     <div class="cgmed-no-patient-sub">
-        <a href="/diabetrack/public/caregiver/patients">Link a patient</a> to begin monitoring medications.
+        <a href="<?= BASE_URL ?>/caregiver/patients">Link a patient</a> to begin monitoring medications.
     </div>
 </div>
 

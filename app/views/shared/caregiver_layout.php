@@ -6,8 +6,8 @@
     <title>DiabeTrack — <?= $pageTitle ?? 'Dashboard' ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-    <link href="/diabetrack/public/assets/css/caregiver_layout.css?<?= time() ?>" rel="stylesheet">
-    <link href="/diabetrack/public/assets/css/caregiver_chip.css?<?= time() ?>" rel="stylesheet">
+    <link href="<?= BASE_URL ?>/assets/css/caregiver_layout.css?<?= time() ?>" rel="stylesheet">
+    <link href="<?= BASE_URL ?>/assets/css/caregiver_chip.css?<?= time() ?>" rel="stylesheet">
 </head>
 <body>
 <div class="page-wrap">
@@ -20,42 +20,42 @@
 
             <div class="brand">
                 <div class="brand-pill">
-                    <img src="/diabetrack/public/assets/img/diabetrack-icon.png" 
+                    <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" 
                          alt="" style="width:22px;height:22px;object-fit:contain;">
                 </div>
                 <span class="brand-name">DiabeTrack</span>
             </div>
 
             <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/patients"
+                <a href="<?= BASE_URL ?>/caregiver/patients"
                 class="nav-btn <?= ($activeMenu ?? '') === 'patients' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="ti ti-users"></i></span>
                     My Patients
                 </a>
             </div>
             <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/dashboard"
+                <a href="<?= BASE_URL ?>/caregiver/dashboard"
                 class="nav-btn <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="ti ti-layout-grid"></i></span>
                     Dashboard
                 </a>
             </div>
             <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/bloodsugar"
+                <a href="<?= BASE_URL ?>/caregiver/bloodsugar"
                 class="nav-btn <?= ($activeMenu ?? '') === 'bloodsugar' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="ti ti-droplet-half-2"></i></span>
                     Blood Sugar
                 </a>
             </div>
             <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/medication"
+                <a href="<?= BASE_URL ?>/caregiver/medication"
                 class="nav-btn <?= ($activeMenu ?? '') === 'medication' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="ti ti-pill"></i></span>
                     Medication
                 </a>
             </div>
             <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/meals"
+                <a href="<?= BASE_URL ?>/caregiver/meals"
                 class="nav-btn <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="ti ti-bowl-spoon"></i></span>
                     Meals
@@ -77,7 +77,7 @@
                     } catch(Exception $e) { $__cgUnread = 0; }
                 }
                 ?>
-                <a href="/diabetrack/public/caregiver/alerts"
+                <a href="<?= BASE_URL ?>/caregiver/alerts"
                 class="nav-btn <?= ($activeMenu ?? '') === 'alerts' ? 'active' : '' ?>"
                 style="position:relative;">
                     <span class="nav-icon"><i class="ti ti-bell"></i></span>
@@ -88,7 +88,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="/diabetrack/public/caregiver/reports"
+                <a href="<?= BASE_URL ?>/caregiver/reports"
                 class="nav-btn <?= ($activeMenu ?? '') === 'reports' ? 'active' : '' ?>">
                     <span class="nav-icon"><i class="ti ti-report-medical"></i></span>
                     Reports
@@ -105,12 +105,12 @@
 
         <!-- User Chip -->
         <div class="user-chip">
-            <a href="/diabetrack/public/caregiver/profile" class="avatar" title="My Profile" style="text-decoration:none;color:inherit;"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></a>
+            <a href="<?= BASE_URL ?>/caregiver/profile" class="avatar" title="My Profile" style="text-decoration:none;color:inherit;"><?= strtoupper(substr($_SESSION['user_name'], 0, 1)) ?></a>
             <div class="user-info">
                 <span class="user-name"><?= htmlspecialchars(ucwords(strtolower($_SESSION['user_name']))) ?></span>
                 <span class="user-role">Caregiver</span>
             </div>
-            <a href="/diabetrack/public/auth/logout" class="logout-btn" title="Logout">
+            <a href="<?= BASE_URL ?>/auth/logout" class="logout-btn" title="Logout">
                 <i class="ti ti-logout"></i>
             </a>
         </div>
@@ -131,7 +131,7 @@
 <nav class="mobile-nav-drawer" id="mobile-nav-drawer" aria-label="Mobile navigation">
     <div class="drawer-header">
         <div class="drawer-brand">
-            <img src="/diabetrack/public/assets/img/diabetrack-icon.png" alt="" style="width:26px;height:26px;object-fit:contain;">
+            <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" alt="" style="width:26px;height:26px;object-fit:contain;">
             <span class="drawer-brand-name">DiabeTrack</span>
         </div>
         <button class="drawer-close" onclick="closeMobileNav()"><i class="ti ti-x"></i></button>
@@ -147,37 +147,37 @@
 
     <div class="drawer-nav">
         <div class="drawer-nav-label">Main</div>
-        <a href="/diabetrack/public/caregiver/patients" class="drawer-nav-link <?= ($activeMenu ?? '') === 'patients' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/patients" class="drawer-nav-link <?= ($activeMenu ?? '') === 'patients' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-users"></i></span> My Patients
         </a>
-        <a href="/diabetrack/public/caregiver/dashboard" class="drawer-nav-link <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/dashboard" class="drawer-nav-link <?= ($activeMenu ?? '') === 'dashboard' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-layout-grid"></i></span> Dashboard
         </a>
-        <a href="/diabetrack/public/caregiver/bloodsugar" class="drawer-nav-link <?= ($activeMenu ?? '') === 'bloodsugar' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/bloodsugar" class="drawer-nav-link <?= ($activeMenu ?? '') === 'bloodsugar' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-droplet-half-2"></i></span> Blood Sugar
         </a>
-        <a href="/diabetrack/public/caregiver/medication" class="drawer-nav-link <?= ($activeMenu ?? '') === 'medication' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/medication" class="drawer-nav-link <?= ($activeMenu ?? '') === 'medication' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-pill"></i></span> Medication
         </a>
-        <a href="/diabetrack/public/caregiver/meals" class="drawer-nav-link <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/meals" class="drawer-nav-link <?= ($activeMenu ?? '') === 'meals' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-bowl-spoon"></i></span> Meals
         </a>
-        <a href="/diabetrack/public/caregiver/alerts" class="drawer-nav-link <?= ($activeMenu ?? '') === 'alerts' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/alerts" class="drawer-nav-link <?= ($activeMenu ?? '') === 'alerts' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-bell"></i></span> Alerts
             <?php if (!empty($__cgUnread) && $__cgUnread > 0): ?>
             <span class="drawer-nav-badge"><?= $__cgUnread ?></span>
             <?php endif; ?>
         </a>
-        <a href="/diabetrack/public/caregiver/reports" class="drawer-nav-link <?= ($activeMenu ?? '') === 'reports' ? 'active' : '' ?>">
+        <a href="<?= BASE_URL ?>/caregiver/reports" class="drawer-nav-link <?= ($activeMenu ?? '') === 'reports' ? 'active' : '' ?>">
             <span class="drawer-nav-icon"><i class="ti ti-report-medical"></i></span> Reports
         </a>
     </div>
 
     <div class="drawer-footer">
-        <a href="/diabetrack/public/caregiver/profile" class="drawer-nav-link">
+        <a href="<?= BASE_URL ?>/caregiver/profile" class="drawer-nav-link">
             <span class="drawer-nav-icon"><i class="ti ti-user-circle"></i></span> My Profile
         </a>
-        <a href="/diabetrack/public/auth/logout" class="drawer-logout">
+        <a href="<?= BASE_URL ?>/auth/logout" class="drawer-logout">
             <span class="drawer-nav-icon" style="background:rgba(220,60,60,0.1);color:rgba(255,120,120,0.8);"><i class="ti ti-logout"></i></span> Log Out
         </a>
     </div>
@@ -199,4 +199,3 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMobil
 
 </body>
 </html>
-

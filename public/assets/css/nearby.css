@@ -479,3 +479,30 @@ body {
 @media (max-width: 400px) {
     .nb-idle-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+    .nb-page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .nb-page-header-right { align-items: flex-start; width: 100%; }
+    .nb-page-title { font-size: 1.8rem; letter-spacing: -1.2px; }
+
+    .nb-filter-tabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+    .nb-filter-tabs::-webkit-scrollbar { display: none; }
+    .nb-filter { flex-shrink: 0; }
+
+    .nb-idle-grid { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .nb-idle-card { padding: 16px 14px; border-radius: 16px; }
+
+    #nbLeafletMap { height: 260px !important; border-radius: 16px; }
+
+    .nb-results-grid { grid-template-columns: 1fr !important; gap: 10px; }
+    .nb-result-card  { padding: 14px 16px; border-radius: 16px; }
+
+    .nb-checklist-grid { grid-template-columns: 1fr !important; }
+
+    .nb-locate-btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 400px) {
+    .nb-idle-grid  { grid-template-columns: 1fr !important; gap: 6px; }
+    .nb-page-title { font-size: 1.6rem; }
+}

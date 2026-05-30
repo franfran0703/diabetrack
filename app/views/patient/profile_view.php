@@ -11,15 +11,22 @@ $memberSince = date('F Y', strtotime($user['created_at']));
 $flashSuccess = $success ?? (isset($_GET['success']) ? urldecode($_GET['success']) : null);
 $flashError   = $error   ?? (isset($_GET['error'])   ? urldecode($_GET['error'])   : null);
 
-// Fetch 2FA status
-require_once __DIR__ . '/../../../config/Database.php';
+// Fetch 2FA status + health settings (weight, goal)
+require_once __DIR__ . '/../../../config/database.php';
 $__db = (new Database())->connect();
 $__s  = $__db->prepare("SELECT two_fa_enabled FROM users WHERE id = :id");
 $__s->execute(['id' => $_SESSION['user_id']]);
 $twoFaEnabled = (bool) $__s->fetchColumn();
+
+// Load health settings from patient_profiles (weight + activity goal)
+$__ps = $__db->prepare("SELECT weight_kg, activity_goal_mins FROM patient_profiles WHERE user_id = :id LIMIT 1");
+$__ps->execute(['id' => $_SESSION['user_id']]);
+$patientProfile   = $__ps->fetch(PDO::FETCH_ASSOC) ?: [];
+$profileWeightKg  = $patientProfile['weight_kg']          ?? null;
+$profileGoalMins  = $patientProfile['activity_goal_mins'] ?? 30;
 ?>
 
-<link href="/diabetrack/public/assets/css/patient_profile.css?<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/patient_profile.css?<?= time() ?>" rel="stylesheet">
 
 <div class="pp-page">
 
@@ -79,6 +86,13 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
             <button class="pp-tab active" onclick="showSection('info', this)">
                 <i class="ti ti-user"></i> Personal Info
             </button>
+            <button class="pp-tab" id="tab-health" onclick="showSection('health', this)">
+                <i class="ti ti-heartbeat"></i> Health Settings
+                <?php if (!$profileWeightKg): ?>
+                <span class="pp-tab-badge pp-tab-badge--warn">Set up</span>
+                <?php endif; ?>
+            </button>
+            <div class="pp-tab-divider"></div>
             <button class="pp-tab" onclick="showSection('password', this)">
                 <i class="ti ti-shield-lock"></i> Password
             </button>
@@ -114,7 +128,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                     <div class="pp-panel-sub">Update your name and email address</div>
                 </div>
                 <div class="pp-panel-body">
-                    <form method="POST" action="/diabetrack/public/patient/updateProfile">
+                    <form method="POST" action="/patient/updateProfile">
                         <input type="hidden" name="action" value="info">
                         <div class="pp-form-2col">
                             <div class="pp-field">
@@ -134,46 +148,105 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                             <button class="pp-btn pp-btn-primary" type="submit"><i class="ti ti-check"></i> Save Changes</button>
                         </div>
                     </form>
+                </div>
+            </div>
 
-                    <div class="pp-panel-head" style="margin-top:2rem;">
-                        <div class="pp-panel-title">Health Details</div>
-                        <div class="pp-panel-sub">Your diabetes and emergency contact info</div>
-                    </div>
-                    <form method="POST" action="/diabetrack/public/patient/updateProfile">
-                        <input type="hidden" name="action" value="patient_profile">
+            <!-- Health Settings -->
+            <div class="pp-panel" id="section-health" style="display:none;">
+                <div class="pp-panel-head">
+                    <div class="pp-panel-title">Health Settings</div>
+                    <div class="pp-panel-sub">Your weight and goal are used to personalise calorie estimates and daily activity targets across the app</div>
+                </div>
+                <div class="pp-panel-body">
+                    <form method="POST" action="/patient/updateProfile" id="healthForm">
+                        <input type="hidden" name="action" value="info">
+                        <!-- Hidden name/email so the existing info action still validates -->
+                        <input type="hidden" name="name"  value="<?= htmlspecialchars($user['name']) ?>">
+                        <input type="hidden" name="email" value="<?= htmlspecialchars($user['email']) ?>">
+
+                        <div class="pp-health-section-label">
+                            <i class="ti ti-scale"></i> Body Weight
+                        </div>
+
                         <div class="pp-form-2col">
                             <div class="pp-field">
-                                <label class="pp-field-label">Date of Birth</label>
-                                <input class="pp-input" type="date" name="date_of_birth"
-                                       value="<?= htmlspecialchars($profile['date_of_birth'] ?? '') ?>">
+                                <label class="pp-field-label">
+                                    Weight (kg)
+                                    <span class="pp-field-hint">Used for precise calorie calculation</span>
+                                </label>
+                                <div class="pp-weight-input-wrap">
+                                    <input class="pp-input" type="number" name="weight_kg"
+                                           id="weightInput"
+                                           min="20" max="300" step="0.1"
+                                           value="<?= htmlspecialchars($profileWeightKg ?? '') ?>"
+                                           placeholder="e.g. 68.5">
+                                    <span class="pp-unit-badge">kg</span>
+                                </div>
+                                <?php if (!$profileWeightKg): ?>
+                                <div class="pp-field-notice">
+                                    <i class="ti ti-info-circle"></i>
+                                    Not set — calorie estimates are currently based on an average 70 kg person
+                                </div>
+                                <?php else: ?>
+                                <div class="pp-field-notice pp-field-notice--ok">
+                                    <i class="ti ti-circle-check"></i>
+                                    Using your weight for precise calorie calculations
+                                </div>
+                                <?php endif; ?>
                             </div>
                             <div class="pp-field">
-                                <label class="pp-field-label">Diabetes Type</label>
-                                <select class="pp-input" name="diabetes_type">
-                                    <option value="">— Select —</option>
-                                    <?php foreach (['Type 1','Type 2','Gestational','Pre-diabetes'] as $t): ?>
-                                    <option value="<?= $t ?>" <?= ($profile['diabetes_type'] ?? '') === $t ? 'selected' : '' ?>>
-                                        <?= $t ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <label class="pp-field-label">
+                                    Height (cm)
+                                    <span class="pp-field-hint">Optional — for BMI display only</span>
+                                </label>
+                                <div class="pp-weight-input-wrap">
+                                    <input class="pp-input" type="number" name="height_cm"
+                                           id="heightInput"
+                                           min="100" max="250" step="1"
+                                           value="<?= htmlspecialchars($patientProfile['height_cm'] ?? '') ?>"
+                                           placeholder="e.g. 165"
+                                           oninput="updateBMI()">
+                                    <span class="pp-unit-badge">cm</span>
+                                </div>
+                                <div class="pp-bmi-display" id="bmiDisplay" style="display:none;"></div>
                             </div>
                         </div>
-                        <div class="pp-form-2col">
-                            <div class="pp-field">
-                                <label class="pp-field-label">Emergency Contact Name</label>
-                                <input class="pp-input" type="text" name="emergency_contact_name"
-                                       value="<?= htmlspecialchars($profile['emergency_contact_name'] ?? '') ?>">
+
+                        <div class="pp-health-section-label" style="margin-top:22px;">
+                            <i class="ti ti-run"></i> Daily Activity Goal
+                        </div>
+
+                        <div class="pp-field">
+                            <label class="pp-field-label">
+                                Daily movement target (minutes)
+                                <span class="pp-field-hint">ADA recommends 30 min/day for Type 2 diabetes</span>
+                            </label>
+                            <div class="pp-goal-preset-row">
+                                <?php foreach ([15=>'Light (15m)', 20=>'Gentle (20m)', 30=>'ADA Rec. (30m)', 45=>'Active (45m)', 60=>'Athlete (60m)'] as $mins => $lbl): ?>
+                                <button type="button"
+                                        class="pp-goal-preset <?= $profileGoalMins === $mins ? 'active' : '' ?>"
+                                        onclick="setGoalPreset(<?= $mins ?>, this)">
+                                    <?= $lbl ?>
+                                </button>
+                                <?php endforeach; ?>
                             </div>
-                            <div class="pp-field">
-                                <label class="pp-field-label">Emergency Contact Number</label>
-                                <input class="pp-input" type="text" name="emergency_contact_number"
-                                       value="<?= htmlspecialchars($profile['emergency_contact_number'] ?? '') ?>">
+                            <div class="pp-weight-input-wrap" style="margin-top:10px;max-width:200px;">
+                                <input class="pp-input" type="number" name="activity_goal_mins"
+                                       id="goalInput"
+                                       min="10" max="180" step="5"
+                                       value="<?= htmlspecialchars($profileGoalMins) ?>"
+                                       oninput="syncPresets(this.value)">
+                                <span class="pp-unit-badge">min/day</span>
+                            </div>
+                            <div class="pp-field-notice" style="margin-top:8px;">
+                                <i class="ti ti-info-circle"></i>
+                                Your activity ring on the Activity page will use this target
                             </div>
                         </div>
+
                         <div class="pp-btn-row">
                             <button class="pp-btn pp-btn-primary" type="submit">
-                                <i class="ti ti-check"></i> Save Health Details
+                                <i class="ti ti-device-floppy"></i> Save Health Settings
                             </button>
                         </div>
                     </form>
@@ -187,7 +260,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                     <div class="pp-panel-sub">Choose a strong password to keep your account secure</div>
                 </div>
                 <div class="pp-panel-body">
-                    <form method="POST" action="/diabetrack/public/patient/updateProfile">
+                    <form method="POST" action="/patient/updateProfile">
                         <input type="hidden" name="action" value="password">
                         <div class="pp-field">
                             <label class="pp-field-label">Current Password</label>
@@ -239,7 +312,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                         <div class="pp-empty">
                             <i class="ti ti-user-x"></i>
                             <p>No caregivers linked yet.</p>
-                            <a href="/diabetrack/public/patient/caregiverRequests" class="pp-btn pp-btn-ghost">
+                            <a href="<?= BASE_URL ?>/patient/caregiverRequests" class="pp-btn pp-btn-ghost">
                                 <i class="ti ti-user-plus"></i> Manage Requests
                             </a>
                         </div>
@@ -262,7 +335,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                                 <div style="font-size:0.75rem;color:#a0714f;margin-top:2px;">Your account is protected with two-factor authentication.</div>
                             </div>
                         </div>
-                        <a href="/diabetrack/public/patient/disable2fa"
+                        <a href="<?= BASE_URL ?>/patient/disable2fa"
                            class="pp-btn pp-btn-danger"
                            onclick="return confirm('Disable 2FA? Your account will be less secure.')"
                            style="display:inline-flex;">
@@ -276,7 +349,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                                 <div style="font-size:0.75rem;color:#a0714f;margin-top:2px;">Enable 2FA to protect your account with Google Authenticator.</div>
                             </div>
                         </div>
-                        <a href="/diabetrack/public/patient/setup2fa" class="pp-btn pp-btn-primary" style="display:inline-flex;">
+                        <a href="<?= BASE_URL ?>/patient/setup2fa" class="pp-btn pp-btn-primary" style="display:inline-flex;">
                             <i class="ti ti-shield-check"></i> Enable 2FA
                         </a>
                     <?php endif; ?>
@@ -291,7 +364,7 @@ $twoFaEnabled = (bool) $__s->fetchColumn();
                 </div>
                 <div class="pp-panel-body">
                     <p class="pp-danger-text">Signing out will end your current session. Make sure you've saved any changes before leaving.</p>
-                    <a href="/diabetrack/public/auth/logout" class="pp-btn pp-btn-danger">
+                    <a href="<?= BASE_URL ?>/auth/logout" class="pp-btn pp-btn-danger">
                         <i class="ti ti-logout"></i> Sign Out
                     </a>
                 </div>
@@ -310,6 +383,43 @@ function showSection(id, btn) {
     if (el) el.style.display = '';
     if (btn) btn.classList.add('active');
 }
+// Health Settings JS
+function setGoalPreset(mins, btn) {
+    document.querySelectorAll('.pp-goal-preset').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('goalInput').value = mins;
+}
+function syncPresets(val) {
+    const v = parseInt(val);
+    document.querySelectorAll('.pp-goal-preset').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.textContent) === v);
+    });
+}
+function updateBMI() {
+    const wt = parseFloat(document.getElementById('weightInput')?.value);
+    const ht = parseFloat(document.getElementById('heightInput')?.value);
+    const el = document.getElementById('bmiDisplay');
+    if (!el) return;
+    if (wt > 0 && ht > 0) {
+        const bmi = wt / Math.pow(ht / 100, 2);
+        const cat = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal weight' : bmi < 30 ? 'Overweight' : 'Obese';
+        const col = bmi < 18.5 ? '#f59e0b' : bmi < 25 ? '#0f7a45' : bmi < 30 ? '#d97706' : '#dc2626';
+        el.style.display = 'flex';
+        el.innerHTML = `<i class="ti ti-calculator"></i> BMI: <strong style="color:${col};">${bmi.toFixed(1)}</strong> — ${cat}`;
+    } else {
+        el.style.display = 'none';
+    }
+}
+// Auto-open Health Settings if weight is unset (query param nudge from activity page)
+document.addEventListener('DOMContentLoaded', () => {
+    if (location.hash === '#health-settings') {
+        const btn = document.getElementById('tab-health');
+        if (btn) { showSection('health', btn); btn.scrollIntoView({behavior:'smooth', block:'center'}); }
+    }
+    // Init BMI display if values already set
+    updateBMI();
+});
+
 function updateStrength(val) {
     const fill = document.getElementById('pwFill');
     if (!fill) return;

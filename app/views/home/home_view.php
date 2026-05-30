@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabeTrack — All-In-One Diabetes Management</title>
-    <link rel="stylesheet" href="/diabetrack/public/assets/css/landing.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/landing.css?v=<?= time() ?>">
 </head>
 <body>
 
 <!-- ── NAVBAR ────────────────────────────────────────── -->
 <nav class="nav" id="navbar">
-    <a href="/diabetrack/public/" class="nav-brand">
+    <a href="/" class="nav-brand">
         <div class="nav-brand-pill">
-            <img src="/diabetrack/public/assets/img/diabetrack-icon.png" alt="DiabeTrack" style="width:28px;height:28px;object-fit:contain;">
+            <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" alt="DiabeTrack" style="width:28px;height:28px;object-fit:contain;">
         </div>
         <span class="nav-brand-name">DiabeTrack</span>
     </a>
@@ -20,8 +20,8 @@
         <a href="#features" class="nav-link">Features</a>
         <a href="#how"      class="nav-link">How It Works</a>
         <a href="#users"    class="nav-link">Who It's For</a>
-        <a href="/diabetrack/public/auth/login"    class="nav-link">Login</a>
-        <a href="/diabetrack/public/auth/register" class="nav-cta">Get Started →</a>
+        <a href="<?= BASE_URL ?>/auth/login"    class="nav-link">Login</a>
+        <a href="<?= BASE_URL ?>/auth/register" class="nav-cta">Get Started →</a>
     </div>
     <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -33,8 +33,8 @@
     <a href="#features" class="drawer-link">Features</a>
     <a href="#how"      class="drawer-link">How It Works</a>
     <a href="#users"    class="drawer-link">Who It's For</a>
-    <a href="/diabetrack/public/auth/login"    class="drawer-link">Login</a>
-    <a href="/diabetrack/public/auth/register" class="drawer-cta">Get Started →</a>
+    <a href="<?= BASE_URL ?>/auth/login"    class="drawer-link">Login</a>
+    <a href="<?= BASE_URL ?>/auth/register" class="drawer-cta">Get Started →</a>
 </div>
 
 <!-- ── HERO ──────────────────────────────────────────── -->
@@ -80,7 +80,7 @@
         </p>
 
         <div class="hero-btns">
-            <a href="/diabetrack/public/auth/register" class="btn-primary-hero">
+            <a href="<?= BASE_URL ?>/auth/register" class="btn-primary-hero">
                 🚀 Get Started Free
             </a>
             <a href="#features" class="btn-secondary-hero">
@@ -252,7 +252,7 @@
                     <li><span class="check-pill">✓</span> Access education hub</li>
                     <li><span class="check-pill">✓</span> Find nearby clinics</li>
                 </ul>
-                <a href="/diabetrack/public/auth/register" class="role-card-cta">Register as Patient →</a>
+                <a href="<?= BASE_URL ?>/auth/register" class="role-card-cta">Register as Patient →</a>
             </div>
 
             <div class="user-role-card caregiver-card">
@@ -268,7 +268,7 @@
                     <li><span class="check-pill">✓</span> Access health reports</li>
                     <li><span class="check-pill">✓</span> Manage multiple patients</li>
                 </ul>
-                <a href="/diabetrack/public/auth/register" class="role-card-cta caregiver-cta">Register as Caregiver →</a>
+                <a href="<?= BASE_URL ?>/auth/register" class="role-card-cta caregiver-cta">Register as Caregiver →</a>
             </div>
         </div>
     </div>
@@ -321,17 +321,17 @@
             Join DiabeTrack and take the first step towards smarter, safer diabetes management — for you and your family.
         </p>
         <div class="cta-btns">
-            <a href="/diabetrack/public/auth/register" class="btn-cta-white">🚀 Create Free Account →</a>
-            <a href="/diabetrack/public/auth/login" class="btn-cta-outline">Sign In</a>
+            <a href="<?= BASE_URL ?>/auth/register" class="btn-cta-white">🚀 Create Free Account →</a>
+            <a href="<?= BASE_URL ?>/auth/login" class="btn-cta-outline">Sign In</a>
         </div>
     </div>
 </section>
 
 <!-- ── FOOTER ──────────────────────────────────────────── -->
 <footer class="footer">
-    <a href="/diabetrack/public/" class="footer-brand">
+    <a href="/" class="footer-brand">
         <div class="nav-brand-pill">
-            <img src="/diabetrack/public/assets/img/diabetrack-icon.png" alt="DiabeTrack" style="width:26px;height:26px;object-fit:contain;">
+            <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" alt="DiabeTrack" style="width:26px;height:26px;object-fit:contain;">
         </div>
         <span class="footer-brand-name">DiabeTrack</span>
     </a>
@@ -339,8 +339,8 @@
     <div class="footer-links">
         <a href="#features">Features</a>
         <a href="#how">How It Works</a>
-        <a href="/diabetrack/public/auth/login">Login</a>
-        <a href="/diabetrack/public/auth/register">Register</a>
+        <a href="<?= BASE_URL ?>/auth/login">Login</a>
+        <a href="<?= BASE_URL ?>/auth/register">Register</a>
     </div>
 </footer>
 

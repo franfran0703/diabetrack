@@ -337,7 +337,7 @@ ob_start();
     <div class="setup2fa-error">⚠️ <?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="/diabetrack/public/patient/setup2fa" id="setupForm">
+    <form method="POST" action="/patient/setup2fa" id="setupForm">
         <input type="hidden" name="action" value="enable">
         <input type="hidden" name="secret" value="<?= htmlspecialchars($secret) ?>">
         <input type="hidden" name="code" id="fullCode">
@@ -414,7 +414,7 @@ ob_start();
         </div>
 
         <div class="setup2fa-actions">
-            <a href="/diabetrack/public/patient/profile" class="btn-cancel">← Cancel</a>
+            <a href="<?= BASE_URL ?>/patient/profile" class="btn-cancel">← Cancel</a>
             <button type="submit" class="btn-activate">🔐 Activate 2FA</button>
         </div>
 

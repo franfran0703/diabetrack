@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DiabeTrack — Sign In</title>
-    <link rel="stylesheet" href="/diabetrack/public/assets/css/auth.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/auth.css?v=<?= time() ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
 
 <!-- Floating Home Button -->
-<a href="/diabetrack/public/" class="auth-home-float">
+<a href="/" class="auth-home-float">
     <span class="home-arrow">←</span> Home
 </a>
 
@@ -24,9 +24,9 @@
     <!-- LEFT — Form -->
     <div class="auth-left">
         <div>
-         <a href="/diabetrack/public/" class="auth-brand">
+         <a href="/" class="auth-brand">
     <div class="auth-brand-pill">
-        <img src="/diabetrack/public/assets/img/diabetrack-icon.png" style="width:32px;height:32px;object-fit:contain;">
+        <img src="<?= BASE_URL ?>/assets/img/diabetrack-icon.png" style="width:32px;height:32px;object-fit:contain;">
     </div>
     <span class="auth-brand-name">DiabeTrack</span>
 </a>
@@ -38,7 +38,7 @@
             <div class="auth-alert error">❌ <?= htmlspecialchars($error) ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="/diabetrack/public/auth/login">
+            <form method="POST" action="/auth/login">
                 <div class="auth-field">
                     <label class="auth-label">Email Address</label>
                     <input type="email" name="email" class="auth-input"
@@ -94,7 +94,7 @@
 
         <div class="auth-bottom-row">
             <span class="auth-bottom-text">
-                No account? <a href="/diabetrack/public/auth/register">Register →</a>
+                No account? <a href="<?= BASE_URL ?>/auth/register">Register →</a>
             </span>
         </div>
     </div>

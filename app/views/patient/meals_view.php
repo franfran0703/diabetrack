@@ -128,7 +128,7 @@ $hasCustomLimits = isset($nutritionLimits) && !empty($nutritionLimits);
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link href="/diabetrack/public/assets/css/meals.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/meals.css?v=<?= time() ?>" rel="stylesheet">
 
 <!-- ══ PAGE HEADER ═══════════════════════════════════════ -->
 <div class="meal-page-header">
@@ -762,7 +762,7 @@ $hasCustomLimits = isset($nutritionLimits) && !empty($nutritionLimits);
             </div>
             <button class="meal-modal-close" onclick="closeModal('addMealModal')" aria-label="Close"><i class="ti ti-x"></i></button>
         </div>
-        <form method="POST" action="/diabetrack/public/patient/meals" id="addMealForm">
+        <form method="POST" action="/patient/meals" id="addMealForm">
             <div class="meal-modal-body">
                 <div class="meal-form-group">
                     <label class="meal-form-label"><i class="ti ti-pencil"></i> Meal Name <span class="meal-required">*</span></label>
@@ -840,7 +840,7 @@ $hasCustomLimits = isset($nutritionLimits) && !empty($nutritionLimits);
             </div>
             <button class="meal-modal-close" onclick="closeModal('savePresetModal')" aria-label="Close"><i class="ti ti-x"></i></button>
         </div>
-        <form method="POST" action="/diabetrack/public/patient/meals">
+        <form method="POST" action="/patient/meals">
             <input type="hidden" name="action" value="save_preset">
             <div class="meal-modal-body">
                 <div class="meal-form-group">
@@ -1106,7 +1106,7 @@ function showDeleteToast(id, name, rows) {
     showToast('deleteToast', 0);
     pendingDelete = { id, rows };
     clearTimeout(deleteTimer);
-    deleteTimer = setTimeout(() => { window.location.href = '/diabetrack/public/patient/meals?delete=' + id + '&deleted=1'; }, 5000);
+    deleteTimer = setTimeout(() => { window.location.href = '/patient/meals?delete=' + id + '&deleted=1'; }, 5000);
 }
 document.getElementById('toastUndo').addEventListener('click', () => {
     clearTimeout(deleteTimer);
@@ -1117,14 +1117,14 @@ document.getElementById('toastUndo').addEventListener('click', () => {
     hideToast('deleteToast');
 });
 document.getElementById('toastClose').addEventListener('click', () => {
-    if (pendingDelete) { window.location.href = '/diabetrack/public/patient/meals?delete=' + pendingDelete.id + '&deleted=1'; pendingDelete = null; }
+    if (pendingDelete) { window.location.href = '/patient/meals?delete=' + pendingDelete.id + '&deleted=1'; pendingDelete = null; }
     hideToast('deleteToast'); clearTimeout(deleteTimer);
 });
 
 /* ── Delete preset ─────────────────────────────────────── */
 function deletePreset(id, link) {
     const item = link.closest('.qa-list-item');
-    fetch('/diabetrack/public/patient/meals?delete_preset=' + id)
+    fetch('/patient/meals?delete_preset=' + id)
         .then(r => { if (r.ok && item) { item.classList.add('removing'); setTimeout(() => item.remove(), 300); } })
         .catch(() => {});
 }

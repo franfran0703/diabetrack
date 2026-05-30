@@ -828,3 +828,75 @@ body {
 @media (max-width: 480px) {
     .cgmed-stat-row { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+    .cgmed-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .cgmed-header-right { width: 100%; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+    .cgmed-title { font-size: 1.8rem; letter-spacing: -1.2px; }
+
+    .cgmed-stat-row { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .cgmed-stat-card { padding: 14px; border-radius: 16px; }
+    .cgmed-stat-val  { font-size: 1.5rem; }
+
+    .cgmed-main-grid { grid-template-columns: 1fr !important; gap: 12px; }
+
+    .cgmed-med-card { padding: 14px 16px; border-radius: 18px; gap: 12px; }
+    .cgmed-med-icon { width: 38px; height: 38px; }
+
+    .cgmed-sched-item { padding: 10px 12px; border-radius: 14px; gap: 10px; }
+
+    .cgmed-action-row { flex-direction: column; gap: 8px; }
+    .cgmed-action-row button, .cgmed-action-row a { width: 100%; justify-content: center; }
+
+    .cgmed-drawer { width: 100% !important; border-radius: 24px 24px 0 0; top: auto; bottom: 0; height: 90vh; }
+    .cgmed-drawer-overlay { align-items: flex-end; }
+
+    .cgmed-filter-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .cgmed-filter-tabs::-webkit-scrollbar { display: none; }
+    .cgmed-filter-tab { flex-shrink: 0; }
+}
+
+@media (max-width: 400px) {
+    .cgmed-stat-row  { gap: 6px; }
+    .cgmed-stat-card { padding: 12px; }
+    .cgmed-stat-val  { font-size: 1.3rem; }
+    .cgmed-title     { font-size: 1.6rem; }
+}
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  MOBILE RESPONSIVE — Patient Medication (Enhanced)       ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+@media (max-width: 640px) {
+    .med-page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .med-page-header-right { width: 100%; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+    .med-page-title { font-size: 1.8rem; letter-spacing: -1.2px; }
+
+    .med-today-grid { grid-template-columns: 1fr !important; gap: 10px; }
+
+    .med-item-row { grid-template-columns: auto 1fr; gap: 10px 12px; padding: 14px; border-radius: 16px; }
+    .med-item-actions { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; gap: 8px; }
+
+    .med-timeline-tabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .med-timeline-tabs::-webkit-scrollbar { display: none; }
+    .med-timeline-tab { flex-shrink: 0; }
+
+    .med-stats-row { grid-template-columns: 1fr 1fr !important; gap: 8px; }
+    .med-scard { padding: 14px; border-radius: 16px; }
+
+    .med-slot-row { flex-wrap: wrap; gap: 7px; }
+    .med-slot-actions { margin-left: 0; width: 100%; justify-content: flex-end; }
+
+    .med-main-layout { grid-template-columns: 1fr !important; gap: 12px; }
+
+    .med-drawer { width: 100% !important; border-radius: 24px 24px 0 0; top: auto; bottom: 0; height: 90vh; }
+    .med-drawer-overlay { align-items: flex-end; }
+
+    .med-form-submit { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 400px) {
+    .med-stats-row  { gap: 6px; }
+    .med-scard      { padding: 12px; }
+    .med-page-title { font-size: 1.6rem; }
+}

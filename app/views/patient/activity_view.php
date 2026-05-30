@@ -213,7 +213,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link href="/diabetrack/public/assets/css/activity.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/activity.css?v=<?= time() ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ══════════════════════════════════════════ -->
@@ -255,7 +255,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             </div>
         </div>
     </div>
-    <a href="/diabetrack/public/patient/profile#health-settings" class="act-weight-nudge-btn">
+    <a href="<?= BASE_URL ?>/patient/profile#health-settings" class="act-weight-nudge-btn">
         <i class="ti ti-settings"></i> Set Weight
     </a>
 </div>
@@ -623,7 +623,7 @@ $flashDeleted = isset($_GET['deleted']) && $_GET['deleted'] === '1';
             </div>
             <?php endif; ?>
 
-            <form method="POST" action="/diabetrack/public/patient/activity?saved=1" id="actForm">
+            <form method="POST" action="/patient/activity?saved=1" id="actForm">
 
                 <!-- Activity type -->
                 <div class="act-form-group">
@@ -1225,7 +1225,7 @@ function confirmDelete(btn) {
     pendingDelete = { id, rows: [row, mirrorFeed, mirrorDrawer].filter(Boolean) };
     clearTimeout(deleteTimer);
     deleteTimer = setTimeout(() => {
-        window.location.href = '/diabetrack/public/patient/activity?delete=' + id + '&_token=' + CSRF + '&deleted=1';
+        window.location.href = '/patient/activity?delete=' + id + '&_token=' + CSRF + '&deleted=1';
     }, 5000);
 }
 document.getElementById('toastUndo').addEventListener('click', () => {
@@ -1236,7 +1236,7 @@ document.getElementById('toastUndo').addEventListener('click', () => {
 });
 document.getElementById('toastClose').addEventListener('click', () => {
     if (pendingDelete) {
-        window.location.href = '/diabetrack/public/patient/activity?delete=' + pendingDelete.id + '&_token=' + CSRF + '&deleted=1';
+        window.location.href = '/patient/activity?delete=' + pendingDelete.id + '&_token=' + CSRF + '&deleted=1';
         pendingDelete = null;
     }
     hideToast('deleteToast');

@@ -27,7 +27,7 @@ function cgInitials(string $name): string {
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
-<link href="/diabetrack/public/assets/css/caregiver_request.css?v=<?= time() ?>" rel="stylesheet">
+<link href="<?= BASE_URL ?>/assets/css/caregiver_request.css?v=<?= time() ?>" rel="stylesheet">
 
 
 <!-- ══ PAGE HEADER ═══════════════════════════════════════ -->
@@ -138,12 +138,12 @@ function cgInitials(string $name): string {
             </div>
 
             <div class="cgp-card-actions">
-                <a href="/diabetrack/public/patient/caregiverRequests?accept=<?= $cg['id'] ?>"
+                <a href="<?= BASE_URL ?>/patient/caregiverRequests?accept=<?= $cg['id'] ?>"
                    class="cgp-btn-accept"
                    onclick="openConfirm('accept', this.href, '<?= htmlspecialchars(addslashes($cg['name'])) ?>'); return false;">
                     <i class="ti ti-check"></i> Accept
                 </a>
-                <a href="/diabetrack/public/patient/caregiverRequests?decline=<?= $cg['id'] ?>"
+                <a href="<?= BASE_URL ?>/patient/caregiverRequests?decline=<?= $cg['id'] ?>"
                    class="cgp-btn-decline"
                    onclick="openConfirm('decline', this.href, '<?= htmlspecialchars(addslashes($cg['name'])) ?>'); return false;">
                     <i class="ti ti-x"></i> Decline
@@ -222,7 +222,7 @@ function cgInitials(string $name): string {
             <div class="cgp-card-actions">
                 <button class="cgp-btn-remove"
                    onclick="openConfirm('remove',
-                       '/diabetrack/public/patient/caregiverRequests?remove=<?= $cg['id'] ?>&_token=<?= $csrfToken ?>',
+                       '/patient/caregiverRequests?remove=<?= $cg['id'] ?>&_token=<?= $csrfToken ?>',
                        '<?= htmlspecialchars(addslashes($cg['name'])) ?>'
                    )">
                     <i class="ti ti-user-minus"></i> Remove Access
